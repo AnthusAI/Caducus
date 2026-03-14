@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "b586606d-5749-4156-a11e-28435e541157",
+  "issue_id": "kanbus-5f4945e7-e3e4-4391-ab60-49ff54ca9c5e",
+  "event_type": "issue_created",
+  "occurred_at": "2026-03-14T16:05:02.249Z",
+  "actor_id": "ryan",
+  "payload": {
+    "assignee": null,
+    "description": "",
+    "issue_type": "epic",
+    "labels": [],
+    "parent": "kanbus-6f9fc4b3-c399-47d6-bd21-a0392550dd7c",
+    "priority": 2,
+    "status": "open",
+    "title": "Entity knowledge base from reinforcement memory"
+  }
+}

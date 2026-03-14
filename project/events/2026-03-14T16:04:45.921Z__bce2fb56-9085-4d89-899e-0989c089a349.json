@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "bce2fb56-9085-4d89-899e-0989c089a349",
+  "issue_id": "kanbus-6f9fc4b3-c399-47d6-bd21-a0392550dd7c",
+  "event_type": "issue_created",
+  "occurred_at": "2026-03-14T16:04:45.921Z",
+  "actor_id": "ryan",
+  "payload": {
+    "assignee": null,
+    "description": "",
+    "issue_type": "initiative",
+    "labels": [],
+    "parent": null,
+    "priority": 2,
+    "status": "open",
+    "title": "Caducus: Ops anomaly radar"
+  }
+}
