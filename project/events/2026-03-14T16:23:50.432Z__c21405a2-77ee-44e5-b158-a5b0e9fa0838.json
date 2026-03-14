@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "c21405a2-77ee-44e5-b158-a5b0e9fa0838",
+  "issue_id": "kanbus-2402d44c-1207-4704-bff1-3b6af51026a3",
+  "event_type": "issue_created",
+  "occurred_at": "2026-03-14T16:23:50.432Z",
+  "actor_id": "ryan",
+  "payload": {
+    "assignee": null,
+    "description": "",
+    "issue_type": "task",
+    "labels": [],
+    "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+    "priority": 2,
+    "status": "open",
+    "title": "Establish the Python CLI project skeleton and test harness"
+  }
+}

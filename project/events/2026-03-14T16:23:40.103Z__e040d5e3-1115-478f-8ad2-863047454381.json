@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "e040d5e3-1115-478f-8ad2-863047454381",
+  "issue_id": "kanbus-e28a9c71-0c4d-4185-bdc6-4ed8c60884a1",
+  "event_type": "issue_created",
+  "occurred_at": "2026-03-14T16:23:40.103Z",
+  "actor_id": "ryan",
+  "payload": {
+    "assignee": null,
+    "description": "",
+    "issue_type": "story",
+    "labels": [],
+    "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+    "priority": 2,
+    "status": "open",
+    "title": "Ingest one alert source into canonical event records"
+  }
+}

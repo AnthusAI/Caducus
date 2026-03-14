@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "e0bb9d38-35c2-4111-851c-1560f0a467fd",
+  "issue_id": "kanbus-ab9e7a59-28e1-42fd-b94f-f35c9c71ca10",
+  "event_type": "issue_created",
+  "occurred_at": "2026-03-14T16:23:41.058Z",
+  "actor_id": "ryan",
+  "payload": {
+    "assignee": null,
+    "description": "",
+    "issue_type": "story",
+    "labels": [],
+    "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+    "priority": 2,
+    "status": "open",
+    "title": "Inspect recent events and analysis outputs from the CLI"
+  }
+}

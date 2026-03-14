@@ -1,0 +1,25 @@
+{
+  "id": "kanbus-2c920f36-47d5-428a-8492-07430157c449",
+  "title": "Collect CloudWatch log events into canonical event records",
+  "description": "",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "6fedadf3-23e1-48ac-bcb0-361d0ce972d9",
+      "author": "ryan",
+      "text": "As an operator, I want Caducus to collect CloudWatch log events into canonical event records, so that the system can analyze live operational log streams.\n\nFeature: CloudWatch event collection\n  Scenario: Collect configured CloudWatch log events\n    Given a Caducus configuration that enables a CloudWatch collector\n    And the collector is configured with one or more log groups\n    When I run the Caducus collect command\n    Then Caducus reads new CloudWatch log events from those log groups\n    And Caducus writes one canonical event record per collected event\n    And each event record includes a timestamp, text summary, group_id, source, and metadata\n\n  Scenario: Override the default group_id for a CloudWatch collector\n    Given a Caducus configuration that enables a CloudWatch collector\n    And the collector has an explicit group_id override\n    When I collect CloudWatch log events\n    Then Caducus writes the configured group_id into the event records",
+      "created_at": "2026-03-14T16:24:02.258132Z"
+    }
+  ],
+  "created_at": "2026-03-14T16:23:33.569502Z",
+  "updated_at": "2026-03-14T16:24:02.258132Z",
+  "closed_at": null,
+  "custom": {}
+}

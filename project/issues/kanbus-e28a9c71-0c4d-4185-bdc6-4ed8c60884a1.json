@@ -1,0 +1,25 @@
+{
+  "id": "kanbus-e28a9c71-0c4d-4185-bdc6-4ed8c60884a1",
+  "title": "Ingest one alert source into canonical event records",
+  "description": "",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "a6f5434d-5a3f-466b-80d5-8cf117542247",
+      "author": "ryan",
+      "text": "As an operator, I want Caducus to ingest alerts from a configured alert source into canonical event records, so that operational incidents from alerting systems appear in the same radar as logs and DLQ failures.\n\nFeature: Alert source ingestion\n  Scenario: Collect alerts from a configured source\n    Given a Caducus configuration that enables an alert collector\n    And the collector is configured for a supported alert source\n    When I run the Caducus collect command\n    Then Caducus reads new alerts from that source\n    And Caducus writes one canonical event record per alert\n    And the event records include canonical fields plus generalized metadata",
+      "created_at": "2026-03-14T16:24:16.209186Z"
+    }
+  ],
+  "created_at": "2026-03-14T16:23:40.103015Z",
+  "updated_at": "2026-03-14T16:24:16.209186Z",
+  "closed_at": null,
+  "custom": {}
+}

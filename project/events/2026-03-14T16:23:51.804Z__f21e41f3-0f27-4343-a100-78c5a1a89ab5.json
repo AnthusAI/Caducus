@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "f21e41f3-0f27-4343-a100-78c5a1a89ab5",
+  "issue_id": "kanbus-09b601da-cc3a-497f-b5c6-601aba9ac609",
+  "event_type": "issue_created",
+  "occurred_at": "2026-03-14T16:23:51.804Z",
+  "actor_id": "ryan",
+  "payload": {
+    "assignee": null,
+    "description": "",
+    "issue_type": "task",
+    "labels": [],
+    "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+    "priority": 2,
+    "status": "open",
+    "title": "Build the first vertical slice: collect CloudWatch events into Virtuus"
+  }
+}

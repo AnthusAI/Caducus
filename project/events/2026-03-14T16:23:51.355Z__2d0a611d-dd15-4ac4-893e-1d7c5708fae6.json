@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "2d0a611d-dd15-4ac4-893e-1d7c5708fae6",
+  "issue_id": "kanbus-a3c31233-159d-42f8-84d1-d3f6b0d7ab96",
+  "event_type": "issue_created",
+  "occurred_at": "2026-03-14T16:23:51.355Z",
+  "actor_id": "ryan",
+  "payload": {
+    "assignee": null,
+    "description": "",
+    "issue_type": "task",
+    "labels": [],
+    "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+    "priority": 2,
+    "status": "open",
+    "title": "Define the canonical event model and Virtuus events schema"
+  }
+}

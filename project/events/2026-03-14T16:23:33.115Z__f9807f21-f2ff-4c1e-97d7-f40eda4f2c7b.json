@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "f9807f21-f2ff-4c1e-97d7-f40eda4f2c7b",
+  "issue_id": "kanbus-f3d04cc3-68c8-4fd1-8ee6-bd24b996a921",
+  "event_type": "issue_created",
+  "occurred_at": "2026-03-14T16:23:33.115Z",
+  "actor_id": "ryan",
+  "payload": {
+    "assignee": null,
+    "description": "",
+    "issue_type": "story",
+    "labels": [],
+    "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+    "priority": 2,
+    "status": "open",
+    "title": "Configure Caducus with YAML, env vars, and CLI overrides"
+  }
+}

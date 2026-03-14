@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "14c5bff4-f962-41a3-9871-c6da6d9fcd6b",
+  "issue_id": "kanbus-93fafa9f-968f-4a0a-94a9-19994c338699",
+  "event_type": "issue_created",
+  "occurred_at": "2026-03-14T16:23:32.637Z",
+  "actor_id": "ryan",
+  "payload": {
+    "assignee": null,
+    "description": "",
+    "issue_type": "task",
+    "labels": [],
+    "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+    "priority": 2,
+    "status": "open",
+    "title": "Define the Caducus MVP PR FAQ"
+  }
+}

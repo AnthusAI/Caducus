@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "b0673e7e-5051-4c86-8a7e-ff5052cd860c",
+  "issue_id": "kanbus-ccde766a-80e0-49fb-907e-35eb812d3091",
+  "event_type": "issue_created",
+  "occurred_at": "2026-03-14T16:23:34.019Z",
+  "actor_id": "ryan",
+  "payload": {
+    "assignee": null,
+    "description": "",
+    "issue_type": "story",
+    "labels": [],
+    "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+    "priority": 2,
+    "status": "open",
+    "title": "Collect SQS DLQ messages into canonical event records"
+  }
+}

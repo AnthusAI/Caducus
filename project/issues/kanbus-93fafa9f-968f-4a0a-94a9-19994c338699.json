@@ -1,0 +1,31 @@
+{
+  "id": "kanbus-93fafa9f-968f-4a0a-94a9-19994c338699",
+  "title": "Define the Caducus MVP PR FAQ",
+  "description": "",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "2a3b5982-dd5f-4ad8-a7d5-b826f61bc59f",
+      "author": "ryan",
+      "text": "Starting the README rewrite to capture the current public-facing product definition: overview, how it works, CLI-first MVP, architecture, and roadmap while Biblicus reinforcement memory is still being engineered.",
+      "created_at": "2026-03-14T16:34:48.030068Z"
+    },
+    {
+      "id": "fd1b85c3-b191-402f-80b0-6d899d17bd82",
+      "author": "ryan",
+      "text": "Updated README.md from a one-line placeholder into a public-facing overview covering the product purpose, why it exists, how it works, the CLI-first MVP, Caducus/Virtuus/Biblicus responsibilities, roadmap, and the outside-in repository direction.",
+      "created_at": "2026-03-14T16:35:30.546279Z"
+    }
+  ],
+  "created_at": "2026-03-14T16:23:32.637211Z",
+  "updated_at": "2026-03-14T16:35:30.546279Z",
+  "closed_at": null,
+  "custom": {}
+}

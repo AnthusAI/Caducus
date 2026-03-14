@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "3115b915-50eb-4323-a354-cb1fefca4b9d",
+  "issue_id": "kanbus-50b86cc4-be22-4d92-b3a6-52a3a591f837",
+  "event_type": "issue_created",
+  "occurred_at": "2026-03-14T16:23:50.903Z",
+  "actor_id": "ryan",
+  "payload": {
+    "assignee": null,
+    "description": "",
+    "issue_type": "task",
+    "labels": [],
+    "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+    "priority": 2,
+    "status": "open",
+    "title": "Implement the dotyaml-based Caducus configuration loader"
+  }
+}

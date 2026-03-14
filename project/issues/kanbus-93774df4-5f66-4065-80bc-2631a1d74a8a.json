@@ -1,0 +1,18 @@
+{
+  "id": "kanbus-93774df4-5f66-4065-80bc-2631a1d74a8a",
+  "title": "Design the Python CLI thin adapter over Virtuus and Biblicus",
+  "description": "",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-03-14T16:23:41.498996Z",
+  "updated_at": "2026-03-14T16:23:41.498996Z",
+  "closed_at": null,
+  "custom": {}
+}

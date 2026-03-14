@@ -1,0 +1,25 @@
+{
+  "id": "kanbus-ccde766a-80e0-49fb-907e-35eb812d3091",
+  "title": "Collect SQS DLQ messages into canonical event records",
+  "description": "",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "1c62cd3d-26a4-4cb7-b436-8abe77aed409",
+      "author": "ryan",
+      "text": "As an operator, I want Caducus to collect SQS dead-letter queue messages into canonical event records, so that failed asynchronous work is visible in the anomaly radar.\n\nFeature: SQS DLQ collection\n  Scenario: Collect configured DLQ messages\n    Given a Caducus configuration that enables an SQS DLQ collector\n    And the collector is configured for a dead-letter queue\n    When I run the Caducus collect command\n    Then Caducus reads new messages from the dead-letter queue\n    And Caducus writes one canonical event record per message\n    And each event record preserves source-specific metadata alongside the canonical fields\n\n  Scenario: Use the queue-based default group_id\n    Given a Caducus configuration that enables an SQS DLQ collector without a group_id override\n    When I collect DLQ messages\n    Then Caducus writes a deterministic group_id derived from the queue identity",
+      "created_at": "2026-03-14T16:24:15.677937Z"
+    }
+  ],
+  "created_at": "2026-03-14T16:23:34.019352Z",
+  "updated_at": "2026-03-14T16:24:15.677937Z",
+  "closed_at": null,
+  "custom": {}
+}

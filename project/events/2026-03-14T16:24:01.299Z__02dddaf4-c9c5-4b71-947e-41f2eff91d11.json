@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "02dddaf4-c9c5-4b71-947e-41f2eff91d11",
+  "issue_id": "kanbus-83db76fa-78b4-4852-a1f9-262452cb3827",
+  "event_type": "issue_created",
+  "occurred_at": "2026-03-14T16:24:01.299Z",
+  "actor_id": "ryan",
+  "payload": {
+    "assignee": null,
+    "description": "",
+    "issue_type": "task",
+    "labels": [],
+    "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+    "priority": 2,
+    "status": "open",
+    "title": "Add the Biblicus reinforcement memory adapter for Caducus analysis"
+  }
+}

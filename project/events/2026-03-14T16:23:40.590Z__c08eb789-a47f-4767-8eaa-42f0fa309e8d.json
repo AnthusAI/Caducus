@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "c08eb789-a47f-4767-8eaa-42f0fa309e8d",
+  "issue_id": "kanbus-f60e13e9-f4a4-44f3-b844-b7462be27016",
+  "event_type": "issue_created",
+  "occurred_at": "2026-03-14T16:23:40.590Z",
+  "actor_id": "ryan",
+  "payload": {
+    "assignee": null,
+    "description": "",
+    "issue_type": "story",
+    "labels": [],
+    "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+    "priority": 2,
+    "status": "open",
+    "title": "Analyze a configured event group through Biblicus"
+  }
+}

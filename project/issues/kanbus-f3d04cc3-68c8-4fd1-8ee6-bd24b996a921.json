@@ -1,0 +1,25 @@
+{
+  "id": "kanbus-f3d04cc3-68c8-4fd1-8ee6-bd24b996a921",
+  "title": "Configure Caducus with YAML, env vars, and CLI overrides",
+  "description": "",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "661274b5-e339-413c-baf4-c982b8c9b3f2",
+      "author": "ryan",
+      "text": "As an operator, I want Caducus to load configuration from YAML, environment variables, and CLI overrides, so that I can control collection and analysis behavior consistently across environments.\n\nFeature: Caducus configuration layering\n  Scenario: Load merged configuration from home, local, and explicit files\n    Given a home Caducus configuration file\n    And a local Caducus configuration file\n    And an explicit configuration file argument\n    When I run the Caducus CLI with the explicit configuration file\n    Then Caducus composes the files in precedence order\n    And later configuration values override earlier ones\n\n  Scenario: Environment variables override configuration values\n    Given a Caducus configuration file with analysis settings\n    And environment variables for Biblicus-backed settings are present\n    When I run a Caducus command\n    Then Caducus uses the environment variable values instead of the file values\n\n  Scenario: CLI overrides update any config path\n    Given a Caducus configuration file\n    When I run the Caducus CLI with dotted --config overrides\n    Then Caducus applies the overrides to the merged configuration\n    And Caducus can override values inside the biblicus configuration subtree",
+      "created_at": "2026-03-14T16:24:01.805153Z"
+    }
+  ],
+  "created_at": "2026-03-14T16:23:33.115165Z",
+  "updated_at": "2026-03-14T16:24:01.805153Z",
+  "closed_at": null,
+  "custom": {}
+}

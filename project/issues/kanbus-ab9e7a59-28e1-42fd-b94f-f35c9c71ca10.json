@@ -1,0 +1,25 @@
+{
+  "id": "kanbus-ab9e7a59-28e1-42fd-b94f-f35c9c71ca10",
+  "title": "Inspect recent events and analysis outputs from the CLI",
+  "description": "",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "72772a23-da32-4fed-971e-175b854eb388",
+      "author": "ryan",
+      "text": "As an operator, I want Caducus CLI commands to show recent events and analysis outputs, so that I can verify what was collected and what the system currently thinks is important.\n\nFeature: CLI inspection of events and analysis\n  Scenario: List recent events\n    Given Caducus has already collected canonical event records\n    When I run a Caducus command to inspect recent events\n    Then Caducus shows the most recent collected events with their timestamps, source, and group_id\n\n  Scenario: Show recent analysis outputs\n    Given Caducus has already run analysis for an event group\n    When I run a Caducus command to inspect analysis outputs\n    Then Caducus shows recent analysis results for that group",
+      "created_at": "2026-03-14T16:24:17.090042Z"
+    }
+  ],
+  "created_at": "2026-03-14T16:23:41.057835Z",
+  "updated_at": "2026-03-14T16:24:17.090042Z",
+  "closed_at": null,
+  "custom": {}
+}
