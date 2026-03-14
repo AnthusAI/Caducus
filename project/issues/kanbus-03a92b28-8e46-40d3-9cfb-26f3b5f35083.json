@@ -1,0 +1,31 @@
+{
+  "id": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+  "title": "Caducus CLI: Collect and analyze ops events",
+  "description": "",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-6f9fc4b3-c399-47d6-bd21-a0392550dd7c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "9cee9922-571b-4077-a8e4-93677d77a8c1",
+      "author": "ryan",
+      "text": "MVP scope: Single coherent CLI that (1) collects events via pluggable collectors - thin layer over Virtuus, writes canonical JSON schema to folder; (2) runs analysis via Biblicus (thin wrapper). Built-in collectors: CloudWatch Logs, SQS DLQ, one alert channel. Pluggable collector protocol for extensions. Virtuus schema: events table with GSIs. group_id strategy: configurable per collector, default from source + logical identifier (log group, queue, channel).",
+      "created_at": "2026-03-14T16:05:19.502726Z"
+    },
+    {
+      "id": "ad81c893-a4d6-42b2-a462-53dd6bd60f9a",
+      "author": "ryan",
+      "text": "**Configuration design (dotyaml pattern):**\n\n- Hierarchy: YAML (merged) → .env → env vars → CLI `--config` overrides\n- Config paths: `~/.caducus/config.yml`, `./.caducus/config.yml`, optional `--configuration` explicit path(s)\n- Single config file contains: Caducus keys (data_dir, collectors, etc.) + pass-through `biblicus` section\n- No schema duplication: `biblicus` subtree uses Biblicus's own structure, passed through to Biblicus when Caducus invokes analysis\n- Env vars: Biblicus's existing vars (OPENAI_API_KEY, BIBLICUS_*, etc.) work as-is; YAML can interpolate `{{ VAR|default }}`\n- CLI: one `--config key=value` (dotted) for any path, e.g. `--config biblicus.reinforcement_memory.embed.model=other`\n- Either Biblicus adds `from_config`, or Caducus does thin adapter from `biblicus` dict to ReinforcementMemory constructor",
+      "created_at": "2026-03-14T16:18:25.440578Z"
+    }
+  ],
+  "created_at": "2026-03-14T16:04:53.470662Z",
+  "updated_at": "2026-03-14T16:18:25.440578Z",
+  "closed_at": null,
+  "custom": {}
+}

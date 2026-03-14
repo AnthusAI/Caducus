@@ -1,0 +1,25 @@
+{
+  "id": "kanbus-5f4945e7-e3e4-4391-ab60-49ff54ca9c5e",
+  "title": "Entity knowledge base from reinforcement memory",
+  "description": "",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-6f9fc4b3-c399-47d6-bd21-a0392550dd7c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "c13ef3f1-874b-4920-90db-ee8878bee994",
+      "author": "ryan",
+      "text": "ROADMAP (backlog): Use Biblicus to run further analysis on top of reinforcement memory output to compile a knowledge base of entities representing concepts about what's going on in operations. Events table is in scope now; entities table and graph analysis / wiki hyperlinks are future. Defer until MVP is complete.",
+      "created_at": "2026-03-14T16:05:20.638612Z"
+    }
+  ],
+  "created_at": "2026-03-14T16:05:02.248894Z",
+  "updated_at": "2026-03-14T16:05:20.638612Z",
+  "closed_at": null,
+  "custom": {}
+}

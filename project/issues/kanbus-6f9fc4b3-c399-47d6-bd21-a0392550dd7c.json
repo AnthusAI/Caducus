@@ -1,0 +1,31 @@
+{
+  "id": "kanbus-6f9fc4b3-c399-47d6-bd21-a0392550dd7c",
+  "title": "Caducus: Ops anomaly radar",
+  "description": "",
+  "type": "initiative",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "dc620f36-dbb7-4dc7-9054-4f4b2dee7771",
+      "author": "ryan",
+      "text": "Caducus is a pluggable product for collecting ops events (CloudWatch logs, alerts, DLQ messages, etc.) and running reinforcement memory analysis to produce an anomaly radar of what's wrong with operations. Uses Virtuus for storage (JSON files in folder) and Biblicus for analysis. Starts as CLI; later React/Next.js GUI with federated web components.",
+      "created_at": "2026-03-14T16:05:18.026218Z"
+    },
+    {
+      "id": "f3368e20-696f-4abb-be64-aab35210bca7",
+      "author": "ryan",
+      "text": "**Open design question**: group_id for reinforcement memory analysis. Options: per-service, per-env, per-source-type, composite (e.g. prod:auth-service), or configurable per collector with default from source+identifier. Recommend: configurable per collector, default = source_type:logical_id.",
+      "created_at": "2026-03-14T16:05:31.695297Z"
+    }
+  ],
+  "created_at": "2026-03-14T16:04:45.921496Z",
+  "updated_at": "2026-03-14T16:05:31.695297Z",
+  "closed_at": null,
+  "custom": {}
+}
