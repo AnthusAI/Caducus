@@ -1,0 +1,6 @@
+date,time,level,component,pid,content,block_id,anomaly
+240101,120000,INFO,DataNode,12345,Receiving block blk_123,blk_123,0
+240101,120001,INFO,DataNode,12345,Received block blk_123,blk_123,0
+240101,120002,WARN,NameNode,12346,Capacity exceeded for node dn1,,1
+240101,120003,INFO,DataNode,12347,Sending block blk_124,blk_124,0
+240101,120004,ERROR,NameNode,12346,Disk failure on dn2,,1

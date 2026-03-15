@@ -1,0 +1,17 @@
+README.md
+pyproject.toml
+src/caducus/__init__.py
+src/caducus/biblicus_adapter.py
+src/caducus/cli.py
+src/caducus/config.py
+src/caducus/events.py
+src/caducus/storage.py
+src/caducus.egg-info/PKG-INFO
+src/caducus.egg-info/SOURCES.txt
+src/caducus.egg-info/dependency_links.txt
+src/caducus.egg-info/entry_points.txt
+src/caducus.egg-info/requires.txt
+src/caducus.egg-info/top_level.txt
+src/caducus/collectors/__init__.py
+src/caducus/collectors/demo_dataset.py
+tests/test_demo_slice.py

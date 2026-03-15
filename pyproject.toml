@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "caducus"
+version = "0.1.0"
+description = "CLI for collecting ops events and running reinforcement-memory analysis."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  "PyYAML>=6.0",
+  "virtuus>=0.4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "behave>=1.2.6",
+  "pytest>=8.0",
+  "ruff>=0.4.0",
+  "black>=24.0",
+  "build>=1.2.2",
+  "python-semantic-release>=10.5.3",
+]
+reinforcement-memory = [
+  "biblicus[reinforcement-memory]>=1.8.0",
+]
+
+[project.scripts]
+caducus = "caducus.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 88
+
+[tool.black]
+line-length = 88
+
+[tool.semantic_release]
+allow_zero_version = true
+build_command = "python -m build"
+commit_parser = "conventional"
+version_toml = [
+  "pyproject.toml:project.version",
+]
+version_variables = [
+  "src/caducus/__init__.py:__version__",
+]
+
+[tool.semantic_release.branches.main]
+match = "main"
+
+[tool.semantic_release.changelog.default_templates]
+changelog_file = "CHANGELOG.md"

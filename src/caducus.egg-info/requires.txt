@@ -1,0 +1,13 @@
+PyYAML>=6.0
+virtuus>=0.4.0
+
+[dev]
+behave>=1.2.6
+pytest>=8.0
+ruff>=0.4.0
+black>=24.0
+build>=1.2.2
+python-semantic-release>=10.5.3
+
+[reinforcement-memory]
+biblicus[reinforcement-memory]>=1.8.0

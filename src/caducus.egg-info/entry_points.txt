@@ -1,0 +1,2 @@
+[console_scripts]
+caducus = caducus.cli:main

@@ -1,3 +1,21 @@
+Metadata-Version: 2.4
+Name: caducus
+Version: 0.1.0
+Summary: CLI for collecting ops events and running reinforcement-memory analysis.
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: PyYAML>=6.0
+Requires-Dist: virtuus>=0.4.0
+Provides-Extra: dev
+Requires-Dist: behave>=1.2.6; extra == "dev"
+Requires-Dist: pytest>=8.0; extra == "dev"
+Requires-Dist: ruff>=0.4.0; extra == "dev"
+Requires-Dist: black>=24.0; extra == "dev"
+Requires-Dist: build>=1.2.2; extra == "dev"
+Requires-Dist: python-semantic-release>=10.5.3; extra == "dev"
+Provides-Extra: reinforcement-memory
+Requires-Dist: biblicus[reinforcement-memory]>=1.8.0; extra == "reinforcement-memory"
+
 # Caducus
 
 Caducus helps operations teams understand what is going wrong right now across logs, alerts, dead-letter queues, and other operational event streams.
