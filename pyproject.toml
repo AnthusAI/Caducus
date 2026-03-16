@@ -40,7 +40,7 @@ line-length = 88
 
 [tool.semantic_release]
 allow_zero_version = true
-build_command = "python -m build"
+build_command = "python -m pip install build && python -m build"
 commit_parser = "conventional"
 version_toml = [
   "pyproject.toml:project.version",
