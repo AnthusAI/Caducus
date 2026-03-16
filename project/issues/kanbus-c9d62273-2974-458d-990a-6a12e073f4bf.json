@@ -1,0 +1,31 @@
+{
+  "id": "kanbus-c9d62273-2974-458d-990a-6a12e073f4bf",
+  "title": "Adopt an English-language demo dataset",
+  "description": "",
+  "type": "chore",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "709b2799-3acf-492f-91d6-ee6dd952202b",
+      "author": "ryan",
+      "text": "Evaluating English-language log datasets for demo quality. Sampling candidate corpora (BGL, Thunderbird, OpenStack-style) to pick one with human-readable content and practical subset size for reproducible CLI demos.",
+      "created_at": "2026-03-16T00:50:04.188001Z"
+    },
+    {
+      "id": "0473c07b-3d5c-4ea3-b459-0a91857c03ab",
+      "author": "ryan",
+      "text": "Switched demo suitability toward English-language logs by adding BGL support to the dataset export script and making output concise for demos. Added source-aware grouping in collector, aggregate top blip formatting in analyzer output, and README examples centered on BGL. Verified with pytest (6 passed) and behave (4 scenarios passed).",
+      "created_at": "2026-03-16T00:58:01.454515Z"
+    }
+  ],
+  "created_at": "2026-03-16T00:49:50.427291Z",
+  "updated_at": "2026-03-16T00:58:01.454515Z",
+  "closed_at": null,
+  "custom": {}
+}

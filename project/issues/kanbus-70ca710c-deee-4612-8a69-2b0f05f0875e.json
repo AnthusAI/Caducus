@@ -1,0 +1,25 @@
+{
+  "id": "kanbus-70ca710c-deee-4612-8a69-2b0f05f0875e",
+  "title": "Document Caducus–Biblicus integration contract",
+  "description": "",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "9872ae12-e3a7-4c68-a590-42c2991c38c6",
+      "author": "ryan",
+      "text": "Contract written in docs/caducus-biblicus-contract.md. Covers: input mapping (canonical event -> TimestampedText), config boundary (Caducus vs biblicus pass-through), storage ownership (events + checkpoints vs Biblicus analysis/vectors), scope isolation (group_id default source_type:logical_id, one group per analyze run). Analysis story kanbus-f60e13 updated with contract-based Gherkin.",
+      "created_at": "2026-03-15T19:06:44.516672Z"
+    }
+  ],
+  "created_at": "2026-03-15T19:06:37.415653Z",
+  "updated_at": "2026-03-15T19:06:46.498417Z",
+  "closed_at": "2026-03-15T19:06:46.498417Z",
+  "custom": {}
+}

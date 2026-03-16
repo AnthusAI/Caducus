@@ -1,0 +1,43 @@
+{
+  "id": "kanbus-3368c403-11c1-44d9-b3a3-303802fd84bf",
+  "title": "Collect logs and surface memory topics end to end",
+  "description": "",
+  "type": "story",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "5a219879-fda9-4126-a27c-cf9c15fecc4c",
+      "author": "ryan",
+      "text": "As an operator, I want Caducus to collect logs and surface semantic memory topics from them, so that I can see what patterns and anomalies matter now without manually reading raw log streams.\n\nFeature: End-to-end log analysis into memory topics\n  Scenario: Collect logs and analyze one group end to end\n    Given a Caducus configuration that enables a log collector\n    And the collector is configured to derive canonical events with id, timestamp, source, group_id, text, and metadata\n    And the Caducus configuration contains a biblicus subtree for reinforcement memory settings\n    When I run Caducus to collect events and analyze one group_id\n    Then Caducus writes canonical event records for the collected logs\n    And Caducus maps those events to Biblicus TimestampedText records\n    And Caducus invokes Biblicus ReinforcementMemory.ingest and analyze for that group_id\n    And Caducus shows structured memory topics including label, memory_tier, lifecycle_tier, member_count, and root_cause when present\n\n  Scenario: Use collected logs as the source of truth for analysis\n    Given canonical event records already exist for a group_id\n    When I run Caducus analysis for that group_id\n    Then Caducus reads the canonical events as the source of truth\n    And Biblicus analysis state is treated as derived and reproducible\n\n  Scenario: Preserve source metadata while clustering on text\n    Given a collected log event contains additional source-specific fields\n    When Caducus stores the canonical event and sends it to Biblicus\n    Then Caducus uses event.text as the clustering text\n    And Caducus preserves the additional source fields in metadata",
+      "created_at": "2026-03-15T20:25:02.986129Z"
+    },
+    {
+      "id": "0033f84e-8158-44c3-a1d0-308264029579",
+      "author": "ryan",
+      "text": "Executable Gherkin for demo-first vertical slice added in features/demo_vertical_slice.feature: (1) full demo run from local file -> canonical events -> Biblicus analyze -> CLI topics, (2) demo ingest only writes canonical events, (3) analyze reads from stored events and outputs stable topic shape.",
+      "created_at": "2026-03-15T22:49:40.554772Z"
+    },
+    {
+      "id": "a123eb30-7f11-4a19-9a07-8013104e012e",
+      "author": "ryan",
+      "text": "Running the first real end-to-end HDFS demo on downloaded data. Goal: verify ingest, group discovery, and Biblicus analysis on a real component-derived group_id instead of only the tiny fixture/tests.",
+      "created_at": "2026-03-15T23:14:29.695215Z"
+    },
+    {
+      "id": "8da44b6f-6cb3-4a23-a05a-40f4007ba4f2",
+      "author": "ryan",
+      "text": "Real end-to-end demo executed successfully on downloaded HDFS_v1 data. Steps run: download 1000 rows to /tmp, ingest into Caducus storage, list discovered groups, analyze exact group_id 'hdfs-demo:dfs.DataNode'. Result: analysis completed with exit code 0 and produced topic output for 768 texts. One shell quoting pitfall was observed: component names containing '$' must be single-quoted in the shell.",
+      "created_at": "2026-03-15T23:15:16.746335Z"
+    }
+  ],
+  "created_at": "2026-03-15T20:24:42.285242Z",
+  "updated_at": "2026-03-15T23:15:16.746335Z",
+  "closed_at": null,
+  "custom": {}
+}

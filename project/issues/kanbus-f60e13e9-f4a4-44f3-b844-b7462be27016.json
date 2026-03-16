@@ -16,10 +16,28 @@
       "author": "ryan",
       "text": "As an operator, I want Caducus to analyze a configured event group through Biblicus, so that recurring operational patterns and anomalies are surfaced without Caducus reimplementing the analysis engine.\n\nFeature: Biblicus-backed event analysis\n  Scenario: Analyze one configured event group\n    Given canonical event records exist for a configured group_id\n    And the Caducus configuration contains a biblicus subtree for reinforcement memory settings\n    When I run the Caducus analyze command for that group\n    Then Caducus passes the Biblicus configuration through without duplicating its schema\n    And Caducus invokes Biblicus reinforcement memory analysis for that group\n    And Caducus persists the resulting analysis outputs",
       "created_at": "2026-03-14T16:24:16.654386Z"
+    },
+    {
+      "id": "42f09182-5c94-4dd0-b230-7894a012d054",
+      "author": "ryan",
+      "text": "Contract-based Gherkin (see docs/caducus-biblicus-contract.md):\n\n  Scenario: Map canonical events to TimestampedText and run analysis\n    Given canonical event records exist with id, timestamp, group_id, summary_text, and metadata\n    And the biblicus config subtree specifies reinforcement_memory data_dir and vector_store\n    When I run the Caducus analyze command for that group_id\n    Then Caducus maps each event to TimestampedText using event.id, group_id, timestamp, summary_text, metadata\n    And Caducus invokes Biblicus ReinforcementMemory.ingest then analyze(group_id=...)\n    And Caducus exposes AnalysisResult as stable CLI output (label, memory_tier, lifecycle_tier, member_count, root_cause)\n\n  Scenario: One group per analyze run\n    Given multiple group_ids have collected events\n    When I run the Caducus analyze command for one group_id\n    Then Caducus runs analysis only for that group_id\n    And Caducus does not mix vector store state with other groups in the same run\n\n  Scenario: group_id default from source and logical id\n    Given a collector without an explicit group_id override\n    When events are collected\n    Then each event has group_id set to source_type:logical_id\n    And analysis can be run for that group_id",
+      "created_at": "2026-03-15T19:06:41.416413Z"
+    },
+    {
+      "id": "cf9b7a35-3835-4d6c-b694-3e83074f841b",
+      "author": "ryan",
+      "text": "Terminology update: canonical event field is , not . Contract-aligned mapping is now event.id, group_id, timestamp, text, metadata -> TimestampedText.",
+      "created_at": "2026-03-15T20:25:03.468765Z"
+    },
+    {
+      "id": "b1109faf-3b09-47e2-bd13-0a1f01dd000e",
+      "author": "ryan",
+      "text": "Contract terminology correction: canonical event field is text, not summary_text.\n\nUpdated mapping:\n- event.id -> TimestampedText.id\n- event.group_id -> TimestampedText.group_id\n- event.timestamp -> TimestampedText.timestamp\n- event.text -> TimestampedText.text\n- event.metadata -> TimestampedText.metadata",
+      "created_at": "2026-03-15T20:25:15.639996Z"
     }
   ],
   "created_at": "2026-03-14T16:23:40.590213Z",
-  "updated_at": "2026-03-14T16:24:16.654386Z",
+  "updated_at": "2026-03-15T20:25:15.639996Z",
   "closed_at": null,
   "custom": {}
 }

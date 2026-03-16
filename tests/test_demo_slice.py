@@ -52,6 +52,23 @@ def test_demo_ingest_writes_canonical_events() -> None:
             assert "group_id" in r
 
 
+def test_demo_ingest_respects_source_column_for_grouping() -> None:
+    """CSV source column overrides default source/group prefix."""
+    with tempfile.TemporaryDirectory() as tmp:
+        csv_path = Path(tmp) / "sample.csv"
+        csv_path.write_text(
+            "source,date,time,level,component,pid,content,block_id,anomaly\n"
+            "bgl-demo,260316,120000,INFO,KERNEL,,instruction cache parity error corrected,,0\n",
+            encoding="utf-8",
+        )
+        table = get_events_table(tmp)
+        count = ingest_demo_file(str(csv_path), table)
+        assert count == 1
+        rows = get_events_for_group(table, "bgl-demo:KERNEL")
+        assert len(rows) == 1
+        assert rows[0]["source"] == "bgl-demo"
+
+
 def test_analyze_requires_biblicus() -> None:
     """Analyze path imports Biblicus; we only test that adapter imports."""
     try:

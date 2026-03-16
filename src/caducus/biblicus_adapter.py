@@ -35,6 +35,69 @@ def _normalize_temporal_signal(lifecycle_tier: str) -> str:
     return "known"
 
 
+def _tier_rank(weight: str) -> int:
+    """Rank weights for aggregation ordering (hot > warm > cold)."""
+    value = (weight or "").strip().lower()
+    if value == "hot":
+        return 3
+    if value == "warm":
+        return 2
+    if value == "cold":
+        return 1
+    return 0
+
+
+def _temporal_rank(value: str) -> int:
+    """Rank temporal recency for aggregation ordering (new > trending > known)."""
+    if value == "new":
+        return 3
+    if value == "trending":
+        return 2
+    if value == "known":
+        return 1
+    return 0
+
+
+def _summarize_topics(topics: list[Any], limit: int = 8) -> list[dict[str, Any]]:
+    """
+    Aggregate duplicate topic labels and return top blips by volume.
+
+    Biblicus may emit multiple nearby clusters with identical labels. For operator
+    output, we collapse those into one blip and keep strongest weight/temporal signal.
+    """
+    grouped: dict[str, dict[str, Any]] = {}
+    for t in topics:
+        label = str((t.label or "").strip())
+        if not label:
+            continue
+        temporal = _normalize_temporal_signal(str(t.lifecycle_tier))
+        existing = grouped.get(label)
+        if existing is None:
+            grouped[label] = {
+                "label": label,
+                "member_count": int(t.member_count or 0),
+                "weight": str(t.memory_tier or ""),
+                "temporal": temporal,
+                "clusters": 1,
+                "root_cause": str(t.root_cause or ""),
+            }
+            continue
+        existing["member_count"] += int(t.member_count or 0)
+        existing["clusters"] += 1
+        if _tier_rank(str(t.memory_tier)) > _tier_rank(existing["weight"]):
+            existing["weight"] = str(t.memory_tier or existing["weight"])
+        if _temporal_rank(temporal) > _temporal_rank(existing["temporal"]):
+            existing["temporal"] = temporal
+        if not existing["root_cause"] and t.root_cause:
+            existing["root_cause"] = str(t.root_cause)
+    blips = sorted(
+        grouped.values(),
+        key=lambda x: (x["member_count"], _tier_rank(x["weight"]), _temporal_rank(x["temporal"])),
+        reverse=True,
+    )
+    return blips[:limit]
+
+
 def _events_to_timestamped_text(rows: list[dict[str, Any]], group_id: str) -> list[TimestampedText]:
     """Map Caducus canonical event rows to Biblicus TimestampedText."""
     out = []
@@ -107,13 +170,14 @@ def run_analysis_for_group(
     result = memory.analyze(group_id=group_id)
 
     print(f"Group: {result.group_id}  Texts: {result.texts_analyzed}  Run: {result.run_id}")
-    for t in result.topics:
-        temporal = _normalize_temporal_signal(t.lifecycle_tier)
+    for i, t in enumerate(_summarize_topics(result.topics), start=1):
         line = (
-            f"  {t.label}  "
-            f"[weight={t.memory_tier} temporal={temporal}]  "
-            f"n={t.member_count}"
+            f"  {i:>2}. {t['label']}  "
+            f"[weight={t['weight']} temporal={t['temporal']}]  "
+            f"n={t['member_count']}"
         )
-        if t.root_cause:
-            line += f"  cause: {t.root_cause[:60]}..."
+        if t["clusters"] > 1:
+            line += f"  (merged {t['clusters']} clusters)"
+        if t["root_cause"]:
+            line += f"  cause: {t['root_cause'][:60]}..."
         print(line)

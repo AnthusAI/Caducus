@@ -1,20 +1,25 @@
 #!/usr/bin/env python3
 """
-Download a subset of the HDFS_v1 log dataset from Hugging Face and save as CSV.
+Download a subset of a log dataset from Hugging Face and save as CSV.
 
-Real HDFS rows use component names like dfs.DataNode$DataXceiver; group IDs are
-hdfs-demo:<component>. After ingest, run `caducus groups --data-dir ./caducus-data`
-to list valid group IDs, then run analyze with one of them.
+This script supports:
+  - HDFS_v1 (default): group IDs as hdfs-demo:<component>
+  - BGL: group IDs as bgl-demo:<component>
+
+After ingest, run `caducus groups --data-dir ./caducus-data` to list valid group IDs,
+then run analyze with one of them.
 
 Example:
 
     pip install datasets
-    python scripts/download_hdfs_demo.py --output demo_data/hdfs_sample.csv --max-rows 10000 --anchor-now "2026-03-16T12:00:00Z"
-    caducus demo ingest --input demo_data/hdfs_sample.csv --data-dir ./caducus-data
+    python scripts/download_hdfs_demo.py --dataset bgl --output demo_data/log_sample.csv --max-rows 10000 --anchor-now "2026-03-16T12:00:00Z"
+    caducus demo ingest --input demo_data/log_sample.csv --data-dir ./caducus-data
     caducus groups --data-dir ./caducus-data
-    caducus analyze --group-id "hdfs-demo:dfs.DataNode$DataXceiver" --data-dir ./caducus-data
+    caducus analyze --group-id "bgl-demo:KERNEL" --data-dir ./caducus-data
 
-Dataset: https://huggingface.co/datasets/logfit-project/HDFS_v1
+Datasets:
+  - https://huggingface.co/datasets/logfit-project/HDFS_v1
+  - https://huggingface.co/datasets/logfit-project/BGL
 """
 
 from __future__ import annotations
@@ -56,6 +61,12 @@ def _parse_anchor_now(value: str) -> datetime:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Download HDFS_v1 subset for Caducus demo")
     parser.add_argument(
+        "--dataset",
+        choices=["hdfs_v1", "bgl"],
+        default="hdfs_v1",
+        help="Dataset to export (default hdfs_v1)",
+    )
+    parser.add_argument(
         "--output",
         default="demo_data/hdfs_sample.csv",
         help="Output CSV path",
@@ -83,8 +94,13 @@ def main() -> int:
         print("Install the datasets package: pip install datasets")
         return 1
 
-    print(f"Loading logfit-project/HDFS_v1 (first {args.max_rows} rows)...")
-    ds = load_dataset("logfit-project/HDFS_v1", split="train")
+    dataset_map = {
+        "hdfs_v1": "logfit-project/HDFS_v1",
+        "bgl": "logfit-project/BGL",
+    }
+    hf_name = dataset_map[args.dataset]
+    print(f"Loading {hf_name} (first {args.max_rows} rows)...")
+    ds = load_dataset(hf_name, split="train")
     subset = ds.select(range(min(args.max_rows, len(ds))))
     rows = list(subset)
 
@@ -103,12 +119,38 @@ def main() -> int:
     out_path = Path(args.output)
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    columns = ["date", "time", "level", "component", "pid", "content", "block_id", "anomaly"]
+    columns = ["source", "date", "time", "level", "component", "pid", "content", "block_id", "anomaly"]
     with open(out_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=columns, extrasaction="ignore")
         writer.writeheader()
         for row in rows:
-            out_row = {k: str(row.get(k) or "") for k in columns}
+            out_row = {k: "" for k in columns}
+            if args.dataset == "hdfs_v1":
+                out_row.update(
+                    {
+                        "source": "hdfs-demo",
+                        "date": str(row.get("date") or ""),
+                        "time": str(row.get("time") or ""),
+                        "level": str(row.get("level") or ""),
+                        "component": str(row.get("component") or ""),
+                        "pid": str(row.get("pid") or ""),
+                        "content": str(row.get("content") or ""),
+                        "block_id": str(row.get("block_id") or ""),
+                        "anomaly": str(row.get("anomaly") or ""),
+                    }
+                )
+            else:
+                out_row.update(
+                    {
+                        "source": "bgl-demo",
+                        "date": str(row.get("date") or ""),
+                        "time": str(row.get("time") or ""),
+                        "level": str(row.get("level") or ""),
+                        "component": str(row.get("component") or "KERNEL"),
+                        "content": str(row.get("content") or ""),
+                        "anomaly": str(row.get("anomaly") or ""),
+                    }
+                )
             if delta is not None:
                 parsed = _parse_hdfs_datetime(out_row["date"], out_row["time"])
                 if parsed is not None:

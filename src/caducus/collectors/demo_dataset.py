@@ -35,10 +35,11 @@ def _row_to_event(row: dict[str, Any], index: int) -> CanonicalEvent:
     date_str = str(row.get("date", ""))
     time_str = str(row.get("time", ""))
     content = str(row.get("content", ""))
+    source = str(row.get("source", SOURCE_ID)).strip() or SOURCE_ID
     component = str(row.get("component", "unknown")).strip() or "unknown"
     event_id = row.get("id") or str(uuid.uuid4())
     timestamp = _parse_timestamp(date_str, time_str)
-    group_id = f"{SOURCE_ID}:{component}"
+    group_id = f"{source}:{component}"
     metadata: dict[str, Any] = {
         "level": row.get("level"),
         "pid": row.get("pid"),
@@ -48,7 +49,7 @@ def _row_to_event(row: dict[str, Any], index: int) -> CanonicalEvent:
     return CanonicalEvent(
         id=event_id,
         timestamp=timestamp,
-        source=SOURCE_ID,
+        source=source,
         group_id=group_id,
         text=content,
         metadata={k: v for k, v in metadata.items() if v is not None},

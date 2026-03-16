@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "320160d3-6a01-4149-bb0c-373153d271f0",
+  "issue_id": "kanbus-ae906eb9-5728-4b8c-8cdf-7589e692c495",
+  "event_type": "issue_created",
+  "occurred_at": "2026-03-16T00:27:11.217Z",
+  "actor_id": "ryan",
+  "payload": {
+    "assignee": null,
+    "description": "",
+    "issue_type": "chore",
+    "labels": [],
+    "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+    "priority": 2,
+    "status": "open",
+    "title": "Reframe README around working demo radar"
+  }
+}

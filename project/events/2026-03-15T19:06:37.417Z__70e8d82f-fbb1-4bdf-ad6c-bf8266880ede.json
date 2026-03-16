@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "70e8d82f-fbb1-4bdf-ad6c-bf8266880ede",
+  "issue_id": "kanbus-70ca710c-deee-4612-8a69-2b0f05f0875e",
+  "event_type": "issue_created",
+  "occurred_at": "2026-03-15T19:06:37.417Z",
+  "actor_id": "ryan",
+  "payload": {
+    "assignee": null,
+    "description": "",
+    "issue_type": "task",
+    "labels": [],
+    "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+    "priority": 2,
+    "status": "open",
+    "title": "Document Caducus–Biblicus integration contract"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "15f874f7-2b11-4040-92ca-5331d58b0eb8",
+  "issue_id": "kanbus-7ac6300d-4882-488a-a125-9ff289bc716b",
+  "event_type": "issue_created",
+  "occurred_at": "2026-03-15T23:20:13.755Z",
+  "actor_id": "ryan",
+  "payload": {
+    "assignee": null,
+    "description": "",
+    "issue_type": "chore",
+    "labels": [],
+    "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+    "priority": 2,
+    "status": "open",
+    "title": "Set up semantic release for Caducus"
+  }
+}

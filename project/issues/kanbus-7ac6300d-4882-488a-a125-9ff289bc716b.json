@@ -1,0 +1,31 @@
+{
+  "id": "kanbus-7ac6300d-4882-488a-a125-9ff289bc716b",
+  "title": "Set up semantic release for Caducus",
+  "description": "",
+  "type": "chore",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "907df05e-1fdd-4f28-88f3-f0bbc026f823",
+      "author": "ryan",
+      "text": "Setting up python-semantic-release for Caducus with GitHub Releases and PyPI publishing. Will add pyproject config, GitHub Actions workflow, and contributor guidance for Conventional Commits/feat commits.",
+      "created_at": "2026-03-15T23:20:23.192181Z"
+    },
+    {
+      "id": "8739113a-4396-4425-8274-eb84734e2afa",
+      "author": "ryan",
+      "text": "Configured python-semantic-release in pyproject.toml, added a GitHub Actions release workflow for GitHub Releases + PyPI trusted publishing, documented Conventional Commit release behavior, and verified the setup with pytest, python -m build, and semantic-release --noop dry runs.",
+      "created_at": "2026-03-15T23:25:11.036885Z"
+    }
+  ],
+  "created_at": "2026-03-15T23:20:13.755748Z",
+  "updated_at": "2026-03-15T23:25:11.049988Z",
+  "closed_at": "2026-03-15T23:25:11.049988Z",
+  "custom": {}
+}

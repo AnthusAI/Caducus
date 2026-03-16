@@ -1,0 +1,31 @@
+{
+  "id": "kanbus-ae906eb9-5728-4b8c-8cdf-7589e692c495",
+  "title": "Reframe README around working demo radar",
+  "description": "",
+  "type": "chore",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-03a92b28-8e46-40d3-9cfb-26f3b5f35083",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "62b6936c-13d8-43a0-b086-87262f775ef4",
+      "author": "ryan",
+      "text": "Preparing a README rewrite focused on the proven HDFS demo path, including raw-log snippets, radar framing, and temporal/weight signal interpretation. Also adding a demo-time control so historical logs can still show meaningful recency states.",
+      "created_at": "2026-03-16T00:27:20.333014Z"
+    },
+    {
+      "id": "5433921a-afd0-413a-8ba1-6a4e524f30a6",
+      "author": "ryan",
+      "text": "Completed README reframing around the working HDFS demo narrative. Added raw log examples, radar framing, and concrete signal language (weight/temporal). Added --anchor-now support in the HDFS subset script so old logs can be shifted to a demo clock for meaningful recency signals. Updated output assertions and verified with pytest + behave.",
+      "created_at": "2026-03-16T00:32:12.320966Z"
+    }
+  ],
+  "created_at": "2026-03-16T00:27:11.216656Z",
+  "updated_at": "2026-03-16T00:32:12.331992Z",
+  "closed_at": "2026-03-16T00:32:12.331992Z",
+  "custom": {}
+}

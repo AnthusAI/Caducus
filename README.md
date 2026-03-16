@@ -1,50 +1,47 @@
 # Caducus
 
-You have a huge pile of logs, and you need to decide what matters *right now*.
+When the pager goes off, the problem is rarely "no data". The problem is too much data.
 
-Caducus turns that pile into an operator radar: clustered issue blips that carry both frequency and recency signals so you can prioritize quickly.
+Caducus is built for that moment. It turns a flood of raw logs into a short, prioritized radar of issue blips so operators can decide what to investigate first.
 
-- **Weight signal**: `hot`, `warm`, `cold`
-- **Temporal signal**: `new`, `trending`, `known`
+What you get from the radar:
 
-The current demo path is real and runnable end-to-end on HDFS log data.
+- **How intense is this issue?** `weight=hot|warm|cold`
+- **How fresh is this issue?** `temporal=new|trending|known`
+- **How big is this issue?** `n=<member_count>`
 
-## What This Looks Like
+Instead of scanning thousands of lines manually, you get a ranked list of patterns with both frequency and recency signals.
 
-Raw logs are noisy:
+## From Log Flood To Radar
 
-```text
-260316,115910,INFO,dfs.DataNode$DataXceiver,143,Receiving block blk_-1608999687919862906 src: /10.250.19.102:54106 dest: /10.250.19.102:50010
-260316,115911,INFO,dfs.DataNode$PacketResponder,145,PacketResponder 1 for block blk_-1608999687919862906 terminating
-260316,115911,INFO,dfs.FSNamesystem,35,BLOCK* NameSystem.allocateBlock: /mnt/hadoop/mapred/system/job_200811092030_0001/job.jar. blk_-1608999687919862906
-```
-
-Caducus normalizes these into canonical events, groups them, and runs reinforcement-memory analysis. The CLI then prints radar-ready topic lines:
+Raw logs look like this:
 
 ```text
-Group: hdfs-demo:dfs.DataNode$DataXceiver  Texts: 1821  Run: 6a013932-b9c4-457c-bc2d-d5ab26c96ece
-  10, 10 251, 251  [weight=warm temporal=new]  n=1766
-  10, 10 251, 251  [weight=warm temporal=new]  n=13
+260316,115910,INFO,KERNEL,,instruction cache parity error corrected
+260316,115911,INFO,KERNEL,,data cache parity error corrected
+260316,115911,WARN,KERNEL,,torus receiver x+ input pipe error(s) detected and corrected
 ```
 
-Interpretation:
+Caducus clusters those into radar-ready blips:
+
+```text
+Group: bgl-demo:KERNEL  Texts: 4983  Run: 899a6ffb-a5ea-47e1-b856-71ba8054cd74
+   1. parity error, parity, instruction cache  [weight=warm temporal=known]  n=4827  (merged 97 clusters)
+   2. mask, ce sym, sym  [weight=warm temporal=known]  n=114
+   3. corrected, cache parity, parity error  [weight=warm temporal=known]  n=42
+```
+
+Read this as:
 
 - `weight` is recurrence/volume pressure (hot/warm/cold).
 - `temporal` is recency state (new/trending/known).
 - `n` is cluster member count.
 
-In other words, each line is a blip on the radar with both intensity and freshness.
+Top blips from a real BGL demo run:
 
-Top blips discovered in the current HDFS demo run:
-
-- Block transfer surge (`Receiving block ...`) - about 1409 lines in this sample, surfaced in the dominant topic cluster.
-- NameNode block allocation churn (`BLOCK* NameSystem.allocateBlock`) - about 472 lines.
-- PacketResponder termination churn (`PacketResponder ... terminating`) - about 235 lines.
-
-Signal legend used in the CLI:
-
-- `weight`: `hot`, `warm`, `cold`
-- `temporal`: `new`, `trending`, `known`
+- Repeated parity-error corrections in cache-related paths (dominant cluster).
+- CE/SYM mask signaling bursts.
+- Secondary corrected parity-error pattern cluster.
 
 ## Run The Working Demo
 
@@ -55,11 +52,12 @@ pip install -e ".[reinforcement-memory,dev]"
 pip install datasets
 ```
 
-Build a real HDFS subset and shift timestamps to a demo "now" so recency signals are meaningful:
+Build a real BGL subset and shift timestamps to a demo "now" so recency signals are meaningful:
 
 ```bash
 python scripts/download_hdfs_demo.py \
-  --output demo_data/hdfs_sample.csv \
+  --dataset bgl \
+  --output demo_data/log_sample.csv \
   --max-rows 3000 \
   --anchor-now "2026-03-16T12:00:00Z"
 ```
@@ -67,25 +65,25 @@ python scripts/download_hdfs_demo.py \
 Ingest and discover valid groups:
 
 ```bash
-caducus demo ingest --input demo_data/hdfs_sample.csv --data-dir ./caducus-data
+caducus demo ingest --input demo_data/log_sample.csv --data-dir ./caducus-data
 caducus groups --data-dir ./caducus-data
 ```
 
 Run analysis for a discovered group:
 
 ```bash
-caducus analyze --group-id 'hdfs-demo:dfs.DataNode$DataXceiver' --data-dir ./caducus-data
+caducus analyze --group-id 'bgl-demo:KERNEL' --data-dir ./caducus-data
 ```
 
 Or do ingest + analyze in one command:
 
 ```bash
-caducus demo run --input demo_data/hdfs_sample.csv --group-id 'hdfs-demo:dfs.DataNode$DataXceiver' --data-dir ./caducus-data
+caducus demo run --input demo_data/log_sample.csv --group-id 'bgl-demo:KERNEL' --data-dir ./caducus-data
 ```
 
 ### Notes
 
-- Real HDFS group IDs are component-derived: `hdfs-demo:<component>`.
+- Group IDs are source and component derived: `<source>:<component>` (for BGL demo this is usually `bgl-demo:KERNEL`).
 - Use single quotes around group IDs containing `$` in shell commands.
 - `--anchor-now` preserves spacing between log rows while shifting them to your chosen clock anchor.
 
