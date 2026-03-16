@@ -14,6 +14,32 @@ Instead of scanning thousands of lines manually, you get a ranked list of patter
 
 ## From Log Flood To Radar
 
+```mermaid
+flowchart TD
+    subgraph logs [1. Noisy Log Stream]
+        L1["error at 10:01: node_X failed parity check"]
+        L2["error at 10:05: node_Y failed parity check"]
+        L3["warn at 10:06: network timeout on port 80"]
+    end
+
+    subgraph clusters [2. Semantic Memory]
+        C1(("Parity Error\nCluster"))
+        C2(("Network Timeout\nCluster"))
+    end
+
+    subgraph blips [3. Radar Blips]
+        B1["[weight=hot temporal=trending] n=2"]
+        B2["[weight=cold temporal=new] n=1"]
+    end
+
+    L1 -->|"semantic match"| C1
+    L2 -->|"semantic match"| C1
+    L3 -->|"semantic match"| C2
+
+    C1 ==>|"reinforces"| B1
+    C2 ==>|"initializes"| B2
+```
+
 Raw logs look like this:
 
 ```text
@@ -96,12 +122,13 @@ Caducus is intentionally thin:
 - **Biblicus** provides semantic reinforcement-memory analysis.
 
 ```mermaid
-flowchart LR
-    sources[OpsSources] --> caducus[Caducus]
-    caducus --> events[CanonicalEvents]
-    events --> virtuus[VirtuusStorage]
-    caducus --> biblicus[BiblicusAnalysis]
-    biblicus --> radar[OpsRadar]
+flowchart TD
+    demoFile[DemoDatasetCSV] --> ingest[CaducusDemoIngest]
+    ingest --> normalize[CanonicalEvents]
+    normalize --> store[VirtuusEventStore]
+    store --> readGroup[ReadEventsByGroup]
+    readGroup --> analyze[BiblicusReinforcementMemory]
+    analyze --> blips[RankedRadarBlips]
 ```
 
 ## Releases
