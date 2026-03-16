@@ -25,6 +25,16 @@ except ImportError as e:
 from caducus.storage import get_events_for_group
 
 
+def _normalize_temporal_signal(lifecycle_tier: str) -> str:
+    """Map Biblicus lifecycle tiers to stable operator-facing recency labels."""
+    value = (lifecycle_tier or "").strip().lower()
+    if value in {"new", "emerging"}:
+        return "new"
+    if value in {"trending", "active"}:
+        return "trending"
+    return "known"
+
+
 def _events_to_timestamped_text(rows: list[dict[str, Any]], group_id: str) -> list[TimestampedText]:
     """Map Caducus canonical event rows to Biblicus TimestampedText."""
     out = []
@@ -98,7 +108,12 @@ def run_analysis_for_group(
 
     print(f"Group: {result.group_id}  Texts: {result.texts_analyzed}  Run: {result.run_id}")
     for t in result.topics:
-        line = f"  {t.label}  [{t.memory_tier}/{t.lifecycle_tier}]  n={t.member_count}"
+        temporal = _normalize_temporal_signal(t.lifecycle_tier)
+        line = (
+            f"  {t.label}  "
+            f"[weight={t.memory_tier} temporal={temporal}]  "
+            f"n={t.member_count}"
+        )
         if t.root_cause:
             line += f"  cause: {t.root_cause[:60]}..."
         print(line)

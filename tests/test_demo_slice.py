@@ -118,4 +118,5 @@ def test_demo_run_produces_stable_topic_output() -> None:
     assert "Group:" in text
     assert "Texts:" in text or "texts_analyzed" in text or "n=" in text
     assert "n=" in text
-    assert "[" in text and "/" in text
+    assert "weight=" in text
+    assert "temporal=" in text

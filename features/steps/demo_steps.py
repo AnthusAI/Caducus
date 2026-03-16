@@ -114,7 +114,8 @@ def step_cli_shows_topics(context):
     out = context.cli_stdout
     assert "Group:" in out, f"Expected 'Group:' in output: {out!r}"
     assert "n=" in out, f"Expected topic member count 'n=' in output: {out!r}"
-    assert "[" in out and "/" in out, f"Expected topic tier format [x/y] in output: {out!r}"
+    assert "weight=" in out, f"Expected weight signal in output: {out!r}"
+    assert "temporal=" in out, f"Expected temporal signal in output: {out!r}"
 
 
 @then("Caducus writes one canonical event per log row")

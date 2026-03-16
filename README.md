@@ -1,54 +1,95 @@
 # Caducus
 
-Caducus helps operations teams understand what is going wrong right now across logs, alerts, dead-letter queues, and other operational event streams.
+You have a huge pile of logs, and you need to decide what matters *right now*.
 
-It is a CLI-first system for collecting timestamped operational events, normalizing them into a canonical schema, storing them as plain JSON, and using semantic reinforcement memory to surface recurring patterns, fresh anomalies, and just-in-time context during incidents.
+Caducus turns that pile into an operator radar: clustered issue blips that carry both frequency and recency signals so you can prioritize quickly.
 
-## Why Caducus Exists
+- **Weight signal**: `hot`, `warm`, `cold`
+- **Temporal signal**: `new`, `trending`, `known`
 
-Operational signals are scattered across many systems:
+The current demo path is real and runnable end-to-end on HDFS log data.
 
-- CloudWatch logs
-- alerting systems
-- dead-letter queues
-- notifications and incident messages
+## What This Looks Like
 
-Each source captures part of the truth, but not the whole picture. Caducus is intended to bring those signals together into one stream of timestamped event records that can be analyzed as a living memory of operational behavior.
+Raw logs are noisy:
 
-The goal is not just to search historical data. The goal is to create a radar for what looks unusual, active, or important now.
+```text
+260316,115910,INFO,dfs.DataNode$DataXceiver,143,Receiving block blk_-1608999687919862906 src: /10.250.19.102:54106 dest: /10.250.19.102:50010
+260316,115911,INFO,dfs.DataNode$PacketResponder,145,PacketResponder 1 for block blk_-1608999687919862906 terminating
+260316,115911,INFO,dfs.FSNamesystem,35,BLOCK* NameSystem.allocateBlock: /mnt/hadoop/mapred/system/job_200811092030_0001/job.jar. blk_-1608999687919862906
+```
+
+Caducus normalizes these into canonical events, groups them, and runs reinforcement-memory analysis. The CLI then prints radar-ready topic lines:
+
+```text
+Group: hdfs-demo:dfs.DataNode$DataXceiver  Texts: 1821  Run: 6a013932-b9c4-457c-bc2d-d5ab26c96ece
+  10, 10 251, 251  [weight=warm temporal=new]  n=1766
+  10, 10 251, 251  [weight=warm temporal=new]  n=13
+```
+
+Interpretation:
+
+- `weight` is recurrence/volume pressure (hot/warm/cold).
+- `temporal` is recency state (new/trending/known).
+- `n` is cluster member count.
+
+In other words, each line is a blip on the radar with both intensity and freshness.
+
+Top blips discovered in the current HDFS demo run:
+
+- Block transfer surge (`Receiving block ...`) - about 1409 lines in this sample, surfaced in the dominant topic cluster.
+- NameNode block allocation churn (`BLOCK* NameSystem.allocateBlock`) - about 472 lines.
+- PacketResponder termination churn (`PacketResponder ... terminating`) - about 235 lines.
+
+Signal legend used in the CLI:
+
+- `weight`: `hot`, `warm`, `cold`
+- `temporal`: `new`, `trending`, `known`
+
+## Run The Working Demo
+
+Install dependencies:
+
+```bash
+pip install -e ".[reinforcement-memory,dev]"
+pip install datasets
+```
+
+Build a real HDFS subset and shift timestamps to a demo "now" so recency signals are meaningful:
+
+```bash
+python scripts/download_hdfs_demo.py \
+  --output demo_data/hdfs_sample.csv \
+  --max-rows 3000 \
+  --anchor-now "2026-03-16T12:00:00Z"
+```
+
+Ingest and discover valid groups:
+
+```bash
+caducus demo ingest --input demo_data/hdfs_sample.csv --data-dir ./caducus-data
+caducus groups --data-dir ./caducus-data
+```
+
+Run analysis for a discovered group:
+
+```bash
+caducus analyze --group-id 'hdfs-demo:dfs.DataNode$DataXceiver' --data-dir ./caducus-data
+```
+
+Or do ingest + analyze in one command:
+
+```bash
+caducus demo run --input demo_data/hdfs_sample.csv --group-id 'hdfs-demo:dfs.DataNode$DataXceiver' --data-dir ./caducus-data
+```
+
+### Notes
+
+- Real HDFS group IDs are component-derived: `hdfs-demo:<component>`.
+- Use single quotes around group IDs containing `$` in shell commands.
+- `--anchor-now` preserves spacing between log rows while shifting them to your chosen clock anchor.
 
 ## How It Works
-
-Caducus is designed around a simple flow:
-
-1. Collect operational events from source systems.
-2. Normalize them into canonical event records with text, timestamps, source identity, and generalized metadata.
-3. Persist them as JSON files in a Virtuus-backed folder structure.
-4. Analyze event groups using Biblicus reinforcement memory.
-5. Surface patterns, anomalies, and context for operators.
-
-This keeps the system inspectable and composable. The underlying data lives in plain folders, not inside a black-box database.
-
-## CLI-First MVP
-
-The initial product is a CLI utility.
-
-The MVP is focused on a coherent end-to-end flow:
-
-- collect events from operational sources
-- store them in a canonical schema
-- run analysis over selected event groups
-- inspect recent events and analysis outputs from the command line
-
-Initial source areas for the MVP are:
-
-- CloudWatch Logs
-- SQS dead-letter queues
-- one alert source
-
-Configuration is intended to be layered through YAML, environment variables, and CLI overrides. Caducus will own collection and orchestration while allowing Biblicus-related analysis settings to flow through the Caducus configuration tree without duplicating Biblicus's schema.
-
-## Architecture At A Glance
 
 Caducus is intentionally thin:
 
@@ -64,53 +105,6 @@ flowchart LR
     caducus --> biblicus[BiblicusAnalysis]
     biblicus --> radar[OpsRadar]
 ```
-
-## Running the demo
-
-Real HDFS data uses **component-derived group IDs**: each log row’s `component` becomes `hdfs-demo:<component>` (e.g. `hdfs-demo:dfs.DataNode$DataXceiver`). You must use a group ID that exists in your ingested data.
-
-### Quick demo (small fixture, no download)
-
-```bash
-pip install -e ".[reinforcement-memory]"
-caducus demo run --input tests/fixtures/demo_hdfs_sample.csv --group-id "hdfs-demo:DataNode" --data-dir /tmp/caducus-demo
-```
-
-The fixture has components `DataNode` and `NameNode`, so valid group IDs are `hdfs-demo:DataNode` and `hdfs-demo:NameNode`.
-
-### Full demo on real HDFS data
-
-1. Install optional deps (Biblicus reinforcement-memory and the datasets library for the download script):
-
-   ```bash
-   pip install -e ".[reinforcement-memory]"
-   pip install datasets
-   ```
-
-2. Download a subset of the [HDFS_v1](https://huggingface.co/datasets/logfit-project/HDFS_v1) dataset:
-
-   ```bash
-   python scripts/download_hdfs_demo.py --output demo_data/hdfs_sample.csv --max-rows 10000
-   ```
-
-3. Ingest and list available groups (group IDs come from the CSV `component` column):
-
-   ```bash
-   caducus demo ingest --input demo_data/hdfs_sample.csv --data-dir ./caducus-data
-   caducus groups --data-dir ./caducus-data
-   ```
-
-4. Run analysis for one of the listed group IDs:
-
-   ```bash
-   caducus analyze --group-id "hdfs-demo:dfs.DataNode$DataXceiver" --data-dir ./caducus-data
-   ```
-
-   Or do ingest and analyze in one step (use a group ID that exists in the CSV):
-
-   ```bash
-   caducus demo run --input demo_data/hdfs_sample.csv --group-id "hdfs-demo:dfs.DataNode$DataXceiver" --data-dir ./caducus-data
-   ```
 
 ## Releases
 
