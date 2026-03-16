@@ -1,36 +1,46 @@
 Feature: Demo vertical slice
-  As an operator
-  I want to run Caducus on a local demo log dataset and see structured memory topics
-  So that I can verify logs-in to memories-out without live AWS sources
+  As an on-call operator
+  I want a story-first demo that turns noisy logs into ranked radar blips
+  So that I can quickly decide what to investigate first
 
-  Scenario: Run demo analysis from a local demo dataset file
+  Background:
     Given a local demo dataset file with HDFS-style log rows
     And a Caducus data directory is configured
-    And the biblicus config subtree specifies reinforcement_memory data_dir and vector_store
-    When I run the Caducus demo run command with that input file and a group_id
-    Then Caducus writes canonical event records for each log row
-    And Caducus maps those events to Biblicus TimestampedText
-    And Caducus invokes Biblicus ReinforcementMemory ingest and analyze for that group_id
-    And the CLI shows structured memory topics with label, memory_tier, lifecycle_tier, member_count
 
-  Scenario: Demo ingest only writes canonical events
-    Given a local demo dataset file with HDFS-style log rows
-    And a Caducus data directory is configured
+  Scenario: Firehose logs become ranked radar output
+    When I run the Caducus demo run command for group_id "hdfs-demo:DataNode"
+    Then the command succeeds
+    And Caducus writes one canonical event per log row
+    And the radar output includes group "hdfs-demo:DataNode"
+    And the radar output includes ranked blips with weight, temporal, and member count
+
+  Scenario: Ingest-only mode stores canonical event shape
     When I run the Caducus demo ingest command with that input file
-    Then Caducus writes one canonical event per log row
-    And each event has id, timestamp, source, group_id, text, and metadata
+    Then the command succeeds
+    And each stored event has id, timestamp, source, group_id, text, and metadata
 
-  Scenario: Analyze reads from stored canonical events
-    Given canonical event records already exist for a group_id in the data directory
-    And the biblicus config subtree is present
-    When I run the Caducus analyze command for that group_id
-    Then Caducus reads canonical events from storage
-    And Caducus runs Biblicus reinforcement memory analysis for that group_id
-    And the CLI outputs topic lines in the stable shape
-
-  Scenario: Groups command lists group IDs after ingest
-    Given a local demo dataset file with HDFS-style log rows
-    And a Caducus data directory is configured
+  Scenario: Groups command reveals discoverable analysis targets
     When I run the Caducus demo ingest command with that input file
     And I run the Caducus groups command
-    Then the CLI lists at least the group IDs from the ingested file
+    Then the command succeeds
+    And the CLI lists at least the group IDs from the ingested file
+
+  Scenario: Analyze uses previously stored events
+    Given canonical event records already exist for group_id "hdfs-demo:DataNode" in the data directory
+    When I run the Caducus analyze command for group_id "hdfs-demo:DataNode"
+    Then the command succeeds
+    And the radar output includes group "hdfs-demo:DataNode"
+    And the radar output includes ranked blips with weight, temporal, and member count
+
+  Scenario: Unknown group returns a clear operator message
+    Given canonical event records already exist for group_id "hdfs-demo:DataNode" in the data directory
+    When I run the Caducus analyze command for group_id "hdfs-demo:DoesNotExist"
+    Then the command succeeds
+    And the CLI says no events were found for group_id "hdfs-demo:DoesNotExist"
+
+  Scenario: Source column controls grouping prefix
+    Given a local demo dataset file with a custom source column
+    When I run the Caducus demo ingest command with that input file
+    And I run the Caducus groups command
+    Then the command succeeds
+    And the CLI includes group_id "bgl-demo:KERNEL"

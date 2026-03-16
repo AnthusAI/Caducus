@@ -1,8 +1,10 @@
 # Caducus
 
+Caducus is for teams running production systems who need to spot important issues quickly in noisy operational data.
+
 When the pager goes off, the problem is rarely "no data". The problem is too much data.
 
-Caducus is built for that moment. It turns a flood of raw logs into a short, prioritized radar of issue blips so operators can decide what to investigate first.
+Caducus turns that flood of raw logs into a short, prioritized radar of issue blips so operators can decide what to investigate first.
 
 What you get from the radar:
 
@@ -39,7 +41,7 @@ Read this as:
 
 In other words, each line is a blip on the radar with both intensity and freshness.
 
-Top blips from a real BGL demo run:
+Top blips from a real supercomputer log dataset:
 
 - Repeated parity-error corrections in cache-related paths (dominant cluster).
 - CE/SYM mask signaling bursts.
@@ -82,7 +84,7 @@ pip install -e ".[reinforcement-memory,dev]"
 pip install datasets
 ```
 
-Build a real BGL subset and shift timestamps to a demo "now" so recency signals are meaningful:
+Build a real-world log subset and shift timestamps to a demo "now" so recency signals are meaningful:
 
 ```bash
 python scripts/download_hdfs_demo.py \
@@ -113,7 +115,7 @@ caducus demo run --input demo_data/log_sample.csv --group-id 'bgl-demo:KERNEL' -
 
 ### Notes
 
-- Group IDs are source and component derived: `<source>:<component>` (for BGL demo this is usually `bgl-demo:KERNEL`).
+- Group IDs are source and component derived: `<source>:<component>` (for this demo it is `bgl-demo:KERNEL`).
 - Use single quotes around group IDs containing `$` in shell commands.
 - `--anchor-now` preserves spacing between log rows while shifting them to your chosen clock anchor.
 
@@ -135,41 +137,11 @@ flowchart TD
     analyze --> blips[RankedRadarBlips]
 ```
 
-## Releases
-
-Caducus uses `python-semantic-release` with Conventional Commits.
-
-Use commit messages like:
-
-- `feat: add CloudWatch collector checkpointing`
-- `fix: quote group IDs containing dollar signs in docs`
-- `feat!: change canonical event schema`
-
-Release behavior:
-
-- `feat:` triggers a minor release
-- `fix:` triggers a patch release
-- `feat!:` or a `BREAKING CHANGE:` footer triggers a major release
-
-The release workflow lives in `.github/workflows/release.yml` and runs on pushes to `main`. It will:
-
-1. Determine the next version from commit messages.
-2. Update `project.version` in `pyproject.toml` and `src/caducus/__init__.py`.
-3. Generate `CHANGELOG.md`, create a tag, and create a GitHub Release.
-4. Publish the built distributions to PyPI.
-
-PyPI publishing is configured for GitHub Actions trusted publishing. Before the first live release, configure the `caducus` project on PyPI to trust this repository's `release.yml` workflow.
-
 ## Roadmap
 
-Caducus is intended to grow beyond the initial CLI foundation over time.
-
-Planned directions include:
-
-- broader source integrations across operational systems
-- deeper analysis of concepts and entities derived from operational activity
-- richer incident context and root-cause workflows
-- a future web UI and embeddable components for other applications
+- More collectors (CloudWatch/SQS/alerts) feeding canonical events
+- Faster topic clustering and richer root-cause hints
+- Minimal UI/embeds for operators to view radar blips
 
 ## Repository Direction
 
