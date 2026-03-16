@@ -1,0 +1,3 @@
+source,date,time,level,component,pid,content,block_id,anomaly
+bgl-demo,260316,120000,INFO,KERNEL,,instruction cache parity error corrected,,0
+bgl-demo,260316,120001,WARN,KERNEL,,torus receiver x+ input pipe error(s) detected and corrected,,0
