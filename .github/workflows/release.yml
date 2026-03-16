@@ -18,7 +18,9 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install dependencies
-        run: pip install -e ".[dev,reinforcement-memory]"
+        run: |
+          pip install git+https://github.com/AnthusAI/Biblicus.git@v1.8.0#egg=biblicus[reinforcement-memory]
+          pip install -e ".[dev,reinforcement-memory]"
       - name: Workaround virtuus VERSION bug
         run: |
           SITE_PKG=$(python -c "import site; print(site.getsitepackages()[0])")

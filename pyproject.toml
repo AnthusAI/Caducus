@@ -23,7 +23,7 @@ dev = [
   "python-semantic-release>=10.5.3",
 ]
 reinforcement-memory = [
-  "biblicus[reinforcement-memory]>=1.6.0",
+  "biblicus[reinforcement-memory]>=1.8.0",
 ]
 
 [project.scripts]
