@@ -19,7 +19,7 @@ jobs:
           python-version: "3.12"
       - name: Install dependencies
         run: |
-          pip install "biblicus[reinforcement-memory] @ git+https://github.com/AnthusAI/Biblicus.git@dev"
+          pip install "biblicus @ git+https://github.com/AnthusAI/Biblicus.git@dev"
           pip install -e ".[dev,reinforcement-memory]"
       - name: Workaround virtuus VERSION bug
         run: |

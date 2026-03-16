@@ -1,5 +1,7 @@
 # Caducus
 
+<img src="docs/cadeceus.png" align="right" width="200" />
+
 Caducus is for teams running production systems who need to spot important issues quickly in noisy operational data.
 
 When the pager goes off, the problem is rarely "no data". The problem is too much data.
