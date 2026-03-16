@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.1.2 (2026-03-16)
+
+### Bug Fixes
+
+- Align trusted publishing environment name
+  ([`1c17fee`](https://github.com/AnthusAI/Caducus/commit/1c17feeca181ac4fa422389f591fe32464a54c96))
+
+
 ## v0.1.1 (2026-03-16)
 
 ### Bug Fixes
