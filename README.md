@@ -14,33 +14,7 @@ Instead of scanning thousands of lines manually, you get a ranked list of patter
 
 ## From Log Flood To Radar
 
-```mermaid
-flowchart TD
-    subgraph logs [1. Noisy Log Stream]
-        L1["error at 10:01: node_X failed parity check"]
-        L2["error at 10:05: node_Y failed parity check"]
-        L3["warn at 10:06: network timeout on port 80"]
-    end
-
-    subgraph clusters [2. Semantic Memory]
-        C1(("Parity Error\nCluster"))
-        C2(("Network Timeout\nCluster"))
-    end
-
-    subgraph blips [3. Radar Blips]
-        B1["[weight=hot temporal=trending] n=2"]
-        B2["[weight=cold temporal=new] n=1"]
-    end
-
-    L1 -->|"semantic match"| C1
-    L2 -->|"semantic match"| C1
-    L3 -->|"semantic match"| C2
-
-    C1 ==>|"reinforces"| B1
-    C2 ==>|"initializes"| B2
-```
-
-Raw logs look like this:
+Raw logs look like this - an overwhelming firehose:
 
 ```text
 260316,115910,INFO,KERNEL,,instruction cache parity error corrected
@@ -48,7 +22,7 @@ Raw logs look like this:
 260316,115911,WARN,KERNEL,,torus receiver x+ input pipe error(s) detected and corrected
 ```
 
-Caducus clusters those into radar-ready blips:
+You have a magic "radar" device for telling you what's important in there and ranking it by priority. Caducus clusters those logs into radar-ready blips. Here's what you see on that radar:
 
 ```text
 Group: bgl-demo:KERNEL  Texts: 4983  Run: 899a6ffb-a5ea-47e1-b856-71ba8054cd74
@@ -63,11 +37,41 @@ Read this as:
 - `temporal` is recency state (new/trending/known).
 - `n` is cluster member count.
 
+In other words, each line is a blip on the radar with both intensity and freshness.
+
 Top blips from a real BGL demo run:
 
 - Repeated parity-error corrections in cache-related paths (dominant cluster).
 - CE/SYM mask signaling bursts.
 - Secondary corrected parity-error pattern cluster.
+
+### How it works conceptually
+
+```mermaid
+flowchart TD
+    subgraph logs [1. Noisy Log Stream]
+        L1["error at 10:01: node_X failed parity check"]
+        L2["error at 10:05: node_Y failed parity check"]
+        L3["warn at 10:06: network timeout on port 80"]
+    end
+
+    subgraph clusters [2. Semantic Memory]
+        C1(("Parity Error<br/>Cluster"))
+        C2(("Network Timeout<br/>Cluster"))
+    end
+
+    subgraph blips [3. Radar Blips]
+        B1["[weight=hot temporal=trending] n=2"]
+        B2["[weight=cold temporal=new] n=1"]
+    end
+
+    L1 -->|"semantic match"| C1
+    L2 -->|"semantic match"| C1
+    L3 -->|"semantic match"| C2
+
+    C1 ==>|"reinforces"| B1
+    C2 ==>|"initializes"| B2
+```
 
 ## Run The Working Demo
 
