@@ -2,6 +2,24 @@
 
 <!-- version list -->
 
+## v0.1.3 (2026-03-16)
+
+### Bug Fixes
+
+- Remove environment from PyPI publish to match non-environment trusted publisher
+  ([`840caa1`](https://github.com/AnthusAI/Caducus/commit/840caa1504e0c67ab48ba9337131d9cf37bcc50d))
+
+### Documentation
+
+- Remove jargon and BGL acronym from README
+  ([`a77c59c`](https://github.com/AnthusAI/Caducus/commit/a77c59cfee37e23b9ca4ea6d147ac50ed0da0940))
+
+### Testing
+
+- Implement stronger story-driven Behave assertions
+  ([`fdfde79`](https://github.com/AnthusAI/Caducus/commit/fdfde796560fbb6a07781c5bc77de477e877c928))
+
+
 ## v0.1.2 (2026-03-16)
 
 ### Bug Fixes
