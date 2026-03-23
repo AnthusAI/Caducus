@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          pip install "biblicus @ git+https://github.com/AnthusAI/Biblicus.git@dev"
+          pip install -e ".[dev,reinforcement-memory]"
+      - name: Workaround virtuus VERSION bug
+        run: |
+          SITE_PKG=$(python -c "import site; print(site.getsitepackages()[0])")
+          VERSION_PATH=$(dirname $(dirname $SITE_PKG))/VERSION
+          echo "0.4.3" | sudo tee $VERSION_PATH > /dev/null
+      - name: Run Pytest
+        run: pytest
+      - name: Run Behave
+        run: behave
