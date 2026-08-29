@@ -148,3 +148,11 @@ flowchart TD
 ## Repository Direction
 
 This repository is being built outside-in. Product definition and behavior specifications come first, followed by the minimum implementation needed to satisfy them.
+
+---
+
+Built by [Anthus AI Solutions](https://anth.us). We run this class of system in production.
+
+Built for operators who need a first pass before a human looks.
+
+If you need this operated, not just cloned, [talk to us](https://anth.us).
