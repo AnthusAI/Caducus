@@ -1,0 +1,31 @@
+{
+  "id": "kanbus-d680361e-7c9d-4a89-befb-6fed7e3ca6cf",
+  "title": "A message I can act on without logging in to AWS",
+  "description": "**Milestone:** M1, first slice\n\n**Goal.** As an operator, each alarm message says what broke, where, the impact and the next step, with one link into the right AWS account. This is the problem that started the initiative.\n\n**Build.**\n- `config/alarm-catalog.yaml` (public: names and advice only): name pattern, product, how to read the site from the name, what broke, impact, next step. `src/caducus/notify/catalog.py`.\n- Seed from source: the five alarms in Papyrus `infra/monitoring/papyrus-monitoring.yaml` (their AlarmDescription says what to read next), the two in `infra/scheduled-jobs/lib/scheduled-container-job.ts`, the two newsletter rate alarms.\n- Message: subject `[ALARM] <product>/<site>: <what broke>`; body with the fields above, the alarm's own reason and datapoints in words, the AWS account's friendly name and a link.\n- Link: IAM Identity Center shortcut, `<portal>/#/console?account_id=..&role_name=..&destination=<url-encoded alarm page>`, all values URL-encoded. Portal URL, permission set and the account-to-name map live in SSM, never in Git. It grants nothing new; the person still needs that access.\n- An unknown alarm still sends, labelled `No triage notes yet`, with the raw reason, and the catalog gets a chore.\n\n**Acceptance.**\nRendered samples for each seeded alarm reviewed by Ryan in the session; a test that every message has all four fields or the label.\n\n**Depends on:** kanbus-9a3b85, kanbus-cfe4b9\n\n**Specification.**\n```gherkin\nFeature: Triage content\n  Scenario: A known alarm\n    Given the alarm \"papyrus-monitoring-router-errors\" is in the catalog\n    When it fires\n    Then the message names what broke, the site, the impact and the next step\n    And it links straight to that alarm in the right AWS account\n\n  Scenario: An alarm with no notes still reaches me\n    Given an alarm that is not in the catalog\n    When it fires\n    Then the message gives its name, its account and its reason\n    And it is labelled \"No triage notes yet\"\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-886a10c9-95a8-432f-a12a-8367b5579777",
+  "labels": [
+    "m1"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-9a3b85ab-fc69-43b1-9a16-cc3b410ec994",
+      "type": "blocked-by"
+    },
+    {
+      "target": "kanbus-cfe4b911-1716-4f8d-b7da-5811e880b1c7",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-11-04T13:14:29.268514Z",
+  "updated_at": "2026-11-04T13:14:31.663529Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

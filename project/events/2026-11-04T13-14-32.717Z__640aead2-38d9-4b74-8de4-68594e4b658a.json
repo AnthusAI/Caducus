@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "640aead2-38d9-4b74-8de4-68594e4b658a",
+  "issue_id": "kanbus-c5bf8359-c55e-4aee-a847-ddad3eddec58",
+  "event_type": "field_updated",
+  "occurred_at": "2026-11-04T13:14:32.717Z",
+  "actor_id": "home",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "**Milestone:** M3, public email and new stories\n\n**Goal.** AnthusAI/Papyrus-web is private: its CI and deploy run in AWS. Content PRs merge without screenshot approval. Add a page on notification options when M3 ships: subscribing, the channels that really exist then, turning things off, what is logged, no tracking. Slack and Discord get added only when live. No speed bragging. Terminology: never 'Notification Center' for this; Papyrus `docs/feature-names.md` gets the entry.\n\n**Acceptance.**\nPage live; every claim traced to a shipped story.\n\n**Depends on:** P_ROLLOUT",
+        "to": "**Milestone:** M3, public email and new stories\n\n**Goal.** AnthusAI/Papyrus-web is private: its CI and deploy run in AWS. Content PRs merge without screenshot approval. Add a page on notification options when M3 ships: subscribing, the channels that really exist then, turning things off, what is logged, no tracking. Slack and Discord get added only when live. No speed bragging. Terminology: never 'Notification Center' for this; Papyrus `docs/feature-names.md` gets the entry.\n\n**Acceptance.**\nPage live; every claim traced to a shipped story.\n\n**Depends on:** PPY-dc8593"
+      }
+    }
+  }
+}

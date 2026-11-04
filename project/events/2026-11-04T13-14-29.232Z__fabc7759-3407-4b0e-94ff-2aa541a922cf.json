@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "fabc7759-3407-4b0e-94ff-2aa541a922cf",
+  "issue_id": "kanbus-06de581f-78c8-4ab1-af95-6e309f8fcd77",
+  "event_type": "issue_created",
+  "occurred_at": "2026-11-04T13:14:29.232Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "SES events update the log through EventBridge, not SNS",
+    "description": "**Milestone:** M1, first slice\n\n**Goal.** As the service, I learn about delivery, bounces and complaints, and stop mailing an address that hard-bounced.\n\n**Build.**\n- Rule on the default bus (`source` `aws.ses`) to SQS `caducus-ses-events`; `handlers/ses_events.py`, mapping adapted from Papyrus `src/papyrus_content/newsletter/events.py`.\n- SES documents these events as best effort and possibly out of order, so updates are idempotent and use the kanbus-53a88d precedence.\n- Hard bounce or complaint writes `SUPP#<hash>` / `SUPP`, checked before every send. SES's account suppression list stays on as well. Gmail gives SES no complaint data (per SES docs), so complaint counts undercount Gmail.\n\n**Acceptance.**\nSample events from the SES documentation as fixtures; a live run with the mailbox simulator's success, bounce and complaint addresses.\n\n**Depends on:** kanbus-cfe4b9\n\n**Specification.**\n```gherkin\nFeature: Provider events\n  Scenario: A hard bounce suppresses the address\n    Given a delivery was sent\n    When SES reports a permanent bounce for it\n    Then the log shows \"bounced\"\n    And the next notification to that address is recorded \"suppressed\" and not sent\n\n  Scenario: A duplicate report changes nothing\n    Given a delivery is recorded as \"delivered\"\n    When the same report arrives again\n    Then the log is unchanged\n```",
+    "issue_type": "story",
+    "status": "open",
+    "priority": 0,
+    "assignee": null,
+    "parent": "kanbus-28219b64-56ee-423d-bbee-480563eedef3",
+    "labels": [
+      "m1"
+    ]
+  }
+}

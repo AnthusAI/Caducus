@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "81f0b2df-d42c-4991-a7b3-7a7c676c2a19",
+  "issue_id": "kanbus-c0596b84-bb5b-4f78-b2da-a99d60b76791",
+  "event_type": "field_updated",
+  "occurred_at": "2026-11-04T13:14:32.223Z",
+  "actor_id": "home",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "**Milestone:** M3, public email and new stories\n\n**Goal.** As a site admin, the things that need me reach me without my opening the console; I can turn them off. Starting kinds are small and listed; others follow by demand.\n\n**Build.**\n- Kinds, class admin, in `config/notification-kinds.yaml`: `site.sending_paused`, `newsletter.issue_blocked`, `review.hard_gate_opened`, `knowledge_run.held`, `site.deploy_failed` (check that a source exists; drop any that has none). Papyrus emits them (P_APPEVENTS).\n- A site's admins come from kanbus-ff4727. These do not replace review requests: the console home stays the place to decide things, and a message links to it.\n- Grouped like alarms. Message wording says what happened and what to do, in Papyrus's terms.\n\n**Acceptance.**\nBehave features; Ryan reviews the wording on a sample.\n\n**Depends on:** kanbus-ff4727, kanbus-602759, P_APPEVENTS\n\n**Specification.**\n```gherkin\nFeature: App alerts for admins\n  Scenario: A hard gate opens\n    Given a site admin with default settings\n    When a hard gate opens on their site\n    Then they get one message linking to it in the newsroom\n\n  Scenario: Editors are not defaulted in\n    Given an editor who is not an admin\n    When a hard gate opens\n    Then they are not notified unless they subscribed\n```",
+        "to": "**Milestone:** M3, public email and new stories\n\n**Goal.** As a site admin, the things that need me reach me without my opening the console; I can turn them off. Starting kinds are small and listed; others follow by demand.\n\n**Build.**\n- Kinds, class admin, in `config/notification-kinds.yaml`: `site.sending_paused`, `newsletter.issue_blocked`, `review.hard_gate_opened`, `knowledge_run.held`, `site.deploy_failed` (check that a source exists; drop any that has none). Papyrus emits them (PPY-0dbcc3).\n- A site's admins come from kanbus-ff4727. These do not replace review requests: the console home stays the place to decide things, and a message links to it.\n- Grouped like alarms. Message wording says what happened and what to do, in Papyrus's terms.\n\n**Acceptance.**\nBehave features; Ryan reviews the wording on a sample.\n\n**Depends on:** kanbus-ff4727, kanbus-602759, PPY-0dbcc3\n\n**Specification.**\n```gherkin\nFeature: App alerts for admins\n  Scenario: A hard gate opens\n    Given a site admin with default settings\n    When a hard gate opens on their site\n    Then they get one message linking to it in the newsroom\n\n  Scenario: Editors are not defaulted in\n    Given an editor who is not an admin\n    When a hard gate opens\n    Then they are not notified unless they subscribed\n```"
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "id": "kanbus-b9f48fba-0238-40e3-b073-0f4a59c0525a",
+  "title": "Retries and a dead-letter path nobody can ignore",
+  "description": "**Milestone:** M2, operators finished\n\n**Goal.** As an operator, a message that could not be delivered becomes something I am told about once and can act on, so this does not become another ignored queue.\n\n**Build.**\n- Transient errors retry with backoff through SQS visibility; permanent errors go straight to `failed` with a reason and are not retried.\n- Each dead-letter queue, central and in forwarder accounts: an alarm on age of oldest message, flowing through the normal path as kind `caducus.dead_letter`: one incident per queue, naming the queue, how many, the oldest, the reason counts and the command to run. It clears when the queue is empty.\n- `caducus notify redrive <queue>`: safe, because the claim row prevents double-sending. Each dead-lettered delivery shows `dead_lettered` in the log, and the person's history says so.\n- If the email channel itself is what failed, the dead-man covers it (kanbus-a402b9).\n\n**Acceptance.**\nForce a failure with a poison message; one incident, one clearing after redrive.\n\n**Depends on:** kanbus-d68036, kanbus-1c3618\n\n**Specification.**\n```gherkin\nFeature: Dead letters\n  Scenario: A delivery fails repeatedly\n    Given a delivery that fails on every attempt\n    When retries are exhausted\n    Then the log shows \"dead_lettered\"\n    And an operator gets one message naming the queue and the command to redrive\n\n  Scenario: Redrive clears it\n    Given a dead-letter incident is open\n    When an operator redrives the queue and it empties\n    Then one message says it cleared and nothing was sent twice\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-52b7c299-5df6-4da7-ace7-9fc00473ac77",
+  "labels": [
+    "m2"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-d680361e-7c9d-4a89-befb-6fed7e3ca6cf",
+      "type": "blocked-by"
+    },
+    {
+      "target": "kanbus-1c361806-538f-416f-a55b-22c2e0853014",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-11-04T13:14:29.343923Z",
+  "updated_at": "2026-11-04T13:14:31.909952Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

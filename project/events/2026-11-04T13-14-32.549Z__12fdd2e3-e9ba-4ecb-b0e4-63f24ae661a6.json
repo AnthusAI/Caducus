@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "12fdd2e3-e9ba-4ecb-b0e4-63f24ae661a6",
+  "issue_id": "kanbus-92b1a18c-850b-4996-a785-fa076c5428f0",
+  "event_type": "field_updated",
+  "occurred_at": "2026-11-04T13:14:32.549Z",
+  "actor_id": "home",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "**Milestone:** Later, coarse\n\n**Goal.** Removes everything kanbus-78f229 lists outside Papyrus, confirms exactly two human alerts remain, and ends with the p.apyr.us docs for the feature set, as the epic says.\n\n**Acceptance.**\nA check across accounts lists only the two last-resort topics plus any machine-only topic Ryan accepted.\n\n**Depends on:** kanbus-78f229, kanbus-49f7bd, kanbus-ecbda3, P_ALARMS, P_SESEB",
+        "to": "**Milestone:** Later, coarse\n\n**Goal.** Removes everything kanbus-78f229 lists outside Papyrus, confirms exactly two human alerts remain, and ends with the p.apyr.us docs for the feature set, as the epic says.\n\n**Acceptance.**\nA check across accounts lists only the two last-resort topics plus any machine-only topic Ryan accepted.\n\n**Depends on:** kanbus-78f229, kanbus-49f7bd, kanbus-ecbda3, PPY-f66e91, PPY-819117"
+      }
+    }
+  }
+}

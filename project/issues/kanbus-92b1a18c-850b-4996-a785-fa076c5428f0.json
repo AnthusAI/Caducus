@@ -1,0 +1,35 @@
+{
+  "id": "kanbus-92b1a18c-850b-4996-a785-fa076c5428f0",
+  "title": "Finish retiring SNS, and document it",
+  "description": "**Milestone:** Later, coarse\n\n**Goal.** Removes everything kanbus-78f229 lists outside Papyrus, confirms exactly two human alerts remain, and ends with the p.apyr.us docs for the feature set, as the epic says.\n\n**Acceptance.**\nA check across accounts lists only the two last-resort topics plus any machine-only topic Ryan accepted.\n\n**Depends on:** kanbus-78f229, kanbus-49f7bd, kanbus-ecbda3, PPY-f66e91, PPY-819117",
+  "type": "task",
+  "status": "open",
+  "priority": 3,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-2b9a2773-23b2-4d66-bd5b-011f48f15f45",
+  "labels": [
+    "later"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-78f22928-cde6-42e7-96b7-bc4d1664f50f",
+      "type": "blocked-by"
+    },
+    {
+      "target": "kanbus-49f7bde8-0480-4e92-b778-5140552ea6e8",
+      "type": "blocked-by"
+    },
+    {
+      "target": "kanbus-ecbda368-4806-4f55-955d-30a5efb672b0",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-11-04T13:14:29.622914Z",
+  "updated_at": "2026-11-04T13:14:32.593675Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

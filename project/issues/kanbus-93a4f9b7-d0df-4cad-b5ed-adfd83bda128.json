@@ -1,0 +1,22 @@
+{
+  "id": "kanbus-93a4f9b7-d0df-4cad-b5ed-adfd83bda128",
+  "title": "Generic webhook channel: designed, not built",
+  "description": "**Milestone:** Backlog\n\n**Goal.** Design only, recorded in docs/notifications-plan.md: an HTTPS POST of the delivery as JSON through the `Channel` interface, signed like Slack's scheme with a per-connection secret, retried by the same queues, with an admin setting the URL. SSRF checks on the URL are the main work. Build when someone asks.\n\n**Acceptance.**\nRemains in backlog until requested.",
+  "type": "task",
+  "status": "backlog",
+  "priority": 4,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-52b7c299-5df6-4da7-ace7-9fc00473ac77",
+  "labels": [
+    "last"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-11-04T13:14:29.647415Z",
+  "updated_at": "2026-11-04T13:15:37.332896Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

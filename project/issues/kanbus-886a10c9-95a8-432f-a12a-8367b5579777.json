@@ -4,15 +4,23 @@
   "description": "Turn CloudWatch alarms and events into operator notifications someone can act on without logging in to AWS: one message per incident, what broke, which site, the impact, the next step, a direct link, acknowledge or mute, one message on clearing. First slice, because this is the problem that started the initiative. Interim: the papyrus-monitoring alarm email stays until this replaces it.",
   "type": "epic",
   "status": "open",
-  "priority": 1,
+  "priority": 0,
   "assignee": null,
   "creator": null,
   "parent": "kanbus-90737cee-7479-4411-bb09-5f5ca4b08818",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "2e13e3e1-d5d1-4a0a-a249-c7c62769b0d6",
+      "author": "home",
+      "text": "Ryan, 2026-11-04, refines this epic: acknowledgement is opt-in per kind (see kanbus-42a682), not on every incident; anyone can mute. First slice ends at kanbus-6275db. Plan: docs/notifications-plan.md.",
+      "created_at": "2026-11-04T13:15:37.344325Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-11-04T12:59:54.186827Z",
-  "updated_at": "2026-11-04T12:59:54.186845Z",
+  "updated_at": "2026-11-04T13:15:37.344510Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

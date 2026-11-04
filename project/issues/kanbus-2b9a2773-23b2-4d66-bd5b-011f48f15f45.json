@@ -10,9 +10,17 @@
   "parent": "kanbus-90737cee-7479-4411-bb09-5f5ca4b08818",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "e356ec38-6f27-4558-b0a7-cb28423c8784",
+      "author": "home",
+      "text": "Exactly two last-resort alerts stay: kanbus-a402b9. SES events move to EventBridge, which can carry them (SES publishes to the default bus only). Inventory: kanbus-78f229. Papyrus part: PPY-f66e91, PPY-819117.",
+      "created_at": "2026-11-04T13:15:37.356460Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-11-04T12:59:54.285298Z",
-  "updated_at": "2026-11-04T12:59:54.285313Z",
+  "updated_at": "2026-11-04T13:15:37.356646Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

@@ -4,15 +4,30 @@
   "description": "Where each person chooses what they receive and on which channels, shared across apps, plus the public subscribe flow for people with no account. Lucide icons, flat fills, no borders, buttons not dropdowns; screenshot review.",
   "type": "epic",
   "status": "open",
-  "priority": 1,
+  "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "kanbus-90737cee-7479-4411-bb09-5f5ca4b08818",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "1672b6e0-70d1-4cc1-8066-a4a893c4ea5d",
+      "author": "home",
+      "text": "Readers' choices are per site, because pairwise subjects cannot be linked. Console and pages: PPY-17cf09, PPY-d7443d, PPY-ab9205. CLI: PPY-d99539. Rollout: PPY-dc8593.",
+      "created_at": "2026-11-04T13:15:37.405054Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "682930e5-dde0-4b84-a191-7de67ae7ca37",
+      "author": "home",
+      "text": "Pages are PPY-f361ee, not PPY-ab9205, which was refiled before it was ever pushed.",
+      "created_at": "2026-11-04T13:17:12.352284Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-11-04T12:59:54.166678Z",
-  "updated_at": "2026-11-04T12:59:54.166694Z",
+  "updated_at": "2026-11-04T13:17:12.352473Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

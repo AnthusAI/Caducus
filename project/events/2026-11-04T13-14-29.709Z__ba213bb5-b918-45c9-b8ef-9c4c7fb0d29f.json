@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "ba213bb5-b918-45c9-b8ef-9c4c7fb0d29f",
+  "issue_id": "kanbus-c5bf8359-c55e-4aee-a847-ddad3eddec58",
+  "event_type": "issue_created",
+  "occurred_at": "2026-11-04T13:14:29.709Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Public docs on p.apyr.us as each milestone lands",
+    "description": "**Milestone:** M3, public email and new stories\n\n**Goal.** AnthusAI/Papyrus-web is private: its CI and deploy run in AWS. Content PRs merge without screenshot approval. Add a page on notification options when M3 ships: subscribing, the channels that really exist then, turning things off, what is logged, no tracking. Slack and Discord get added only when live. No speed bragging. Terminology: never 'Notification Center' for this; Papyrus `docs/feature-names.md` gets the entry.\n\n**Acceptance.**\nPage live; every claim traced to a shipped story.\n\n**Depends on:** P_ROLLOUT",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-6a008767-14d2-4dd8-a3d9-78fda7ab7330",
+    "labels": [
+      "m3"
+    ]
+  }
+}

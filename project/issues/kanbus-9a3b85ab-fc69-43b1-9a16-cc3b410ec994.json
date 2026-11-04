@@ -1,0 +1,31 @@
+{
+  "id": "kanbus-9a3b85ab-fc69-43b1-9a16-cc3b410ec994",
+  "title": "One message per incident, and one when it clears",
+  "description": "**Milestone:** M1, first slice\n\n**Goal.** As an operator, I get one message when an alarm starts and one when it ends, however often it flaps, because too many notifications is the same as none.\n\n**Build.**\n- `src/caducus/notify/incidents.py`; row `INCIDENT#<aws account>#<region>#<alarm>` / `STATE`.\n- ALARM opens an incident and notifies once. A further ALARM on an open incident counts and does not notify. OK starts a hold-down; if it stays OK through the hold-down, one clearing message with the duration and the number of flaps. INSUFFICIENT_DATA is logged and sends nothing.\n- Honour `detail.muteDetail`: a muted alarm records but does not notify. Hold-down is one setting in the catalog, read per alarm; adjust it from observed flapping, not by a cap.\n\n**Acceptance.**\nTable-tested state machine; behave features.\n\n**Depends on:** kanbus-ad0a0d, kanbus-be0e9d\n\n**Specification.**\n```gherkin\nFeature: Incidents\n  Scenario: A flapping alarm is one incident\n    Given an alarm entered ALARM and a message went out\n    When it goes OK and back to ALARM within the hold-down, three times\n    Then no further message goes out\n\n  Scenario: Clearing sends one message\n    Given an open incident\n    When the alarm stays OK through the hold-down\n    Then one message says it cleared, how long it lasted and how many times it flapped\n\n  Scenario: Missing data is not an incident\n    When an alarm enters INSUFFICIENT_DATA\n    Then no message goes out and the transition is logged\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-886a10c9-95a8-432f-a12a-8367b5579777",
+  "labels": [
+    "m1"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-ad0a0d56-6db5-46c1-8f03-77eb99ffc07d",
+      "type": "blocked-by"
+    },
+    {
+      "target": "kanbus-be0e9d0d-4996-4eaa-853a-d2108befc2b4",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-11-04T13:14:29.253294Z",
+  "updated_at": "2026-11-04T13:14:31.626164Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

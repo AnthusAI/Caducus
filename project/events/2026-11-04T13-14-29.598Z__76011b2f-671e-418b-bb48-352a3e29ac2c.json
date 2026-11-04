@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "76011b2f-671e-418b-bb48-352a3e29ac2c",
+  "issue_id": "kanbus-723c8ba4-2c44-41d4-ba62-544ca5a0e833",
+  "event_type": "issue_created",
+  "occurred_at": "2026-11-04T13:14:29.598Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Adopt in Cyclotron",
+    "description": "**Milestone:** Later, coarse\n\n**Goal.** Brand, app events (for example a retrain finished, or a decision queue backed up). Cyclotron's session owns the merge and takes approval from Ryan directly. Its repo has no SNS topic by source search.\n\n**Acceptance.**\nSpec'd when started.\n\n**Depends on:** kanbus-0c3a43",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 3,
+    "assignee": null,
+    "parent": "kanbus-dd394f79-6339-4bca-9a4c-259c93afaffe",
+    "labels": [
+      "later"
+    ]
+  }
+}

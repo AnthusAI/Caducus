@@ -4,15 +4,23 @@
   "description": "Outbound Slack delivery, plus console UI for an admin to connect a site to Slack through the app. Relates to the existing inbound Slack agent app. Depends on open questions 3 and 4. Creating the Slack app itself is Ryan's step.",
   "type": "epic",
   "status": "open",
-  "priority": 1,
+  "priority": 3,
   "assignee": null,
   "creator": null,
   "parent": "kanbus-90737cee-7479-4411-bb09-5f5ca4b08818",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "269dc7b3-73c4-413f-8022-9269e2936f41",
+      "author": "home",
+      "text": "Coarse until M3 ships. Console: PPY-cc015c.",
+      "created_at": "2026-11-04T13:15:37.417024Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-11-04T12:59:54.226159Z",
-  "updated_at": "2026-11-04T12:59:54.226173Z",
+  "updated_at": "2026-11-04T13:15:37.417214Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "08d85cd4-ebc4-4b9b-b40b-fa9d69b7f8bc",
+  "issue_id": "kanbus-f4ad8221-719b-4de5-b588-ebc505bd5022",
+  "event_type": "issue_created",
+  "occurred_at": "2026-11-04T13:14:29.550Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Discord: install by incoming webhook, stored tokens, uninstall and signed inbound",
+    "description": "**Milestone:** Later, coarse\n\n**Goal.** Coarse until M3 ships. Channel posts use `webhook.incoming`, which needs no bot in the server, and allow `username` and `avatar_url` per message: exactly one app with a site's name and icon.\n\n**Build.**\nEach authorization returns a webhook id and token; store the token encrypted with the KMS key. Webhook events are signed Ed25519 (`X-Signature-Ed25519`, `X-Signature-Timestamp`); answer 204 within 3 seconds, 401 on a bad signature. Discord documents no event for removal from a server, so a 404 from a webhook means gone: stop using it at once (repeat attempts earn a temporary restriction), mark the connection broken, tell the admin.\n\n**Acceptance.**\nSpec'd when started.\n\n**Depends on:** kanbus-ff4727",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 3,
+    "assignee": null,
+    "parent": "kanbus-34bdf037-bde8-46ba-85b5-fd0f38d84373",
+    "labels": [
+      "later"
+    ]
+  }
+}

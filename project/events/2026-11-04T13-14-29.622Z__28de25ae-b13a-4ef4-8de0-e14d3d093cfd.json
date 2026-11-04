@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "28de25ae-b13a-4ef4-8de0-e14d3d093cfd",
+  "issue_id": "kanbus-92b1a18c-850b-4996-a785-fa076c5428f0",
+  "event_type": "issue_created",
+  "occurred_at": "2026-11-04T13:14:29.622Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Finish retiring SNS, and document it",
+    "description": "**Milestone:** Later, coarse\n\n**Goal.** Removes everything kanbus-78f229 lists outside Papyrus, confirms exactly two human alerts remain, and ends with the p.apyr.us docs for the feature set, as the epic says.\n\n**Acceptance.**\nA check across accounts lists only the two last-resort topics plus any machine-only topic Ryan accepted.\n\n**Depends on:** kanbus-78f229, kanbus-49f7bd, kanbus-ecbda3, P_ALARMS, P_SESEB",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 3,
+    "assignee": null,
+    "parent": "kanbus-2b9a2773-23b2-4d66-bd5b-011f48f15f45",
+    "labels": [
+      "later"
+    ]
+  }
+}

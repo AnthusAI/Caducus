@@ -1,0 +1,31 @@
+{
+  "id": "kanbus-26003ffa-c0da-47cc-b694-768db7755959",
+  "title": "Discord: posts, rate limits, mentions and reader DMs",
+  "description": "**Milestone:** Later, coarse\n\n**Goal.** Coarse until M3 ships.\n\n**Build.**\nAlways send `allowed_mentions: {\"parse\": []}`, so a headline's `@everyone` pings nobody (webhooks parse user mentions by default, ordinary messages everything). Limits: read `X-RateLimit-*` headers and `Retry-After`, do not hard-code. The global limit is 50 requests per second; 10,000 invalid requests per 10 minutes earns a temporary ban, so stop retrying 401s and 403s. Content 2,000 characters; embeds 6,000 in total. FIFO SQS group per webhook. Reader DMs: Discord says DMs should generally come from a user action, not to DM a whole server, and that opening many quickly can get a bot blocked. Build after channel posts, in a paced trial, per the plan's decision.\n\n**Acceptance.**\nSpec'd when started: `@everyone` in a headline pings nobody.\n\n**Depends on:** kanbus-f4ad82, kanbus-5acd4e",
+  "type": "task",
+  "status": "open",
+  "priority": 3,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-34bdf037-bde8-46ba-85b5-fd0f38d84373",
+  "labels": [
+    "later"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-f4ad8221-719b-4de5-b588-ebc505bd5022",
+      "type": "blocked-by"
+    },
+    {
+      "target": "kanbus-5acd4ef2-fb7e-478d-a01d-3ca8cef87d0e",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-11-04T13:14:29.562172Z",
+  "updated_at": "2026-11-04T13:14:32.432666Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -4,15 +4,23 @@
   "description": "Move the other Anthus cloud apps onto the shared client, UI and brand definition, each with its own app events. This is the proof that it is reusable rather than Papyrus-only.",
   "type": "epic",
   "status": "open",
-  "priority": 1,
+  "priority": 3,
   "assignee": null,
   "creator": null,
   "parent": "kanbus-90737cee-7479-4411-bb09-5f5ca4b08818",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "5fc54a8e-c99e-4e40-b8fd-69cbb12f1591",
+      "author": "home",
+      "text": "Coarse until M3 ships. Each product's own session merges.",
+      "created_at": "2026-11-04T13:15:37.440360Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-11-04T12:59:54.265796Z",
-  "updated_at": "2026-11-04T12:59:54.265810Z",
+  "updated_at": "2026-11-04T13:15:37.440547Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

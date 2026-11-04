@@ -10,9 +10,17 @@
   "parent": null,
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "128395f7-9bdc-47ab-8883-e116d3bdf14f",
+      "author": "home",
+      "text": "Plan filed 2026-11-04: docs/notifications-plan.md. Issues labelled m1, m2, m3, later; ryan-step marks Ryan's own. Papyrus side: PPY-4d1143.\n\nThe earlier decisions stand, with later ones winning: admins get app alerts by default (replaces 'all off until chosen' for them); acknowledgement is opt-in per kind (replaces acknowledge on every incident).\n\nDECISIONS FOR RYAN, each with a recommendation:\n1. Operator sending domain: notify.anth.us, delegated to a zone in the new AWS account.\n2. MIT licence for Caducus: yes (kanbus-e364c7).\n3. 'Exactly two' SNS alerts: two kinds, with the SES alert copied into every AWS account that sends mail, so papyrus-production as well as caducus-production, because roundups and Prospectus mail stay there. Yes.\n4. Machine-only SNS (SNS invoking a Lambda, with no person subscribed): replaced by EventBridge where it can carry them, and AWS Budgets checked case by case. Recommend treating 'exactly two' as human alerts, and accepting a machine topic only where there is no alternative.\n5. Delivery-log retention: 90 days, matching the newsletter's event log. Consent kept until deletion; address-free suppression hash kept after.\n6. Reader DMs (settled as yes, but docs raise two limits). Slack can only DM people in workspaces with the app installed, so most readers could not use it unless their admin installs it. Discord says DMs should generally come from a user action, and that many DMs quickly can get a bot blocked. Recommend: channel posts first; Slack DMs with that limit stated on the page; Discord DMs only after a small paced trial, dropped if it hits limits.\n7. Per-message site name and icon on Slack (settled as yes). Slack says chat:write.customize should be used in response to a user action and heavily signposted. Recommend no override on Slack: show the site's name and icon inside the message. Discord's webhooks allow it per message, so use it there.\n8. One SES account for public and operator mail: yes, protected by per-site pausing and the last-resort alert. A second account is deferred.\n9. Who counts as a site admin for default alerts: the owners and admins in Prospectus of the Account holding the site, and only after they have signed in since launch, since Prospectus holds no address.\n10. Does sending feed the weekly quota: report only at first, percent only, never blocking operator, last-resort or consent mail (kanbus-95686d). Blocking new-story mail at 100% is a later choice.\n11. Where privacy and terms pages live: anth.us, and whether a lawyer reads them. App name on Slack and Discord: Anthus.\n12. One AWS account, no staging, us-east-1: yes for now.\n13. Kinds that ask for acknowledgement to start: site sending paused and dead-letter incidents, reviewed after real use.",
+      "created_at": "2026-11-04T13:15:52.745143Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-11-04T12:59:54.087777Z",
-  "updated_at": "2026-11-04T12:59:54.087796Z",
+  "updated_at": "2026-11-04T13:15:52.745384Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

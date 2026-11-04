@@ -1,0 +1,27 @@
+{
+  "id": "kanbus-53a88d63-fbc6-4723-b721-2c57987ab75f",
+  "title": "The delivery log: what was sent, to whom, on which channel, what happened",
+  "description": "**Milestone:** M1, first slice\n\n**Goal.** As an operator, I can answer 'did this reach them, and if not why' from one record. Ryan requires this schema early.\n\n**Build.**\n- `schemas/delivery-log.v1.json`, `src/caducus/notify/delivery_log.py`.\n- One row per delivery: `pk=EVENT#<eventId>`, `sk=DELIVERY#<deliveryId>`; GSI `byRecipient` (`recipientKey`, `queuedAt`).\n- Fields: `deliveryId`, `eventId`, `kind`, `class`, `product`, `site`, `recipientKey` (a pseudonym, see below), `channel`, `destinationMask` (`r***@example.com`), `status`, `reason`, `providerMessageId`, `attempts`, `groupId`, `incidentKey`, `queuedAt`, `sentAt`, `finalAt`, `ackRequested`, `ackAt`, `expiresAt`.\n- `recipientKey`: an HMAC of the address, or a Person or site-subject reference. Addresses live only in the recipient row and are never logged. Status precedence, so out-of-order provider events cannot undo a worse result: queued < sent < delivered < delayed < bounced, complained, rejected, failed; `suppressed`, `skipped_preference`, `grouped`, `refused`, `dead_lettered` are terminal. Ported from the rule in Papyrus `src/papyrus_content/newsletter/events.py`.\n- Retention by `expiresAt`, set from one setting (see the retention decision in the plan). Structured CloudWatch logs carry ids and statuses only.\n\n**Acceptance.**\nEvery status transition table-tested; a test scans emitted log lines for address-shaped strings.\n\n**Depends on:** kanbus-9cc7ec\n\n**Specification.**\n```gherkin\nFeature: Delivery log\n  Scenario: A send is recorded from queue to delivery\n    Given a notification is queued for a person by email\n    When it is sent and the provider reports delivery\n    Then the log shows the kind, the channel, a masked address, the provider id and \"delivered\"\n\n  Scenario: A late delivery report does not hide a bounce\n    Given a delivery is recorded as \"bounced\"\n    When a \"delivered\" report for it arrives afterwards\n    Then the delivery stays \"bounced\"\n\n  Scenario: Choosing not to send is recorded too\n    Given a person turned this kind off\n    When an event of this kind is routed\n    Then the log shows \"skipped_preference\" for that person\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-52b7c299-5df6-4da7-ace7-9fc00473ac77",
+  "labels": [
+    "m1"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-9cc7ecad-1d48-4620-aa10-df051cf0a47f",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-11-04T13:14:29.187593Z",
+  "updated_at": "2026-11-04T13:14:31.425788Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

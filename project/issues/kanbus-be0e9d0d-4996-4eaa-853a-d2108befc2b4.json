@@ -1,0 +1,31 @@
+{
+  "id": "kanbus-be0e9d0d-4996-4eaa-853a-d2108befc2b4",
+  "title": "Alarm forwarder: CloudWatch alarm state changes from other AWS accounts reach the central bus",
+  "description": "**Milestone:** M1, first slice\n\n**Goal.** Alarms in any of our AWS accounts arrive centrally, with no SNS and no change to the alarms themselves. CloudWatch sends state changes to the account's default bus whether or not an alarm has actions, and documents that delivery as guaranteed.\n\n**Build.**\n- `infra/forwarder/alarm-forwarder.yaml`: rule on the default bus matching `source` `aws.cloudwatch`, `detail-type` `CloudWatch Alarm State Change`; target the central bus with an IAM role (EventBridge requires one for cross-account targets) and an SQS dead-letter queue in the source account.\n- Central bus policy allows `events:PutEvents` by `aws:PrincipalOrgID`; the id comes from SSM. Central rule to `caducus-ingest`, with an input step converting to the event format in `handlers/alarm_adapter.py`.\n- Deploy as a service-managed StackSet from the delegated admin account, papyrus-production first, us-east-1. Accounts outside this AWS Organizations tree (the local profiles list some) need an explicit grant; see kanbus-64fc60.\n- Note from the docs: forwarded events are billed to the sender as custom events; a rule cannot hop a third account.\n\n**Acceptance.**\nForce a labelled test alarm with `aws cloudwatch set-alarm-state` in papyrus-production; the event appears in the delivery log. Remove the test alarm afterwards. This is a write in papyrus-production: get Ryan's yes first.\n\n**Depends on:** kanbus-9cc7ec, kanbus-d0987c",
+  "type": "task",
+  "status": "open",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-886a10c9-95a8-432f-a12a-8367b5579777",
+  "labels": [
+    "m1"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-9cc7ecad-1d48-4620-aa10-df051cf0a47f",
+      "type": "blocked-by"
+    },
+    {
+      "target": "kanbus-d0987c86-c1a5-408a-9dc4-4b024e1d5aa3",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-11-04T13:14:29.243121Z",
+  "updated_at": "2026-11-04T13:14:31.589851Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

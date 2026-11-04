@@ -1,0 +1,43 @@
+{
+  "id": "kanbus-6275db47-c61f-4cb6-bb03-d6ba2d1fe0c0",
+  "title": "Run beside the SNS email on papyrus-production, then show Ryan",
+  "description": "**Milestone:** M1, first slice\n\n**Goal.** End of the first slice. The papyrus-monitoring alarm email keeps going; both run, and we compare.\n\n**Build.**\n- Forwarder live on papyrus-production; the operator list holds Ryan's address.\n- For one real alarm or more, compare with the SNS email. Fix the catalog from what he says.\n- Count messages per day on each path and post it on the epic. Nothing is removed here: PPY-f66e91 does that.\n- Deploys are on merge to main in this repo; StackSet changes to other accounts need Ryan's yes.\n\n**Acceptance.**\nRyan confirms he could act on a real alarm from the message alone, and the comparison is recorded on kanbus-886a10.\n\n**Depends on:** kanbus-4eba71, kanbus-a402b9, kanbus-91d450",
+  "type": "task",
+  "status": "open",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-886a10c9-95a8-432f-a12a-8367b5579777",
+  "labels": [
+    "m1"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-4eba7132-7515-43f1-ad0b-1ea1dd3977d6",
+      "type": "blocked-by"
+    },
+    {
+      "target": "kanbus-a402b9df-5931-4028-9d67-1a62dc8e5bdd",
+      "type": "blocked-by"
+    },
+    {
+      "target": "kanbus-91d45075-ac60-448b-9216-66d672208a59",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [
+    {
+      "id": "c780f166-d870-475b-acbf-bca1b5ea103a",
+      "author": "home",
+      "text": "Papyrus side: PPY-f66e91",
+      "created_at": "2026-11-04T13:15:36.687537Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-11-04T13:14:29.300974Z",
+  "updated_at": "2026-11-04T13:15:36.687979Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

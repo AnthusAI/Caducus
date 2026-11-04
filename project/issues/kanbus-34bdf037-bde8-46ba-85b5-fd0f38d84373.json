@@ -4,15 +4,23 @@
   "description": "Outbound Discord delivery, plus console UI for an admin to connect a site to a Discord server. Depends on open questions 3 and 4. Creating the Discord app itself is Ryan's step.",
   "type": "epic",
   "status": "open",
-  "priority": 1,
+  "priority": 3,
   "assignee": null,
   "creator": null,
   "parent": "kanbus-90737cee-7479-4411-bb09-5f5ca4b08818",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "f5c1948e-3e92-4a38-ba4d-72fa9a21519d",
+      "author": "home",
+      "text": "Coarse until M3 ships. Console: PPY-62c937.",
+      "created_at": "2026-11-04T13:15:37.428810Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-11-04T12:59:54.245681Z",
-  "updated_at": "2026-11-04T12:59:54.245695Z",
+  "updated_at": "2026-11-04T13:15:37.428995Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "02a769ee-a28e-4fa9-940b-1cc031939f43",
+  "issue_id": "kanbus-6275db47-c61f-4cb6-bb03-d6ba2d1fe0c0",
+  "event_type": "field_updated",
+  "occurred_at": "2026-11-04T13:14:31.732Z",
+  "actor_id": "home",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "**Milestone:** M1, first slice\n\n**Goal.** End of the first slice. The papyrus-monitoring alarm email keeps going; both run, and we compare.\n\n**Build.**\n- Forwarder live on papyrus-production; the operator list holds Ryan's address.\n- For one real alarm or more, compare with the SNS email. Fix the catalog from what he says.\n- Count messages per day on each path and post it on the epic. Nothing is removed here: P_ALARMS does that.\n- Deploys are on merge to main in this repo; StackSet changes to other accounts need Ryan's yes.\n\n**Acceptance.**\nRyan confirms he could act on a real alarm from the message alone, and the comparison is recorded on kanbus-886a10.\n\n**Depends on:** kanbus-4eba71, kanbus-a402b9, kanbus-91d450",
+        "to": "**Milestone:** M1, first slice\n\n**Goal.** End of the first slice. The papyrus-monitoring alarm email keeps going; both run, and we compare.\n\n**Build.**\n- Forwarder live on papyrus-production; the operator list holds Ryan's address.\n- For one real alarm or more, compare with the SNS email. Fix the catalog from what he says.\n- Count messages per day on each path and post it on the epic. Nothing is removed here: PPY-f66e91 does that.\n- Deploys are on merge to main in this repo; StackSet changes to other accounts need Ryan's yes.\n\n**Acceptance.**\nRyan confirms he could act on a real alarm from the message alone, and the comparison is recorded on kanbus-886a10.\n\n**Depends on:** kanbus-4eba71, kanbus-a402b9, kanbus-91d450"
+      }
+    }
+  }
+}

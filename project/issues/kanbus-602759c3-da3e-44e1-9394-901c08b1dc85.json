@@ -1,0 +1,35 @@
+{
+  "id": "kanbus-602759c3-da3e-44e1-9394-901c08b1dc85",
+  "title": "One brand definition per product, and per site for Papyrus",
+  "description": "**Milestone:** M3, public email and new stories\n\n**Goal.** As a reader, mail from a site looks like that site. As a developer, there is one definition feeding email, Slack, Discord and public mail.\n\n**Build.**\n- `schemas/brand.v1.json`: id (`anthus`, `papyrus-<site>`, `chatticus`, ...), name, origin, base path, icon URL, sending domain, from name, and the email theme fields exactly as in Papyrus `docs/newsletter.md`, Email theme fields, validated as in `email_render/theme.py`. Slack and Discord read name, icon, accent.\n- Row `BRAND#<id>`. A site writes its brand at deploy by event (PPY-44721a), so one change to `papyrus.config.ts` means one deploy, and no second repo. Other products use the same event.\n- A missing brand falls back to the neutral Anthus brand and logs it; it never blocks operator alerts.\n\n**Acceptance.**\nSample renders for two brands; Ryan's screenshot review recorded. Marks and words carry meaning, not colour alone.\n\n**Depends on:** kanbus-67de8f\n\n**Specification.**\n```gherkin\nFeature: Brand\n  Scenario: A site's notification carries its brand\n    Given a site registered its brand\n    When a new-story email renders for that site\n    Then it uses that site's name, theme and sending domain\n\n  Scenario: A bad colour value is refused\n    When a brand arrives with a value containing \"url(\"\n    Then it is refused, with the reason, and the previous brand stays\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-2c2dad3a-fbda-4948-96da-02852a114e2a",
+  "labels": [
+    "m3"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-67de8f5b-b568-4b07-a777-6c1651b69d32",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [
+    {
+      "id": "b0fb806d-ad6b-4034-b697-b34fad2944aa",
+      "author": "home",
+      "text": "Papyrus side: PPY-44721a",
+      "created_at": "2026-11-04T13:15:36.735115Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-11-04T13:14:29.409453Z",
+  "updated_at": "2026-11-04T13:15:36.735301Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

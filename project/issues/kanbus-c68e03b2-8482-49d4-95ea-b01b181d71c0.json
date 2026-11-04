@@ -1,0 +1,39 @@
+{
+  "id": "kanbus-c68e03b2-8482-49d4-95ea-b01b181d71c0",
+  "title": "Send a test, and see delivery history",
+  "description": "**Milestone:** M2, operators finished\n\n**Goal.** As a person or an admin, I can prove a channel works and see what was sent. Console buttons come with PPY-17cf09 and PPY-d7443d; this is the service side and the `caducus` CLI.\n\n**Build.**\n- API routes `POST /v1/test`, `GET /v1/history` (IAM, see kanbus-ff4727; for M2 the CLI uses the operator's AWS session). `caducus notify test <channel>`, `caducus notify history [--person|--site|--kind]`.\n- A test is a real send through the channel and logged with kind `caducus.test`, sent only to the caller's own destination.\n- A person sees their own history. Admins see their site's, addresses masked unless they are the owner or admin of that Account, as in the Papyrus newsletter panel.\n\n**Acceptance.**\nBehave features; live test via the mailbox simulator.\n\n**Depends on:** kanbus-53a88d, kanbus-cfe4b9\n\n**Specification.**\n```gherkin\nFeature: Test and history\n  Scenario: Send a test\n    When I press send a test for my email channel\n    Then one test message goes only to my own address\n    And it appears in my history with its result\n\n  Scenario: An admin reads history\n    Given an admin of a site\n    When they read the site's delivery history\n    Then they see kind, channel, result and time for each delivery\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-52b7c299-5df6-4da7-ace7-9fc00473ac77",
+  "labels": [
+    "m2"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-53a88d63-fbc6-4723-b721-2c57987ab75f",
+      "type": "blocked-by"
+    },
+    {
+      "target": "kanbus-cfe4b911-1716-4f8d-b7da-5811e880b1c7",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [
+    {
+      "id": "e2c6c298-bea5-49a4-8d65-16a1f8c9f8e6",
+      "author": "home",
+      "text": "Papyrus side: PPY-17cf09",
+      "created_at": "2026-11-04T13:15:36.785684Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-11-04T13:14:29.333092Z",
+  "updated_at": "2026-11-04T13:15:36.785879Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

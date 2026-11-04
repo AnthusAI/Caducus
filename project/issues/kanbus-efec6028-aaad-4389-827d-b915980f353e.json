@@ -4,15 +4,23 @@
   "description": "Ryan, 2026-11-04: the vision for the newsletter is that it starts, by default, as a weekly digest of a site's new-story notifications. This is the last milestone in the initiative, after everything else has shipped. No digests are in the first version. Recorded here so the earlier milestones keep it possible: the new-story notification events, the shared brand definition and one subscriber record are what the digest will build on.",
   "type": "epic",
   "status": "open",
-  "priority": 3,
+  "priority": 4,
   "assignee": null,
   "creator": null,
   "parent": "kanbus-90737cee-7479-4411-bb09-5f5ca4b08818",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "75cf7785-63db-4d87-884e-4859dd99db0a",
+      "author": "home",
+      "text": "Left as is: last milestone, nothing filed yet. Keep possible: new-story events, the brand, one subscriber record.",
+      "created_at": "2026-11-04T13:15:37.452602Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-11-04T12:59:54.326074Z",
-  "updated_at": "2026-11-04T12:59:54.326091Z",
+  "updated_at": "2026-11-04T13:15:37.452789Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

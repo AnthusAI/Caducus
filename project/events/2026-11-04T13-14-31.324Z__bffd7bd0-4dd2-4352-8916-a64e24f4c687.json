@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "bffd7bd0-4dd2-4352-8916-a64e24f4c687",
+  "issue_id": "kanbus-91d45075-ac60-448b-9216-66d672208a59",
+  "event_type": "field_updated",
+  "occurred_at": "2026-11-04T13:14:31.324Z",
+  "actor_id": "home",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "**Milestone:** M1, first slice\n\n**Goal.** Addresses never go in Git, so they live in SSM and only Ryan can confirm them.\n\n**Build.**\n1. Give the operator address and the last-resort address (may be the same) for the SSM parameters `/caducus/operators` and `/caducus/last-resort-address`. T_SKEL creates them empty; a script in the repo writes them from Ryan's shell.\n2. Click the SES verification mail for the operator address. While the account is in the SES sandbox it can only send to verified addresses, which is enough for the first slice.\n3. Click the SNS subscription confirmation for the last-resort topic once S_LAST deploys.\n\n**Acceptance.**\n`aws sesv2 get-email-identity` shows the address verified; the SNS subscription is confirmed.\n\n**Depends on:** kanbus-d0987c",
+        "to": "**Milestone:** M1, first slice\n\n**Goal.** Addresses never go in Git, so they live in SSM and only Ryan can confirm them.\n\n**Build.**\n1. Give the operator address and the last-resort address (may be the same) for the SSM parameters `/caducus/operators` and `/caducus/last-resort-address`. kanbus-9cc7ec creates them empty; a script in the repo writes them from Ryan's shell.\n2. Click the SES verification mail for the operator address. While the account is in the SES sandbox it can only send to verified addresses, which is enough for the first slice.\n3. Click the SNS subscription confirmation for the last-resort topic once kanbus-a402b9 deploys.\n\n**Acceptance.**\n`aws sesv2 get-email-identity` shows the address verified; the SNS subscription is confirmed.\n\n**Depends on:** kanbus-d0987c"
+      }
+    }
+  }
+}

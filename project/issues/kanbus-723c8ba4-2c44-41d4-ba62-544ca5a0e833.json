@@ -1,0 +1,27 @@
+{
+  "id": "kanbus-723c8ba4-2c44-41d4-ba62-544ca5a0e833",
+  "title": "Adopt in Cyclotron",
+  "description": "**Milestone:** Later, coarse\n\n**Goal.** Brand, app events (for example a retrain finished, or a decision queue backed up). Cyclotron's session owns the merge and takes approval from Ryan directly. Its repo has no SNS topic by source search.\n\n**Acceptance.**\nSpec'd when started.\n\n**Depends on:** kanbus-0c3a43",
+  "type": "task",
+  "status": "open",
+  "priority": 3,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-dd394f79-6339-4bca-9a4c-259c93afaffe",
+  "labels": [
+    "later"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-0c3a43e6-c96e-4339-92b8-ea087208c1a7",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-11-04T13:14:29.598825Z",
+  "updated_at": "2026-11-04T13:14:32.515333Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

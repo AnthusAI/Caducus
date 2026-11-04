@@ -1,0 +1,31 @@
+{
+  "id": "kanbus-2c455a93-04db-4aa0-b3ea-e99231923e49",
+  "title": "Slack: channel posts, rate limits, escaping and reader DMs",
+  "description": "**Milestone:** Later, coarse\n\n**Goal.** Coarse until M3 ships. Delivery through the `Channel` interface.\n\n**Build.**\nFIFO SQS with message group per channel, because Slack allows about one message per second per channel with short bursts. On 429 wait for `Retry-After`; other workspaces and methods are unaffected. Escape `&`, `<`, `>` in every title and reader text before building mrkdwn, so `<!channel>`, `<!here>` and `<@U...>` cannot be formed from a headline; use `plain_text` where blocks allow, `link_names` off. Test with hostile headlines. Reader DMs: pass the user id as `channel`; Slack answers `channel_not_found` if the app cannot reach them, which in practice means the reader's workspace must have the app installed, so the page must say so. Requires Google sign-in (settled), which needs the site registered as public-reader in Prospectus: today Shipped and Machines on Machines.\n\n**Acceptance.**\nSpec'd when started: a headline `<!channel> hi` shows literally and pings nobody.\n\n**Depends on:** kanbus-ae4094, kanbus-726078",
+  "type": "task",
+  "status": "open",
+  "priority": 3,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-05bb3908-bd7e-461e-ad69-9089f5daa972",
+  "labels": [
+    "later"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-ae40949d-4352-434d-b81d-e340b1e61c3a",
+      "type": "blocked-by"
+    },
+    {
+      "target": "kanbus-726078b1-a4bc-4570-a2e3-3b79e68ab0bb",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-11-04T13:14:29.526441Z",
+  "updated_at": "2026-11-04T13:14:32.342106Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

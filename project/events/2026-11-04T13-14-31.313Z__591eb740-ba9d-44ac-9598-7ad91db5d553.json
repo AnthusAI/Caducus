@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "591eb740-ba9d-44ac-9598-7ad91db5d553",
+  "issue_id": "kanbus-d0987c86-c1a5-408a-9dc4-4b024e1d5aa3",
+  "event_type": "field_updated",
+  "occurred_at": "2026-11-04T13:14:31.313Z",
+  "actor_id": "home",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "**Milestone:** M1, first slice\n\n**Goal.** Only Ryan can create an AWS account. Plan: docs/notifications-plan.md.\n\n**Build.**\n1. In AWS Organizations (management account) create an account named `caducus-production`, using a mailbox only Ryan controls.\n2. In IAM Identity Center assign the AdministratorAccess permission set to it, and add a local profile `caducus-production` (region us-east-1).\n3. For the alarm forwarder (T_FWD): enable trusted access for CloudFormation StackSets in AWS Organizations and register `caducus-production` as a delegated administrator for StackSets.\n4. Say the profile name in the session. The id goes in the GitHub repository variable `CADUCUS_AWS_ACCOUNT`, never in Git.\n\n**Acceptance.**\n`AWS_PROFILE=caducus-production aws sts get-caller-identity` works; `aws sesv2 get-account` answers (it will show the sandbox).",
+        "to": "**Milestone:** M1, first slice\n\n**Goal.** Only Ryan can create an AWS account. Plan: docs/notifications-plan.md.\n\n**Build.**\n1. In AWS Organizations (management account) create an account named `caducus-production`, using a mailbox only Ryan controls.\n2. In IAM Identity Center assign the AdministratorAccess permission set to it, and add a local profile `caducus-production` (region us-east-1).\n3. For the alarm forwarder (kanbus-be0e9d): enable trusted access for CloudFormation StackSets in AWS Organizations and register `caducus-production` as a delegated administrator for StackSets.\n4. Say the profile name in the session. The id goes in the GitHub repository variable `CADUCUS_AWS_ACCOUNT`, never in Git.\n\n**Acceptance.**\n`AWS_PROFILE=caducus-production aws sts get-caller-identity` works; `aws sesv2 get-account` answers (it will show the sandbox)."
+      }
+    }
+  }
+}
