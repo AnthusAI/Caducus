@@ -17,10 +17,17 @@
       "text": "Exactly two last-resort alerts stay: kanbus-a402b9. SES events move to EventBridge, which can carry them (SES publishes to the default bus only). Inventory: kanbus-78f229. Papyrus part: PPY-f66e91, PPY-819117.",
       "created_at": "2026-11-04T13:15:37.356460Z",
       "comment_type": "default"
+    },
+    {
+      "id": "c99e3a2f-1e24-46d5-92f3-81f87fe6eced",
+      "author": "home",
+      "text": "Reworked 2026-11-04: two last-resort alerts per AWS account that sends mail; here PPY-dd8c18 reuses the confirmed `papyrus-monitoring-alarms` subscription. The newsletter pause stays on its SNS action until PPY-819117 moves it.",
+      "created_at": "2026-11-04T17:10:49.486119Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-11-04T12:59:54.285298Z",
-  "updated_at": "2026-11-04T13:15:37.356646Z",
+  "updated_at": "2026-11-04T17:10:49.486315Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

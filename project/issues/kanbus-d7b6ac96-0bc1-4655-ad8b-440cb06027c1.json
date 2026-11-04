@@ -1,7 +1,7 @@
 {
   "id": "kanbus-d7b6ac96-0bc1-4655-ad8b-440cb06027c1",
   "title": "Connect the log radar as a source of incidents",
-  "description": "**Milestone:** Later, coarse\n\n**Goal.** The radar's hot, new blips become events of kind `radar.blip` in the same format, so the radar feeds the same routing. After CloudWatch and app events, per direction. See initiative kanbus-6f9fc4.\n\n**Acceptance.**\nSpec'd when started.\n\n**Depends on:** kanbus-64fc60",
+  "description": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** Later, coarse\n\n**Goal.** The radar's hot, new blips become events of kind `radar.blip` in the same format, in whichever host runs the radar. After CloudWatch and app events, per direction. See initiative kanbus-6f9fc4.\n\n**Acceptance.**\nSpec'd when started.",
   "type": "task",
   "status": "open",
   "priority": 3,
@@ -11,15 +11,10 @@
   "labels": [
     "later"
   ],
-  "dependencies": [
-    {
-      "target": "kanbus-64fc608f-5a8a-481b-bdad-f0be7aada31b",
-      "type": "blocked-by"
-    }
-  ],
+  "dependencies": [],
   "comments": [],
   "created_at": "2026-11-04T13:14:29.659833Z",
-  "updated_at": "2026-11-04T13:14:32.652488Z",
+  "updated_at": "2026-11-04T17:10:47.700791Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

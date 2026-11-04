@@ -6,7 +6,7 @@ import re
 from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional, Pattern
 
-from .files import load_mapping
+from .files import find_config, load_mapping
 
 DEFAULT_HOLD_DOWN_SECONDS = 300
 
@@ -68,3 +68,12 @@ def catalog_from_mapping(data: Mapping[str, Any]) -> Catalog:
 
 def load_catalog(path: str) -> Catalog:
     return catalog_from_mapping(load_mapping(path))
+
+
+def load_host_catalog(directory: str = "") -> Catalog:
+    """The host's `alarm-catalog.json` (or `.yaml`) in `directory` or `CADUCUS_CONFIG_DIR`.
+
+    With none, every alarm is labelled "No triage notes yet" and still reaches the operator.
+    """
+    path = find_config("alarm-catalog.yaml", directory)
+    return load_catalog(path) if path else Catalog([], DEFAULT_HOLD_DOWN_SECONDS)

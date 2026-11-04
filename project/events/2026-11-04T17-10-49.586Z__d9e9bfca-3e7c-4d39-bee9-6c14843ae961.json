@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "event_id": "d9e9bfca-3e7c-4d39-bee9-6c14843ae961",
+  "issue_id": "kanbus-454b52c2-9bb8-483d-aa06-b687a33f456c",
+  "event_type": "comment_added",
+  "occurred_at": "2026-11-04T17:10:49.586Z",
+  "actor_id": "home",
+  "payload": {
+    "comment_id": "8c95c763-a63d-4aee-ac1d-4e8bb1d0827e",
+    "comment_author": "home"
+  }
+}

@@ -20,7 +20,7 @@ from caducus.notify.fakes import FakeClock
 from caducus.notify.logs import contains_address, emit
 from caducus.notify.store import MemoryStore
 
-ROOT = os.path.join(os.path.dirname(__file__), "..", "..")
+SCHEMAS = os.path.join(os.path.dirname(__file__), "..", "..", "src", "caducus", "notify", "schemas")
 
 
 def expected(current, new):
@@ -69,7 +69,7 @@ def create(log, **overrides):
 
 def test_row_matches_the_published_schema():
     jsonschema = pytest.importorskip("jsonschema")
-    with open(os.path.join(ROOT, "schemas", "delivery-log.v1.json")) as handle:
+    with open(os.path.join(SCHEMAS, "delivery-log.v1.json")) as handle:
         schema = json.load(handle)
     store, log = make_log()
     row = create(log, reason="x", group_id="g", incident_key="i")

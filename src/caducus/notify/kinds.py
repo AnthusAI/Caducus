@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Optional, Tuple
 
-from .files import load_mapping
+from .files import PACKAGE_DIR, find_config, load_mapping
 
 CLASSES = ("operator", "admin", "account", "public")
 ACK_MODES = ("none", "requested")
@@ -79,6 +80,17 @@ def registry_from_mapping(data: Mapping[str, Any]) -> KindRegistry:
     return KindRegistry(kinds)
 
 
-def load_registry(path: str) -> KindRegistry:
-    """Load the registry from `config/notification-kinds.yaml` (or its JSON build)."""
-    return registry_from_mapping(load_mapping(path))
+BASE_KINDS = os.path.join(PACKAGE_DIR, "data", "notification-kinds.json")
+
+
+def load_registry(directory: str = "") -> KindRegistry:
+    """The package's base kinds, plus any the host adds.
+
+    A host adds or overrides kinds with `notification-kinds.json` (or `.yaml`) in
+    `directory`, which defaults to `CADUCUS_CONFIG_DIR`.
+    """
+    data = load_mapping(BASE_KINDS)
+    extra = find_config("notification-kinds.yaml", directory)
+    if extra:
+        data = {"kinds": {**data["kinds"], **(load_mapping(extra).get("kinds") or {})}}
+    return registry_from_mapping(data)

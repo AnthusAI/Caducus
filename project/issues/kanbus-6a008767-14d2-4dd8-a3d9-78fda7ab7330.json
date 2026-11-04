@@ -17,10 +17,17 @@
       "text": "Docs land with each milestone. Licence: kanbus-e364c7.",
       "created_at": "2026-11-04T13:15:37.477671Z",
       "comment_type": "default"
+    },
+    {
+      "id": "c5afb393-bfde-48ac-a087-81b6b9d89777",
+      "author": "home",
+      "text": "Reworked 2026-11-04: operator runbook goes in Papyrus (PPY-e82423).",
+      "created_at": "2026-11-04T17:10:49.601090Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-11-04T12:59:54.305753Z",
-  "updated_at": "2026-11-04T13:15:37.477852Z",
+  "updated_at": "2026-11-04T17:10:49.601292Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

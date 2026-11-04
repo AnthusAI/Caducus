@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "375ac438-72d7-428d-8797-acdaad2b9906",
+  "issue_id": "kanbus-a6582887-cf6e-471e-8147-31d4f14ed6e3",
+  "event_type": "field_updated",
+  "occurred_at": "2026-11-04T17:10:47.733Z",
+  "actor_id": "home",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "**Milestone:** M3, public email and new stories\n\n**Goal.** Slack's Marketplace guide requires a clear privacy policy: what is collected, how it is used, how long it is kept, how to access or delete it, and a contact method. Discord's portal has fields for both. Draft for Ryan's review; Ryan decides if a lawyer reads it. Write what the system really does: no tracking, retention from the plan, deletion per kanbus-98e489. Host per the plan's decision (recommended anth.us, through the newsroom as an ordinary page, not Git; the Anth.us articles rule applies).\n\n**Acceptance.**\nPublic URLs exist, approved by Ryan. No claims about features not yet shipped.\n\n**Depends on:** kanbus-98e489",
+        "to": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** M3, public email and new stories\n\n**Goal.** Slack's Marketplace guide requires a clear privacy policy: what is collected, how it is used, how long it is kept, how to access or delete it, and a contact method. Discord's portal has fields for both. Draft for Ryan's review; Ryan decides if a lawyer reads it. Write what the system really does: no tracking, retention from the plan, deletion per kanbus-98e489. Host per the plan's decision (recommended anth.us, through the newsroom as an ordinary page, not Git; the Anth.us articles rule applies).\n\n**Acceptance.**\nPublic URLs exist, approved by Ryan. No claims about features not yet shipped.\n\n**Depends on:** kanbus-98e489"
+      }
+    }
+  }
+}

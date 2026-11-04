@@ -9,7 +9,7 @@ import pytest
 from caducus.notify.events import EventInvalid, parse_event
 from caducus.notify.kinds import load_registry, registry_from_mapping
 
-ROOT = os.path.join(os.path.dirname(__file__), "..", "..")
+SCHEMAS = os.path.join(os.path.dirname(__file__), "..", "..", "src", "caducus", "notify", "schemas")
 
 VALID = {
     "schema": 1,
@@ -84,7 +84,7 @@ def test_parse_event_rejects_non_objects():
 @pytest.mark.parametrize("detail", CASES)
 def test_parser_and_json_schema_agree(detail):
     jsonschema = pytest.importorskip("jsonschema")
-    with open(os.path.join(ROOT, "schemas", "notification-event.v1.json")) as handle:
+    with open(os.path.join(SCHEMAS, "notification-event.v1.json")) as handle:
         schema = json.load(handle)
     validator = jsonschema.Draft202012Validator(
         schema, format_checker=jsonschema.FormatChecker()
@@ -104,7 +104,7 @@ def test_parser_and_json_schema_agree(detail):
 
 
 def test_registry_loads_the_shipped_kinds():
-    registry = load_registry(os.path.join(ROOT, "config", "notification-kinds.yaml"))
+    registry = load_registry()
     kind = registry.get("cloudwatch.alarm")
     assert kind.klass == "operator" and kind.channels == ("email",)
     assert kind.grouping.by == ("product", "site")

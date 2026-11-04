@@ -229,27 +229,22 @@ def test_suppressed_rows_say_why():
 def test_every_catalog_entry_has_all_four_fields():
     world = World()
     entries = world.catalog._entries
-    assert len(entries) >= 9
+    assert len(entries) == 4
     for entry in entries:
         assert entry.what.strip() and entry.impact.strip() and entry.next_step.strip()
         assert entry.product == "papyrus"
 
 
 SEEDED = [
-    "papyrus-monitoring-collector-errors",
-    "papyrus-monitoring-search-provider-failing",
     "papyrus-monitoring-router-errors",
-    "papyrus-monitoring-router-dead-letters",
-    "papyrus-monitoring-decisions-stopped",
-    "ScheduledJobStack-FailureAlarm1A2B3C4D",
-    "ScheduledJobStack-MissedWeekAlarmFFEE0011",
+    "papyrus-monitoring-search-provider-failing",
     "papyrus-newsletter-shipped-bounce-rate",
     "papyrus-newsletter-pilobolus-complaint-rate",
 ]
 
 
 @pytest.mark.parametrize("name", SEEDED)
-def test_each_seeded_alarm_has_all_four_fields_in_its_message(name):
+def test_each_fixture_alarm_has_all_four_fields_in_its_message(name):
     world = World()
     world.alarm(name)
     world.send_all_queued()

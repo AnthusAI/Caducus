@@ -3,7 +3,7 @@
   "title": "Thin clients: Python and TypeScript",
   "description": "**Milestone:** Later, coarse\n\n**Goal.** Apps need only `PutEvents` with the schema. Add the smallest helper per language: `caducus.notify.client` first (Papyrus), a small npm package when Chatticus adopts. No shared UI package until a second app needs it.\n\n**Acceptance.**\nSpec'd when started.\n\n**Depends on:** kanbus-ff4727",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 3,
   "assignee": null,
   "creator": null,
@@ -17,10 +17,18 @@
       "type": "blocked-by"
     }
   ],
-  "comments": [],
+  "comments": [
+    {
+      "id": "aa249d5a-cc96-4372-a99e-ce919455b377",
+      "author": "home",
+      "text": "No longer applies: the package is the client, and there is no event bus or API to call.",
+      "created_at": "2026-11-04T17:10:49.195539Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-11-04T13:14:29.574207Z",
-  "updated_at": "2026-11-04T13:14:32.455951Z",
-  "closed_at": null,
+  "updated_at": "2026-11-04T17:10:49.202264Z",
+  "closed_at": "2026-11-04T17:10:49.202192Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}

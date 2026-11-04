@@ -3,14 +3,13 @@
   "title": "Ryan: request SES production access for the new account, then ramp",
   "description": "**Milestone:** M2, operators finished\n\n**Goal.** Public mail cannot start before this. The request carries a legal acknowledgement, so it is Ryan's. AWS's first reply is within 96 hours by its documentation; submit it during M1 so it does not hold M3.\n\n**Build.**\n1. Run `aws sesv2 put-account-details --production-access-enabled --mail-type MARKETING --website-url https://p.apyr.us --additional-contact-email-addresses <Ryan's choice> --contact-language EN` in `caducus-production`, or use the console. MARKETING because AWS defines one-to-many mail that way and new-story mail will be the majority. If asked about list mail, say truthfully: double opt-in, one-click unsubscribe, bounce and complaint suppression, no open or click tracking.\n2. Sandbox status is per Region: us-east-1 only for now.\n\nRamp (agents do this after approval): operators only, then Machines on Machines subscribers, then a batch of sites. Pace with `MaxSendRate`, read live from `sesv2 get_account` as `src/papyrus_content/newsletter/worker.py` does; no fixed daily caps of our own. Watch Reputation.BounceRate and Reputation.ComplaintRate between steps.\n\n**Acceptance.**\n`aws sesv2 get-account` shows ProductionAccessEnabled true.\n\n**Depends on:** kanbus-d0987c",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": "kanbus-28219b64-56ee-423d-bbee-480563eedef3",
   "labels": [
-    "m2",
-    "ryan-step"
+    "m2"
   ],
   "dependencies": [
     {
@@ -18,10 +17,18 @@
       "type": "blocked-by"
     }
   ],
-  "comments": [],
+  "comments": [
+    {
+      "id": "809ffdb6-00fc-49f3-a1b9-f0e2e1b5fe01",
+      "author": "home",
+      "text": "Not needed. papyrus-production already has SES production access (HEALTHY, 14 a second, 50,000 a day). Ramp notes moved to PPY-c522bf. Other accounts' needs are in their adoption tasks.",
+      "created_at": "2026-11-04T17:10:48.981873Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-11-04T13:14:29.157171Z",
-  "updated_at": "2026-11-04T13:14:31.361093Z",
-  "closed_at": null,
+  "updated_at": "2026-11-04T17:12:13.395948Z",
+  "closed_at": "2026-11-04T17:10:48.989161Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}

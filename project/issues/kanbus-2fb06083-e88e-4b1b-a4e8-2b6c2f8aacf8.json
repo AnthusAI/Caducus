@@ -3,7 +3,7 @@
   "title": "Runbook: operating the notification service",
   "description": "**Milestone:** M1, first slice\n\n**Goal.** `docs/notifications-operations.md`: deploying, adding an AWS account, adding a catalog entry, redrive, last-resort meaning, what to do when the dead-man fires. Grows with each milestone.\n\n**Acceptance.**\nA person new to it can add a catalog entry from the page alone.\n\n**Depends on:** kanbus-6275db",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 0,
   "assignee": null,
   "creator": null,
@@ -17,10 +17,18 @@
       "type": "blocked-by"
     }
   ],
-  "comments": [],
+  "comments": [
+    {
+      "id": "55828129-035f-4fc1-8f88-193551a84b21",
+      "author": "home",
+      "text": "Moved: the operator runbook is `docs/operator-alerts.md` in Papyrus, under PPY-e82423. Package usage goes in the Caducus README under kanbus-e364c7.",
+      "created_at": "2026-11-04T17:10:49.217213Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-11-04T13:14:29.684379Z",
-  "updated_at": "2026-11-04T13:14:32.682274Z",
-  "closed_at": null,
+  "updated_at": "2026-11-04T17:10:49.223579Z",
+  "closed_at": "2026-11-04T17:10:49.223549Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}

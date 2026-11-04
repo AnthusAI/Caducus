@@ -1,3 +1,0 @@
-aws-cdk-lib>=2.140,<3
-constructs>=10,<11
-PyYAML>=6.0

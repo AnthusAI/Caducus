@@ -1,10 +1,12 @@
-"""Read a config mapping from JSON or YAML."""
+"""Read config mappings: JSON with the standard library, YAML only when PyYAML is installed."""
 
 from __future__ import annotations
 
 import json
 import os
-from typing import Any, Dict
+from typing import Any, Dict, Optional
+
+PACKAGE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def load_mapping(path: str) -> Dict[str, Any]:
@@ -14,7 +16,7 @@ def load_mapping(path: str) -> Dict[str, Any]:
     if path.endswith(".json"):
         data = json.loads(text)
     else:
-        import yaml
+        import yaml  # only needed for YAML files; the notify extra does not install it
 
         data = yaml.safe_load(text)
     if not isinstance(data, dict):
@@ -22,9 +24,17 @@ def load_mapping(path: str) -> Dict[str, Any]:
     return data
 
 
-def config_path(name: str, directory: str = "") -> str:
-    """Resolve a config file name, preferring JSON when the directory has it."""
-    directory = directory or os.environ.get("CADUCUS_CONFIG_DIR", "config")
+def find_config(name: str, directory: str = "") -> Optional[str]:
+    """Find a host config file by name in `directory` (default `CADUCUS_CONFIG_DIR`).
+
+    The JSON form is preferred when both exist. Returns None when there is no such file.
+    """
+    directory = directory or os.environ.get("CADUCUS_CONFIG_DIR", "")
+    if not directory:
+        return None
     stem = name.rsplit(".", 1)[0]
-    as_json = os.path.join(directory, stem + ".json")
-    return as_json if os.path.exists(as_json) else os.path.join(directory, name)
+    for candidate in (stem + ".json", name):
+        path = os.path.join(directory, candidate)
+        if os.path.exists(path):
+            return path
+    return None

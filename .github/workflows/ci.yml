@@ -23,7 +23,7 @@ jobs:
           python-version: "3.12"
       - name: Install dependencies
         run: |
-          pip install -e ".[dev,reinforcement-memory,notify-dev]"
+          pip install -e ".[dev,radar,reinforcement-memory,notify-dev]"
       - name: Workaround virtuus VERSION bug
         run: |
           SITE_PKG=$(python -c "import site; print(site.getsitepackages()[0])")

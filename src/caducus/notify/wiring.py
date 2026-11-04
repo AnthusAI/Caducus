@@ -8,11 +8,10 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Mapping, Optional
 
-from .catalog import Catalog, load_catalog
+from .catalog import Catalog, load_host_catalog
 from .channels.email import EmailChannel, Pacer, SesMailer
 from .delivery_log import DeliveryLog
 from .directory import SsmDirectory
-from .files import config_path
 from .grouping import Dispatcher
 from .incidents import IncidentTracker
 from .kinds import load_registry
@@ -53,8 +52,9 @@ def build_runtime(env: Optional[Mapping[str, str]] = None) -> Runtime:
     env = env if env is not None else os.environ
     store = DynamoStore(boto3.resource("dynamodb").Table(env["TABLE_NAME"]))
     ssm = boto3.client("ssm")
-    kinds = load_registry(config_path("notification-kinds.yaml", env.get("CADUCUS_CONFIG_DIR", "")))
-    catalog = load_catalog(config_path("alarm-catalog.yaml", env.get("CADUCUS_CONFIG_DIR", "")))
+    config_dir = env.get("CADUCUS_CONFIG_DIR", "")
+    kinds = load_registry(config_dir)
+    catalog = load_host_catalog(config_dir)
     directory = SsmDirectory(ssm, env["OPERATORS_PARAMETER"], env["RECIPIENT_KEY_PARAMETER"])
     log = DeliveryLog(store, utcnow, int(env.get("RETENTION_DAYS", "90")))
     queues = SqsQueues(boto3.client("sqs"), {"email": env["EMAIL_QUEUE_URL"]})

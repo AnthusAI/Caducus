@@ -13,7 +13,7 @@ SOURCE_PREFIX = "anthus."
 
 
 class EventInvalid(ValueError):
-    """The event does not match schemas/notification-event.v1.json."""
+    """The event does not match schemas/notification-event.v1.json (shipped in the package)."""
 
 
 @dataclass(frozen=True)

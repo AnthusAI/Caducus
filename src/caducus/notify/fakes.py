@@ -58,8 +58,8 @@ class FakeMailer(Mailer):
         return self.rate
 
 
-CONFIG = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "config"
+FIXTURES = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "tests", "notify", "fixtures"
 )
 OPERATOR_ADDRESS = "ops-{}@example.com"
 PORTAL = "https://portal.example.awsapps.com/start"
@@ -77,8 +77,8 @@ class World:
         self.sleeps: List[float] = []
         self.addresses = [OPERATOR_ADDRESS.format(n + 1) for n in range(operators)]
         self.directory = StaticDirectory(self.addresses, "test-key-secret")
-        self.kinds = load_registry(os.path.join(CONFIG, "notification-kinds.yaml"))
-        catalog_data = load_mapping(os.path.join(CONFIG, "alarm-catalog.yaml"))
+        self.kinds = load_registry()
+        catalog_data = load_mapping(os.path.join(FIXTURES, "alarm-catalog.yaml"))
         # A made-up family of alarms so a storm can hit one site with many alarms.
         catalog_data["alarms"].append(
             {

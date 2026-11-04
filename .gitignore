@@ -6,6 +6,4 @@ __pycache__/
 build/
 dist/
 
-infra/notifications/.build/
-infra/notifications/cdk.out/
 .venv/

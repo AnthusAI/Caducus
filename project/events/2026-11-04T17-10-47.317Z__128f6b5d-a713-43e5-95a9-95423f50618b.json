@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "128f6b5d-a713-43e5-95a9-95423f50618b",
+  "issue_id": "kanbus-602759c3-da3e-44e1-9394-901c08b1dc85",
+  "event_type": "field_updated",
+  "occurred_at": "2026-11-04T17:10:47.317Z",
+  "actor_id": "home",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "**Milestone:** M3, public email and new stories\n\n**Goal.** As a reader, mail from a site looks like that site. As a developer, there is one definition feeding email, Slack, Discord and public mail.\n\n**Build.**\n- `schemas/brand.v1.json`: id (`anthus`, `papyrus-<site>`, `chatticus`, ...), name, origin, base path, icon URL, sending domain, from name, and the email theme fields exactly as in Papyrus `docs/newsletter.md`, Email theme fields, validated as in `email_render/theme.py`. Slack and Discord read name, icon, accent.\n- Row `BRAND#<id>`. A site writes its brand at deploy by event (PPY-44721a), so one change to `papyrus.config.ts` means one deploy, and no second repo. Other products use the same event.\n- A missing brand falls back to the neutral Anthus brand and logs it; it never blocks operator alerts.\n\n**Acceptance.**\nSample renders for two brands; Ryan's screenshot review recorded. Marks and words carry meaning, not colour alone.\n\n**Depends on:** kanbus-67de8f\n\n**Specification.**\n```gherkin\nFeature: Brand\n  Scenario: A site's notification carries its brand\n    Given a site registered its brand\n    When a new-story email renders for that site\n    Then it uses that site's name, theme and sending domain\n\n  Scenario: A bad colour value is refused\n    When a brand arrives with a value containing \"url(\"\n    Then it is refused, with the reason, and the previous brand stays\n```",
+        "to": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** M3, public email and new stories\n\n**Goal.** As a reader, mail from a site looks like that site. Nothing to register: a site's brand is in its deployment.\n\n**Build.**\n- Papyrus: the plugin's `theme` block in `papyrus.config.ts`, validated at synth exactly as `amplify/plugins/newsletter/config.ts` does, reaches the function as `THEME_JSON` and name, origin and base path as environment, as the newsletter's does. A site sets one `const` theme for both plugins. One config change, one deploy.\n- Package: a small `Brand` type (name, origin, icon, theme mapping) with a neutral default, which operator mail uses. Slack and Discord read name, icon, accent.\n- No brand rows, schema registry or events.\n\n**Acceptance.**\nSample renders for two sites; Ryan's screenshot review recorded. Marks and words carry meaning, not colour alone.\n\n**Related:** PPY-44721a, PPY-c522bf\n\n**Specification.**\n```gherkin\nFeature: Brand\n  Scenario: A site's notification carries its brand\n    Given a site with a theme in its config\n    When a new-story email renders for that site\n    Then it uses that site's name, theme and sending domain\n\n  Scenario: Operator mail has no site\n    When an operator message renders\n    Then it uses the neutral brand and still reads correctly as plain text\n```"
+      }
+    }
+  }
+}

@@ -1,9 +1,9 @@
 {
   "id": "kanbus-9cc7ecad-1d48-4620-aa10-df051cf0a47f",
-  "title": "Service skeleton: CDK app, DynamoDB table and OIDC deploy on merge to main",
-  "description": "**Milestone:** M1, first slice\n\n**Goal.** An empty, deployed service, so every later story ships by merging. Public repo: CI in GitHub Actions, CD by OIDC, no stored keys.\n\n**Build.**\n- `src/caducus/notify/` (new package, standard library plus boto3, imports nothing from the radar; `from __future__ import annotations` because the package still supports Python 3.9, Lambdas run 3.12 arm64).\n- `infra/notifications/` CDK in Python: table `caducus-notifications` (keys `pk`,`sk`, TTL `expiresAt`, on demand, customer-managed KMS key, point-in-time recovery off so erasure is real, as in `amplify/plugins/newsletter/papyrus.plugin.ts`), event bus `caducus-notifications`, empty SSM parameters from kanbus-91d450, and the create-only secret construct ported from Papyrus `amplify/plugins/newsletter/secure-string-parameter.ts` for the link-signing key `/caducus/link-key`.\n- `infra/notifications/bootstrap-oidc.yaml`: the GitHub OIDC role, restricted to `repo:AnthusAI/Caducus:ref:refs/heads/main`; deployed once from Ryan's session.\n- `.github/workflows/deploy-notifications.yml`: after the tests pass on main, `cdk deploy` with the role. Add a push trigger on develop to `ci.yml`.\n- Guard: the deploy stops unless the caller account equals the repository variable `CADUCUS_AWS_ACCOUNT`.\n\n**Acceptance.**\n- A merge to main deploys with no stored key; a run with the wrong account stops before any change.\n- `pytest` and `behave` stay green; no AWS id or address in Git (LeftBlock passes).\n\n**Depends on:** kanbus-d0987c",
+  "title": "Publish the notify package to PyPI: no infrastructure in this repo",
+  "description": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** M1, first slice\n\n**Goal.** Caducus is a dependency, so 'deployed' here means published. Each host pins an exact version. This repo holds no AWS account, CDK or OIDC deploy.\n\n**Build.**\n- Keep `src/caducus/notify/`, standard library plus boto3, lazily imported.\n- `pyproject.toml`: move `PyYAML` and `virtuus` from base dependencies to a `radar` extra, so a Lambda takes the package with no Rust wheel. `notify` extra: boto3.\n- Package data: `src/caducus/notify/schemas/*.json` and the base kinds as JSON, in the wheel. Hosts add their own kinds and alarm catalog from their own repos.\n- `release.yml`: fix the install line the same way as `ci.yml`, or nothing releases: the last run failed and PyPI still has only 0.1.0 while tags reach v0.1.4. Use trusted publishing once Ryan sets it up (PPY-d21c7f), dropping `password`.\n- Merging to main publishes; site and stack deploys stay in Papyrus.\n\n**Acceptance.**\n`pip install caducus[notify]==<new>` in a clean venv, then `from caducus.notify import handlers` works with no PyYAML or virtuus; the wheel holds schemas and base kinds.\n\n**Related:** PPY-d21c7f, PPY-e92c8e, PPY-44721a",
   "type": "task",
-  "status": "in_progress",
+  "status": "open",
   "priority": 0,
   "assignee": null,
   "creator": null,
@@ -11,30 +11,10 @@
   "labels": [
     "m1"
   ],
-  "dependencies": [
-    {
-      "target": "kanbus-d0987c86-c1a5-408a-9dc4-4b024e1d5aa3",
-      "type": "blocked-by"
-    }
-  ],
-  "comments": [
-    {
-      "id": "bd2e73bf-3456-4efd-8ba2-d2d377be7fb4",
-      "author": "home",
-      "text": "Starting M1 offline build in worktree notifications-m1 (branch feat/notifications-m1). Scope: everything not needing the AWS account. Plan: notify package (stdlib+boto3 lazily; PyYAML only for config loading), store interface with in-memory fake and a DynamoDB implementation tested with moto, CDK stack written and asserted but not deployed. Python 3.12 venv; CLI support for 3.9 untouched (notify imports use __future__ annotations).",
-      "created_at": "2026-11-04T16:12:05.253422Z",
-      "comment_type": "default"
-    },
-    {
-      "id": "618c0638-2d35-4b47-9147-0dd4081cc19b",
-      "author": "home",
-      "text": "Built, not deployed: infra/notifications (CDK Python: table with CMK, TTL, no PITR, byRecipient index; bus; ingest and email queues with DLQs; three arm64 Python 3.12 Lambdas; one-minute schedule; create-only SecureString construct for /caducus/link-key and /caducus/recipient-key), bootstrap-oidc.yaml, .github/workflows/deploy-notifications.yml with the account guard (skipped until CADUCUS_AWS_ACCOUNT is set), ci.yml now also runs on develop pushes. Synthesised and asserted in tests/test_infra_notifications.py. The cdk CLI is not installed here, so app.synth() was used. Remaining for the account: deploy bootstrap-oidc.yaml, set repo variables, SSM parameters /caducus/operators and /caducus/triage (kanbus-91d450), first deploy.",
-      "created_at": "2026-11-04T16:24:56.419176Z",
-      "comment_type": "default"
-    }
-  ],
+  "dependencies": [],
+  "comments": [],
   "created_at": "2026-11-04T13:14:29.167339Z",
-  "updated_at": "2026-11-04T16:24:56.419386Z",
+  "updated_at": "2026-11-04T17:10:47.049621Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

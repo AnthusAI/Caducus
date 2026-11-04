@@ -16,7 +16,7 @@ from typing import Any, Callable, Dict, Mapping, Optional, Sequence
 from ..delivery_log import DeliveryLog
 from ..directory import Directory
 from ..logs import emit
-from ..render.operator import render_operator_email
+from ..render.operator import RenderedEmail, render_operator_email
 from ..store import Store
 from .base import Channel, Outcome
 
@@ -33,6 +33,20 @@ THROTTLE_CODES = (
 
 class Throttled(Exception):
     """The provider asked us to slow down."""
+
+
+class Renderer:
+    """Turns a delivery's items into an email. Hosts pass their own for branded mail."""
+
+    def render(self, items: Sequence[Mapping[str, Any]]) -> RenderedEmail:
+        raise NotImplementedError
+
+
+class OperatorRenderer(Renderer):
+    """The package's plain, neutral operator template."""
+
+    def render(self, items: Sequence[Mapping[str, Any]]) -> RenderedEmail:
+        return render_operator_email(items)
 
 
 class Mailer:
@@ -128,6 +142,7 @@ class EmailChannel(Channel):
         directory: Directory,
         mailer: Mailer,
         pacer: Optional[Pacer] = None,
+        renderer: Optional[Renderer] = None,
         sleep: Callable[[float], None] = time.sleep,
         backoff: Sequence[float] = BACKOFF_SECONDS,
     ):
@@ -136,6 +151,7 @@ class EmailChannel(Channel):
         self._directory = directory
         self._mailer = mailer
         self._pacer = pacer
+        self._renderer = renderer or OperatorRenderer()
         self._sleep = sleep
         self._backoff = tuple(backoff)
 
@@ -166,7 +182,7 @@ class EmailChannel(Channel):
         )
         if not claimed:
             return Outcome("duplicate")
-        rendered = render_operator_email(content["items"])
+        rendered = self._renderer.render(content["items"])
         try:
             message_id = self._send_with_backoff(
                 to_address=recipient.address,

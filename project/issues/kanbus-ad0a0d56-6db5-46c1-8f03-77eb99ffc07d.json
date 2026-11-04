@@ -1,9 +1,9 @@
 {
   "id": "kanbus-ad0a0d56-6db5-46c1-8f03-77eb99ffc07d",
   "title": "Route an event to people and channels",
-  "description": "**Milestone:** M1, first slice\n\n**Goal.** As the service, I turn one accepted event into one queued delivery per person and channel. First version: operator kinds go to the operators in SSM; preferences arrive in kanbus-222bcf.\n\n**Build.**\n- `src/caducus/notify/routing.py`, `src/caducus/notify/handlers/router.py`, SQS `caducus-ingest` with a dead-letter queue, consumer with SQS maximum concurrency (not reserved concurrency: other accounts here have a Lambda concurrency limit of only 10, see `infra/monitoring/papyrus-monitoring.yaml` for the workaround).\n- Conditional put on `EVENT#<eventId>` / `META` for dedupe. Per-channel SQS queues; `src/caducus/notify/channels/base.py` defines `Channel.send(delivery) -> Outcome`, so Slack, Discord and a later generic webhook are added without touching routing.\n\n**Acceptance.**\nUnit and behave tests; a redelivered SQS message makes no second delivery.\n\n**Depends on:** kanbus-6eb0c5, kanbus-53a88d\n\n**Specification.**\n```gherkin\nFeature: Routing\n  Scenario: An operator event reaches each operator once\n    Given two operators are configured\n    When an operator event arrives twice\n    Then each operator has exactly one queued email delivery\n\n  Scenario: A kind with no audience is visible\n    Given no operators are configured\n    When an operator event arrives\n    Then the delivery log records \"refused\" with the reason \"no audience\"\n```",
+  "description": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** M1, first slice\n\n**Goal.** As the package, I turn one accepted event into one queued delivery per person and channel. First host: the operator piece, with operators from its SSM parameter.\n\n**Build.**\n- `routing.py`, `handlers/router.py`; queue names come from the host's environment. Host's SQS uses maximum concurrency rather than reserved concurrency only if needed.\n- Conditional put on `EVENT#<eventId>` / `META` for dedupe. `channels/base.py` defines `Channel.send(delivery) -> Outcome`.\n- Open from PR #5: if the router dies after the dedupe write and before queuing, a redelivery is dropped. Mark events as routed.\n\n**Acceptance.**\nUnit and behave tests; a redelivered SQS message makes no second delivery.\n\n**Depends on:** kanbus-6eb0c5, kanbus-53a88d\n\n**Specification.**\n```gherkin\nFeature: Routing\n  Scenario: An operator event reaches each operator once\n    Given two operators are configured\n    When an operator event arrives twice\n    Then each operator has exactly one queued email delivery\n\n  Scenario: A kind with no audience is visible\n    Given no operators are configured\n    When an operator event arrives\n    Then the delivery log records \"refused\" with the reason \"no audience\"\n```",
   "type": "story",
-  "status": "in_progress",
+  "status": "open",
   "priority": 0,
   "assignee": null,
   "creator": null,
@@ -21,17 +21,9 @@
       "type": "blocked-by"
     }
   ],
-  "comments": [
-    {
-      "id": "e78fa6bc-d73e-4018-8712-6ae0a33c4946",
-      "author": "home",
-      "text": "Built: notify/routing.py (Router), notify/directory.py (operators from SSM behind an interface), notify/queues.py, channels/base.py, handlers/router.py. Dedupe by conditional put on EVENT#id/META; delivery ids are deterministic. Known limit: if the router dies after the dedupe write but before queuing, SQS redelivery is dropped as a duplicate (documented in the PR). SQS max concurrency 2 in the CDK stack. Specs: routing.feature.",
-      "created_at": "2026-11-04T16:24:56.358271Z",
-      "comment_type": "default"
-    }
-  ],
+  "comments": [],
   "created_at": "2026-11-04T13:14:29.197635Z",
-  "updated_at": "2026-11-04T16:24:56.358461Z",
+  "updated_at": "2026-11-04T17:10:47.080048Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

@@ -1,7 +1,7 @@
 {
   "id": "kanbus-95686d19-37fd-43f5-a721-4fddeaa6f8b7",
   "title": "Report sending volume to Prospectus quota: percent only, no dollars",
-  "description": "**Milestone:** Later, coarse\n\n**Goal.** If Ryan confirms sending counts toward quota. Register with `quota: true` in Prospectus (Prospectus session told before merge). Report item kinds such as `caducus.email.sent` by Account via `POST /v1/quota/accounts/{account}/usage`, batched, retried with the same operation id. No rates in this public repo; customers see percent used. Operator, last-resort and consent mail never check quota.\n\n**Acceptance.**\nAn unknown kind's 422 is visible; no dollar figure or rate anywhere in Git.\n\n**Depends on:** kanbus-b47fad",
+  "description": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** Later, coarse\n\n**Goal.** If Ryan confirms sending counts toward quota. Report only (accepted): each host reports items such as `caducus.email.sent` by Account via `POST /v1/quota/accounts/{account}/usage`, batched, retried with the same operation id. A Papyrus site's existing registration needs `quota: true` in Prospectus, so tell that session before merge. No rates in public repos; customers see percent used. Operator, last-resort and consent mail never check quota. Package exposes a hook; Papyrus implements it.\n\n**Acceptance.**\nAn unknown kind's 422 is visible; no dollar figure or rate anywhere in Git.",
   "type": "task",
   "status": "open",
   "priority": 3,
@@ -12,15 +12,10 @@
     "later",
     "prospectus"
   ],
-  "dependencies": [
-    {
-      "target": "kanbus-b47fadeb-4314-491b-a94d-7509868aa781",
-      "type": "blocked-by"
-    }
-  ],
+  "dependencies": [],
   "comments": [],
   "created_at": "2026-11-04T13:14:29.634973Z",
-  "updated_at": "2026-11-04T13:14:32.622108Z",
+  "updated_at": "2026-11-04T17:10:47.669915Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

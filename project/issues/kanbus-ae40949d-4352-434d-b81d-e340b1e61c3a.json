@@ -1,7 +1,7 @@
 {
   "id": "kanbus-ae40949d-4352-434d-b81d-e340b1e61c3a",
   "title": "Slack: install, stored tokens, uninstall and signed inbound",
-  "description": "**Milestone:** Later, coarse\n\n**Goal.** Coarse until M3 ships. An admin connects a site to a workspace and channel.\n\n**Build.**\nOAuth install flow on the notification domain; connection row per site and workspace. Tokens encrypted with the service's KMS key in DynamoDB: per-install tokens are created at runtime, so IaC cannot generate them. Verify every inbound request (`v0:<timestamp>:<body>`, HMAC-SHA256 with the signing secret, reject beyond five minutes, constant-time compare, raw body). `app_uninstalled` and `tokens_revoked` can arrive in either order; either one marks the connection gone and the admin is told. Keep separate from the per-site inbound agent app in Papyrus `docs/slack-agent.md`; converging them is deferred. Stories with Gherkin are written when this starts.\n\n**Acceptance.**\nSpec'd when started: forged signature refused; uninstall stops sends and tells the admin.\n\n**Depends on:** kanbus-ff4727",
+  "description": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** Later, coarse\n\n**Goal.** Coarse until M3 ships. An admin connects a site to a workspace and channel, from the site's own deployment. One Slack app, many sites, nothing shared at runtime.\n\n**Build.**\nPackage: `channels/slack.py`. Papyrus: OAuth callback in the site's plugin routes; connection row in the site's table. Tokens encrypted with the site's KMS key in DynamoDB: per-install tokens are created at runtime, so IaC cannot generate them. A Slack app has one Events URL but no central service exists here, so no events: uninstall is detected at the next send (`token_revoked`, `account_inactive`), which marks the connection gone and tells the admin. Check the exact error names when building. Verify OAuth `state`. If real inbound is needed later, one signed endpoint in papyrus-monitoring routes by team id. Separate from the per-site inbound agent app in Papyrus `docs/slack-agent.md`. Stories with Gherkin are written when this starts.\n\n**Acceptance.**\nSpec'd when started: uninstall stops sends and tells the admin.\n\n**Depends on:** kanbus-ff4727\n**Related:** PPY-cc015c",
   "type": "task",
   "status": "open",
   "priority": 3,
@@ -27,7 +27,7 @@
     }
   ],
   "created_at": "2026-11-04T13:14:29.514840Z",
-  "updated_at": "2026-11-04T13:15:36.811409Z",
+  "updated_at": "2026-11-04T17:10:47.471203Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
