@@ -46,6 +46,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.ref_name }}
+          fetch-depth: 0
 
       - name: Force branch to workflow SHA
         run: git reset --hard ${{ github.sha }}
@@ -63,6 +64,9 @@ jobs:
         uses: python-semantic-release/python-semantic-release@v10.5.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          # main takes changes only through pull requests, so the release is a tag, with the version stamped into the build.
+          commit: false
+          changelog: false
           git_committer_name: github-actions
           git_committer_email: actions@users.noreply.github.com
 
