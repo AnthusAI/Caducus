@@ -10,6 +10,7 @@ from .files import PACKAGE_DIR, find_config, load_mapping
 
 CLASSES = ("operator", "admin", "account", "public")
 ACK_MODES = ("none", "requested")
+AUDIENCES = ("class", "probe")
 GROUPING_FIELDS = ("product", "site")
 
 
@@ -30,6 +31,7 @@ class Kind:
     ack: str = "none"
     grouping: Optional[Grouping] = None
     lifecycle: Optional[str] = None
+    audience: str = "class"  # "probe": only the directory's probe mailbox, for heartbeats
 
 
 class KindRegistry:
@@ -52,6 +54,9 @@ def _kind(name: str, raw: Mapping[str, Any]) -> Kind:
     ack = raw.get("ack", "none")
     if ack not in ACK_MODES:
         raise ValueError("kind %s: ack must be one of %s" % (name, ", ".join(ACK_MODES)))
+    audience = raw.get("audience", "class")
+    if audience not in AUDIENCES:
+        raise ValueError("kind %s: audience must be one of %s" % (name, ", ".join(AUDIENCES)))
     channels = tuple(raw.get("channels") or ())
     if not channels:
         raise ValueError("kind %s: needs at least one channel" % name)
@@ -70,6 +75,7 @@ def _kind(name: str, raw: Mapping[str, Any]) -> Kind:
         ack=ack,
         grouping=grouping,
         lifecycle=raw.get("lifecycle"),
+        audience=audience,
     )
 
 

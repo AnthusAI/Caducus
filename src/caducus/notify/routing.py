@@ -226,6 +226,9 @@ class Router:
     # -- delivery ------------------------------------------------------------
 
     def _audience(self, kind: Kind) -> List[Recipient]:
+        if kind.audience == "probe":
+            probe = self._directory.probe()
+            return [probe] if probe else []
         if kind.klass == "operator":
             return self._directory.operators()
         return []  # admin, account and public audiences arrive with preferences

@@ -1,5 +1,14 @@
 {
   "kinds": {
+    "caducus.heartbeat": {
+      "ack": "none",
+      "audience": "probe",
+      "channels": [
+        "email"
+      ],
+      "class": "operator",
+      "defaultOn": true
+    },
     "cloudwatch.alarm": {
       "ack": "none",
       "channels": [

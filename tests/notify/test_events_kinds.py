@@ -110,7 +110,7 @@ def test_registry_loads_the_shipped_kinds():
     assert kind.grouping.by == ("product", "site")
     assert kind.lifecycle == "incident"
     assert registry.get("nope") is None
-    assert registry.names() == ("cloudwatch.alarm",)
+    assert registry.names() == ("caducus.heartbeat", "cloudwatch.alarm")
 
 
 @pytest.mark.parametrize(
