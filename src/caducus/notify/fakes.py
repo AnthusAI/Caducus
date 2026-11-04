@@ -64,6 +64,7 @@ FIXTURES = os.path.join(
 OPERATOR_ADDRESS = "ops-{}@example.com"
 PORTAL = "https://portal.example.awsapps.com/start"
 ACCOUNT_ID = "123456789012"
+PROBE_ADDRESS = "success@simulator.amazonses.com"
 
 
 class World:
@@ -76,7 +77,9 @@ class World:
         self.mailer = FakeMailer()
         self.sleeps: List[float] = []
         self.addresses = [OPERATOR_ADDRESS.format(n + 1) for n in range(operators)]
-        self.directory = StaticDirectory(self.addresses, "test-key-secret")
+        self.directory = StaticDirectory(
+            self.addresses, "test-key-secret", probe_address=PROBE_ADDRESS
+        )
         self.kinds = load_registry()
         catalog_data = load_mapping(os.path.join(FIXTURES, "alarm-catalog.yaml"))
         # A made-up family of alarms so a storm can hit one site with many alarms.
@@ -153,6 +156,21 @@ class World:
         return process_envelope(
             self.router, self.catalog, self.alarm_envelope(name, state, **kwargs)
         )
+
+    def heartbeat_envelope(self, event_id: str) -> Dict[str, Any]:
+        """What the heartbeat schedule puts on the ingest queue."""
+        return {
+            "detail-type": "Notification Requested",
+            "detail": {
+                "schema": 1,
+                "eventId": event_id,
+                "kind": "caducus.heartbeat",
+                "product": "caducus",
+                "occurredAt": "2026-11-04T12:00:00Z",
+                "severity": "info",
+                "facts": {"title": "Operator mail heartbeat"},
+            },
+        }
 
     def notification(self, event_id: str, kind: str = "cloudwatch.alarm", **facts: Any):  # type: ignore[no-untyped-def]
         facts.setdefault("title", "A title")

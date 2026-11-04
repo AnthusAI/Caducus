@@ -20,6 +20,7 @@ class TriageSettings:
     portal_url: str = ""
     role_name: str = ""
     accounts: Mapping[str, str] = field(default_factory=dict)
+    sites: Mapping[str, str] = field(default_factory=dict)  # a catalog's site id to its name
 
 
 def _enc(value: str) -> str:
@@ -88,7 +89,7 @@ def build_alarm_item(
         "state": "ALARM",
         "alarmName": name,
         "product": event.product,
-        "site": event.site or "",
+        "site": settings.sites.get(event.site or "", event.site or ""),
         "awsAccount": settings.accounts.get(account, account),
         "region": region,
         "reason": facts.get("reason", ""),

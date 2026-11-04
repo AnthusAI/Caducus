@@ -178,7 +178,8 @@ def test_the_runtime_imports_and_loads_its_config_without_pyyaml():
     code = (
         "import sys; sys.modules['yaml'] = None;"
         "import caducus.notify.handlers.router, caducus.notify.handlers.email_sender, "
-        "caducus.notify.handlers.flush, caducus.notify.wiring;"
+        "caducus.notify.handlers.flush, caducus.notify.handlers.ses_events, "
+        "caducus.notify.handlers.reconcile, caducus.notify.wiring;"
         "from caducus.notify.kinds import load_registry;"
         "from caducus.notify.catalog import load_host_catalog;"
         "assert load_registry().get('cloudwatch.alarm');"

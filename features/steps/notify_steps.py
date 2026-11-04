@@ -632,3 +632,120 @@ def step_no_tracking(context):
 def step_text_part(context):
     for mail in context.rendered:
         assert mail.text.strip()
+
+
+# -- the operator listener's own health checks ------------------------------
+
+from datetime import datetime, timezone  # noqa: E402
+
+from caducus.notify.fakes import PROBE_ADDRESS  # noqa: E402
+from caducus.notify.handlers import email_sender, reconcile, ses_events  # noqa: E402
+from caducus.notify.metrics import MemoryMetrics  # noqa: E402
+
+
+@when("a heartbeat is requested")
+def step_heartbeat(context):
+    world = context.world
+    router_handler.process_envelope(
+        world.router, world.catalog, world.heartbeat_envelope("hb-1")
+    )
+
+
+@then("exactly one delivery is queued")
+def step_one_delivery(context):
+    assert len(context.world.queued_for("email")) == 1, context.world.queues.sent
+
+
+@then("that delivery goes to the probe mailbox and not to the operator")
+def step_probe_only(context):
+    world = context.world
+    world.send_all_queued()
+    assert [c["to"] for c in world.mailer.calls] == [PROBE_ADDRESS]
+
+
+def _ses_event(kind, event_type):
+    return {
+        "source": "aws.ses",
+        "detail": {"eventType": event_type, "mail": {"tags": {"kind": [kind]}}},
+    }
+
+
+@when("SES reports a heartbeat delivered")
+def step_hb_delivered(context):
+    context.metrics = MemoryMetrics()
+    ses_events.handle_event(context.metrics, _ses_event("caducus.heartbeat", "Delivery"))
+
+
+@when("SES reports an alarm email delivered")
+def step_alarm_delivered(context):
+    context.metrics = MemoryMetrics()
+    ses_events.handle_event(context.metrics, _ses_event("cloudwatch.alarm", "Delivery"))
+
+
+@then('the metric "{name}" is counted once')
+def step_counted_once(context, name):
+    assert context.metrics.counted == [name], context.metrics.counted
+
+
+@then("no heartbeat metric is counted")
+def step_no_metric(context):
+    assert context.metrics.counted == []
+
+
+@when("a heartbeat is requested and SES refuses to send it")
+def step_hb_refused(context):
+    world = context.world
+    context.metrics = MemoryMetrics()
+    router_handler.process_envelope(
+        world.router, world.catalog, world.heartbeat_envelope("hb-2")
+    )
+    world.mailer.script = [RuntimeError("MessageRejected")]
+    body = world.queued_for("email")[0]
+    record = {"messageId": "m1", "body": json.dumps(body)}
+    email_sender.handle_batch(
+        world.store, world.email, {"Records": [record]}, context.metrics
+    )
+
+
+@then('the metric "{name}" is counted')
+def step_counted(context, name):
+    assert name in context.metrics.counted
+
+
+@given('CloudWatch says "{name}" is in ALARM')
+def step_cw_alarm(context, name):
+    context.firing = getattr(context, "firing", [])
+    context.firing.append(
+        {
+            "AlarmName": name,
+            "AlarmArn": "arn:aws:cloudwatch:us-east-1:%s:alarm:%s" % (ACCOUNT_ID, name),
+            "StateUpdatedTimestamp": datetime(2026, 11, 4, 11, 0, tzinfo=timezone.utc),
+            "StateReason": "Threshold Crossed",
+        }
+    )
+
+
+@when("the reconcile runs twice")
+def step_reconcile_twice(context):
+    world = context.world
+    for _ in range(2):
+        reconcile.reconcile(world.router, world.catalog, context.firing)
+
+
+@when('the reconcile runs ignoring the prefix "{prefix}"')
+def step_reconcile_ignoring(context, prefix):
+    world = context.world
+    reconcile.reconcile(world.router, world.catalog, context.firing, [prefix])
+
+
+@then('one email about "{name}" is queued')
+def step_one_email_about(context, name):
+    world = context.world
+    assert len(world.queued_for("email")) == 1
+    world.send_all_queued()
+    assert name in world.mailer.calls[0]["text"]
+
+
+@then("no email is queued")
+def step_no_email(context):
+    assert context.world.queued_for("email") == []
