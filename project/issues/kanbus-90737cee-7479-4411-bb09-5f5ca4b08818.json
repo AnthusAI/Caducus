@@ -31,10 +31,17 @@
       "text": "Ryan, 2026-11-04: accepted all twelve plan recommendations. (1) Operator sending domain notify.anth.us. (2) Two kinds of last-resort SNS alert, the SES one copied to every account that sends mail. (3) Machine-only SNS topics move to EventBridge unless there is no alternative. (4) Delivery log 90 days, consent until deletion, address-free suppression hash kept. (5) Reader channel posts first, small paced Discord DM trial, Slack DMs only where the app is installed, said so on the page. (6) No per-message override on Slack, site name and icon inside the message; override on Discord webhooks. (7) One SES account for public and operator mail, per-site pausing. (8) Site admins are Prospectus owners and admins of the Account holding the site. (9) Sending volume is report only, percent only, never blocking operator, last-resort or consent mail. (10) Privacy and terms on anth.us, apps named Anthus, Ryan decides on a lawyer. (11) One account, no staging, us-east-1. (12) Acknowledgement first for site sending paused and dead-letter incidents, reviewed after real use.",
       "created_at": "2026-11-04T16:07:04.050572Z",
       "comment_type": "default"
+    },
+    {
+      "id": "7f37710e-a867-4e26-b3a3-1926a501588f",
+      "author": "home",
+      "text": "Ryan, 2026-11-04: REVERSES the new-account decision (11) and the central service in docs/notifications-plan.md. Caducus runs as a dependency inside the existing Papyrus site deployments in the papyrus-production account, not as its own service in caducus-production. Plan to be reworked before more building.",
+      "created_at": "2026-11-04T16:42:19.002853Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-11-04T12:59:54.087777Z",
-  "updated_at": "2026-11-04T16:07:04.051331Z",
+  "updated_at": "2026-11-04T16:42:19.003364Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

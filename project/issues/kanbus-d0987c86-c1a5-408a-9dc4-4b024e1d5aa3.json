@@ -3,7 +3,7 @@
   "title": "Ryan: create the caducus-production AWS account and its access",
   "description": "**Milestone:** M1, first slice\n\n**Goal.** Only Ryan can create an AWS account. Plan: docs/notifications-plan.md.\n\n**Build.**\n1. In AWS Organizations (management account) create an account named `caducus-production`, using a mailbox only Ryan controls.\n2. In IAM Identity Center assign the AdministratorAccess permission set to it, and add a local profile `caducus-production` (region us-east-1).\n3. For the alarm forwarder (kanbus-be0e9d): enable trusted access for CloudFormation StackSets in AWS Organizations and register `caducus-production` as a delegated administrator for StackSets.\n4. Say the profile name in the session. The id goes in the GitHub repository variable `CADUCUS_AWS_ACCOUNT`, never in Git.\n\n**Acceptance.**\n`AWS_PROFILE=caducus-production aws sts get-caller-identity` works; `aws sesv2 get-account` answers (it will show the sandbox).",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 0,
   "assignee": null,
   "creator": null,
@@ -13,10 +13,18 @@
     "ryan-step"
   ],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "6058e64d-5ed5-44ca-b233-0b2b573c521d",
+      "author": "home",
+      "text": "Not needed: Ryan chose on 2026-11-04 to run Caducus as a dependency inside Papyrus site deployments in papyrus-production. No new account.",
+      "created_at": "2026-11-04T16:42:19.025156Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-11-04T13:14:29.132956Z",
-  "updated_at": "2026-11-04T13:14:31.313773Z",
-  "closed_at": null,
+  "updated_at": "2026-11-04T16:42:19.039227Z",
+  "closed_at": "2026-11-04T16:42:19.038865Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
