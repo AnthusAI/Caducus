@@ -38,10 +38,17 @@
       "text": "Ryan, 2026-11-04: REVERSES the new-account decision (11) and the central service in docs/notifications-plan.md. Caducus runs as a dependency inside the existing Papyrus site deployments in the papyrus-production account, not as its own service in caducus-production. Plan to be reworked before more building.",
       "created_at": "2026-11-04T16:42:19.002853Z",
       "comment_type": "default"
+    },
+    {
+      "id": "5bbbb5e7-8126-4c5e-aa92-17a05091ceae",
+      "author": "home",
+      "text": "Ryan, 2026-11-04: account-level operator alarms run in the papyrus-monitoring stack as a small operator piece, since they belong to no one site. Other apps use the same package in their own deployments and accounts.",
+      "created_at": "2026-11-04T17:02:39.408075Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-11-04T12:59:54.087777Z",
-  "updated_at": "2026-11-04T16:42:19.003364Z",
+  "updated_at": "2026-11-04T17:02:39.409042Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
