@@ -1,0 +1,78 @@
+name: Deploy notifications
+
+# Deploys the notification service on every merge to main, after the tests pass.
+# No stored key: GitHub's OIDC token is exchanged for the role in
+# infra/notifications/bootstrap-oidc.yaml, which only main of this repository may assume.
+# Until the repository variable CADUCUS_AWS_ACCOUNT is set, the deploy job is skipped.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/caducus/notify/**"
+      - "config/**"
+      - "infra/notifications/**"
+      - ".github/workflows/deploy-notifications.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-notifications
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install -e ".[dev,reinforcement-memory,notify-dev]"
+      - name: Run Pytest
+        run: pytest
+      - name: Run Behave
+        run: behave
+
+  deploy:
+    needs: test
+    if: ${{ vars.CADUCUS_AWS_ACCOUNT != '' }}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-arn: arn:aws:iam::${{ vars.CADUCUS_AWS_ACCOUNT }}:role/caducus-github-deploy
+          aws-region: us-east-1
+      - name: Stop unless this is the Caducus account
+        env:
+          EXPECTED_ACCOUNT: ${{ vars.CADUCUS_AWS_ACCOUNT }}
+        run: |
+          actual="$(aws sts get-caller-identity --query Account --output text)"
+          if [ "$actual" != "$EXPECTED_ACCOUNT" ]; then
+            echo "Refusing to deploy: the credentials are for a different account than CADUCUS_AWS_ACCOUNT."
+            exit 1
+          fi
+      - name: Install CDK
+        run: |
+          npm install --global aws-cdk@2
+          pip install -r infra/notifications/requirements.txt
+      - name: Deploy
+        working-directory: infra/notifications
+        env:
+          CDK_DEFAULT_ACCOUNT: ${{ vars.CADUCUS_AWS_ACCOUNT }}
+          FROM_ADDRESS: ${{ vars.CADUCUS_FROM_ADDRESS }}
+        run: cdk deploy --require-approval never -c "fromAddress=$FROM_ADDRESS"

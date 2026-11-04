@@ -3,7 +3,7 @@
   "title": "Group alarms that fire together",
   "description": "**Milestone:** M1, first slice\n\n**Goal.** As an operator, a storm of related alarms reaches me as one or two messages with everything in them. No caps: group and pace.\n\n**Build.**\n- `grouping` in the kind registry: `groupKey` for alarms is product and site, or product alone when no site. `src/caducus/notify/grouping.py`.\n- The first alarm in a group goes at once. Others within the window are collected and sent as one message listing each, each with its own link and next step; nothing is dropped. EventBridge schedule each minute to flush due groups; rows `GROUP#<key>`.\n- The window is one setting per kind, tuned from observed gaps between alarms. Clearing messages group the same way.\n\n**Acceptance.**\nBehave features; a replay of a synthetic 50-alarm burst produces two messages and 50 logged deliveries or `grouped` rows.\n\n**Depends on:** kanbus-d68036\n\n**Specification.**\n```gherkin\nFeature: Storm grouping\n  Scenario: A burst\n    Given alarms for one site\n    When ten fire within the grouping window\n    Then the first sends at once\n    And one further message lists the other nine, each with its link\n    And all ten are in the delivery log\n\n  Scenario: Different sites stay separate\n    When alarms fire for two different sites\n    Then each site has its own message\n```",
   "type": "story",
-  "status": "open",
+  "status": "in_progress",
   "priority": 0,
   "assignee": null,
   "creator": null,
@@ -17,9 +17,17 @@
       "type": "blocked-by"
     }
   ],
-  "comments": [],
+  "comments": [
+    {
+      "id": "2bb780c1-4151-4272-a40e-c246236b4ed7",
+      "author": "home",
+      "text": "Built: notify/grouping.py. First item goes at once and opens a window per (recipient, channel, kind, message state, product/site); others are recorded as grouped and sent as one message by the minute flush. 50-alarm burst is 2 messages and 50 log rows (tested). Interrupted flush cannot double-send. Window is one setting per kind (120 s to start, to be tuned from observed gaps). Specs: grouping.feature.",
+      "created_at": "2026-11-04T16:24:56.394786Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-11-04T13:14:29.279300Z",
-  "updated_at": "2026-11-04T13:14:31.685254Z",
+  "updated_at": "2026-11-04T16:24:56.394979Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

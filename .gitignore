@@ -5,3 +5,7 @@ __pycache__/
 *.egg-info/
 build/
 dist/
+
+infra/notifications/.build/
+infra/notifications/cdk.out/
+.venv/

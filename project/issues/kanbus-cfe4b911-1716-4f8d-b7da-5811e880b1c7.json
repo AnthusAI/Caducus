@@ -3,7 +3,7 @@
   "title": "Send a notification email, paced, with retries, never tracked",
   "description": "**Milestone:** M1, first slice\n\n**Goal.** As an operator, I get a readable HTML and plain-text email with no pixel and no rewritten link.\n\n**Build.**\n- `src/caducus/notify/channels/email.py`, `src/caducus/notify/render/operator.py`, `handlers/email_sender.py`, SQS `caducus-email` with a dead-letter queue.\n- Ported from Papyrus `src/papyrus_content/newsletter/worker.py`: claim the row with `attribute_not_exists` before calling SES, so a retry cannot double-send; throttled calls back off 1, 2, 4 seconds; space calls to `MaxSendRate` from `sesv2 get_account`, cached.\n- Render: inline styles, links always underlined, state in words and a mark (`ALARM`, `CLEARED`), never colour alone. Escape everything. The themed renderer comes in kanbus-67de8f; this template must not need Markus.\n- Message tags: `delivery`, `kind`.\n\n**Acceptance.**\nRendered samples checked by test for no `<img>` pixel, no tracking host, a text part and the state as a word.\n\n**Depends on:** kanbus-ad0a0d, kanbus-236f63\n\n**Specification.**\n```gherkin\nFeature: Email channel\n  Scenario: An email goes out once\n    Given a queued email delivery\n    When the sender handles it twice\n    Then SES was called once\n    And the log shows \"sent\" with the provider id\n\n  Scenario: SES throttles\n    Given SES answers with a throttling error\n    When the sender handles a delivery\n    Then it retries with backoff and the delivery is still sent once\n\n  Scenario: Nothing in the mail tracks the reader\n    When any notification email is rendered\n    Then it has no tracking image and every link points at its real destination\n```",
   "type": "story",
-  "status": "open",
+  "status": "in_progress",
   "priority": 0,
   "assignee": null,
   "creator": null,
@@ -21,9 +21,17 @@
       "type": "blocked-by"
     }
   ],
-  "comments": [],
+  "comments": [
+    {
+      "id": "0cda688f-ccda-43d5-a790-682c9b29262d",
+      "author": "home",
+      "text": "Built: channels/email.py (claim-before-send, backoff 1/2/4 s then surfaces for SQS retry, Pacer to MaxSendRate, Mailer interface, SesMailer on sesv2), handlers/email_sender.py, render/operator.py (no images, links underlined and whole, state as word and mark, light and dark). Tested with a fake Mailer and against moto. NOT done: any live SES call, kanbus-236f63 (identity, DKIM, configuration set without tracking). Specs: email.feature.",
+      "created_at": "2026-11-04T16:24:56.406678Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-11-04T13:14:29.221930Z",
-  "updated_at": "2026-11-04T13:14:31.527496Z",
+  "updated_at": "2026-11-04T16:24:56.406876Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

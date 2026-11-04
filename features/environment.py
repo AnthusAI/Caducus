@@ -12,7 +12,12 @@ def before_scenario(context, scenario):
 
 
 def after_scenario(context, scenario):
-    """Clean up temp dir."""
+    """Clean up temp dir and log capture."""
+    import logging
+
+    logger = logging.getLogger("caducus.notify")
+    for handler in [h for h in logger.handlers if type(h).__name__ == "_Capture"]:
+        logger.removeHandler(handler)
     if getattr(context, "tmpdir", None):
         import shutil
         shutil.rmtree(context.tmpdir, ignore_errors=True)

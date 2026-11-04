@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Delivery log row (schema 1)",
+  "description": "One row per delivery at pk EVENT#<eventId>, sk DELIVERY#<deliveryId>; GSI byRecipient on (recipientKey, queuedAt). Addresses are never stored: recipientKey is a pseudonym and destinationMask hides the address. A status never moves backward; see delivery_log.next_status.",
+  "type": "object",
+  "required": [
+    "pk", "sk", "deliveryId", "eventId", "kind", "class", "product", "recipientKey",
+    "channel", "destinationMask", "status", "attempts", "queuedAt", "ackRequested", "expiresAt"
+  ],
+  "properties": {
+    "pk": { "type": "string", "pattern": "^EVENT#" },
+    "sk": { "type": "string", "pattern": "^DELIVERY#" },
+    "deliveryId": { "type": "string" },
+    "eventId": { "type": "string" },
+    "kind": { "type": "string" },
+    "class": { "enum": ["operator", "admin", "account", "public"] },
+    "product": { "type": "string" },
+    "site": { "type": "string" },
+    "recipientKey": { "type": "string", "description": "HMAC of the address, or a Person or site-subject reference. Never an address." },
+    "channel": { "type": "string" },
+    "destinationMask": { "type": "string", "description": "For example r***@example.com." },
+    "status": {
+      "enum": [
+        "queued", "sent", "delivered", "delayed", "bounced", "complained", "rejected", "failed",
+        "suppressed", "skipped_preference", "grouped", "refused", "dead_lettered"
+      ]
+    },
+    "reason": { "type": "string" },
+    "providerMessageId": { "type": "string" },
+    "attempts": { "type": "integer", "minimum": 0 },
+    "groupId": { "type": "string" },
+    "incidentKey": { "type": "string" },
+    "queuedAt": { "type": "string", "format": "date-time" },
+    "sentAt": { "type": "string", "format": "date-time" },
+    "finalAt": { "type": "string", "format": "date-time" },
+    "ackRequested": { "type": "boolean" },
+    "ackAt": { "type": "string", "format": "date-time" },
+    "expiresAt": { "type": "integer", "description": "Epoch seconds; DynamoDB TTL. Set from one retention setting (90 days)." },
+    "version": { "type": "integer" }
+  },
+  "additionalProperties": false
+}
