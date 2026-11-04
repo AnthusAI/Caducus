@@ -8,6 +8,7 @@ version = "0.1.4"
 description = "CLI for collecting ops events and running reinforcement-memory analysis."
 readme = "README.md"
 requires-python = ">=3.9"
+license = { file = "LICENSE" }
 dependencies = [
   "PyYAML>=6.0",
   "virtuus>=0.4.0",
