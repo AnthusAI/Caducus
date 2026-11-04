@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "56b39a1e-d677-4d9c-bf36-7cd2f969017d",
+  "issue_id": "kanbus-cfe4b911-1716-4f8d-b7da-5811e880b1c7",
+  "event_type": "issue_created",
+  "occurred_at": "2026-11-04T13:14:29.221Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Send a notification email, paced, with retries, never tracked",
+    "description": "**Milestone:** M1, first slice\n\n**Goal.** As an operator, I get a readable HTML and plain-text email with no pixel and no rewritten link.\n\n**Build.**\n- `src/caducus/notify/channels/email.py`, `src/caducus/notify/render/operator.py`, `handlers/email_sender.py`, SQS `caducus-email` with a dead-letter queue.\n- Ported from Papyrus `src/papyrus_content/newsletter/worker.py`: claim the row with `attribute_not_exists` before calling SES, so a retry cannot double-send; throttled calls back off 1, 2, 4 seconds; space calls to `MaxSendRate` from `sesv2 get_account`, cached.\n- Render: inline styles, links always underlined, state in words and a mark (`ALARM`, `CLEARED`), never colour alone. Escape everything. The themed renderer comes in T_RENDER; this template must not need Markus.\n- Message tags: `delivery`, `kind`.\n\n**Acceptance.**\nRendered samples checked by test for no `<img>` pixel, no tracking host, a text part and the state as a word.\n\n**Depends on:** kanbus-ad0a0d, kanbus-236f63\n\n**Specification.**\n```gherkin\nFeature: Email channel\n  Scenario: An email goes out once\n    Given a queued email delivery\n    When the sender handles it twice\n    Then SES was called once\n    And the log shows \"sent\" with the provider id\n\n  Scenario: SES throttles\n    Given SES answers with a throttling error\n    When the sender handles a delivery\n    Then it retries with backoff and the delivery is still sent once\n\n  Scenario: Nothing in the mail tracks the reader\n    When any notification email is rendered\n    Then it has no tracking image and every link points at its real destination\n```",
+    "issue_type": "story",
+    "status": "open",
+    "priority": 0,
+    "assignee": null,
+    "parent": "kanbus-28219b64-56ee-423d-bbee-480563eedef3",
+    "labels": [
+      "m1"
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "kinds": {
+    "caducus.heartbeat": {
+      "ack": "none",
+      "audience": "probe",
+      "channels": [
+        "email"
+      ],
+      "class": "operator",
+      "defaultOn": true
+    },
+    "cloudwatch.alarm": {
+      "ack": "none",
+      "channels": [
+        "email"
+      ],
+      "class": "operator",
+      "defaultOn": true,
+      "grouping": {
+        "by": [
+          "product",
+          "site"
+        ],
+        "windowSeconds": 120
+      },
+      "lifecycle": "incident"
+    }
+  }
+}

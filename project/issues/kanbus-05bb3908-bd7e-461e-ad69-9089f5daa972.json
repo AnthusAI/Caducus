@@ -1,0 +1,35 @@
+{
+  "id": "kanbus-05bb3908-bd7e-461e-ad69-9089f5daa972",
+  "title": "Slack connector and console setup",
+  "description": "Outbound Slack delivery, plus console UI for an admin to connect a site to Slack through the app. Relates to the existing inbound Slack agent app. Depends on open questions 3 and 4. Creating the Slack app itself is Ryan's step.",
+  "type": "epic",
+  "status": "open",
+  "priority": 3,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-90737cee-7479-4411-bb09-5f5ca4b08818",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "269dc7b3-73c4-413f-8022-9269e2936f41",
+      "author": "home",
+      "text": "Coarse until M3 ships. Console: PPY-cc015c.",
+      "created_at": "2026-11-04T13:15:37.417024Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "2e03936c-df3a-4ce0-9b25-c11babe6fba9",
+      "author": "home",
+      "text": "Reworked 2026-11-04: one app, many sites, no central endpoint, so no Events URL; uninstall is detected at send. Recommendation awaiting Ryan.",
+      "created_at": "2026-11-04T17:10:49.555164Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-11-04T12:59:54.226159Z",
+  "updated_at": "2026-11-04T17:10:49.555370Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

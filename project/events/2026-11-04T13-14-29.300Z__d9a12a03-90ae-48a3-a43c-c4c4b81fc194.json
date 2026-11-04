@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "d9a12a03-90ae-48a3-a43c-c4c4b81fc194",
+  "issue_id": "kanbus-6275db47-c61f-4cb6-bb03-d6ba2d1fe0c0",
+  "event_type": "issue_created",
+  "occurred_at": "2026-11-04T13:14:29.300Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Run beside the SNS email on papyrus-production, then show Ryan",
+    "description": "**Milestone:** M1, first slice\n\n**Goal.** End of the first slice. The papyrus-monitoring alarm email keeps going; both run, and we compare.\n\n**Build.**\n- Forwarder live on papyrus-production; the operator list holds Ryan's address.\n- For one real alarm or more, compare with the SNS email. Fix the catalog from what he says.\n- Count messages per day on each path and post it on the epic. Nothing is removed here: P_ALARMS does that.\n- Deploys are on merge to main in this repo; StackSet changes to other accounts need Ryan's yes.\n\n**Acceptance.**\nRyan confirms he could act on a real alarm from the message alone, and the comparison is recorded on kanbus-886a10.\n\n**Depends on:** kanbus-4eba71, kanbus-a402b9, kanbus-91d450",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 0,
+    "assignee": null,
+    "parent": "kanbus-886a10c9-95a8-432f-a12a-8367b5579777",
+    "labels": [
+      "m1"
+    ]
+  }
+}

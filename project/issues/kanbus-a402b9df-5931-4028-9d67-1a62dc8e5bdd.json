@@ -1,0 +1,39 @@
+{
+  "id": "kanbus-a402b9df-5931-4028-9d67-1a62dc8e5bdd",
+  "title": "The two last-resort alerts: SES in trouble, and a dead-man's switch",
+  "description": "**Milestone:** M1, first slice\n\n**Goal.** As Ryan, I still hear about it when the notification service itself cannot tell me. These two stay on SNS by decision; nothing else human does. Built in M1 because the new path cannot be trusted without them.\n\n**Build.**\n- `infra/notifications/stacks/last_resort.py`; `handlers/heartbeat.py`; SNS topic `caducus-last-resort`, email subscription from `/caducus/last-resort-address`.\n- Dead-man: a schedule emits an event of kind `caducus.heartbeat` through the real path to the SES mailbox simulator's success address. When SES reports delivery, `handlers/ses_events.py` puts metric `Caducus/HeartbeatDelivered`. Alarm with missing data as breaching. The simulator does not count toward quota or reputation but is billed as normal mail, and is limited by the send rate. Choose the interval with those costs stated in the PR.\n- SES: alarms on `Reputation.BounceRate` >= 0.05 and `Reputation.ComplaintRate` >= 0.001 (the thresholds SES recommends; it may pause at 10% and 0.5%), and on metric `Caducus/HeartbeatSendFailed` from a refused send. EventBridge has no documented SES account-paused event, so a refused heartbeat is how we see 'unable to send'.\n- Both alarms notify on ALARM and OK. They are excluded from the forwarder so they do not also arrive as operator alerts. `papyrus-production` also sends mail (newsletter roundups, Prospectus), so see the plan's decision on a copy of the SES alarm there.\n\n**Acceptance.**\n- Disabling the heartbeat's schedule in a test fires the dead-man; re-enabling clears it. Ryan receives both on the SNS address.\n- A CDK test fails if a third alarm targets the topic.\n\n**Depends on:** kanbus-06de58, kanbus-91d450\n\n**Specification.**\n```gherkin\nFeature: Last-resort alerts\n  Scenario: The service stops\n    Given heartbeats have been arriving\n    When no heartbeat completes for the configured time\n    Then the dead-man alert reaches the last-resort address by SNS\n\n  Scenario: SES reputation is at risk\n    When the account's complaint rate reaches the recommended limit\n    Then the SES alert reaches the last-resort address by SNS\n\n  Scenario: Only two alerts use SNS\n    When the infrastructure is synthesised\n    Then exactly the two last-resort alarms have SNS actions\n```",
+  "type": "story",
+  "status": "closed",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-2b9a2773-23b2-4d66-bd5b-011f48f15f45",
+  "labels": [
+    "m1"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-06de581f-78c8-4ab1-af95-6e309f8fcd77",
+      "type": "blocked-by"
+    },
+    {
+      "target": "kanbus-91d45075-ac60-448b-9216-66d672208a59",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [
+    {
+      "id": "50c97de7-3c19-43be-87b6-d9a52a735b88",
+      "author": "home",
+      "text": "Moved to the Papyrus board as PPY-dd8c18, since it now lives in papyrus-monitoring. Same two alerts.",
+      "created_at": "2026-11-04T17:10:49.046844Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-11-04T13:14:29.289990Z",
+  "updated_at": "2026-11-04T17:10:49.053084Z",
+  "closed_at": "2026-11-04T17:10:49.053053Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

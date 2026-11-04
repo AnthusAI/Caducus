@@ -1,0 +1,49 @@
+{
+  "id": "kanbus-e5812c13-91be-4167-9221-8bc3c41ce2af",
+  "title": "Personal notification settings and subscriptions UI",
+  "description": "Where each person chooses what they receive and on which channels, shared across apps, plus the public subscribe flow for people with no account. Lucide icons, flat fills, no borders, buttons not dropdowns; screenshot review.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-90737cee-7479-4411-bb09-5f5ca4b08818",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "1672b6e0-70d1-4cc1-8066-a4a893c4ea5d",
+      "author": "home",
+      "text": "Readers' choices are per site, because pairwise subjects cannot be linked. Console and pages: PPY-17cf09, PPY-d7443d, PPY-ab9205. CLI: PPY-d99539. Rollout: PPY-dc8593.",
+      "created_at": "2026-11-04T13:15:37.405054Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "682930e5-dde0-4b84-a191-7de67ae7ca37",
+      "author": "home",
+      "text": "Pages are PPY-f361ee, not PPY-ab9205, which was refiled before it was ever pushed.",
+      "created_at": "2026-11-04T13:17:12.352284Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "5061b828-54a2-44dc-8bcc-5127dec05e45",
+      "author": "home",
+      "text": "Rollout is PPY-e28679, not PPY-dc8593, which was refiled to clear a dangling dependency.",
+      "created_at": "2026-11-04T13:19:03.850463Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "f43303a4-138f-4a19-8de0-50811d9f9e09",
+      "author": "home",
+      "text": "Reworked 2026-11-04: per-site tables and library calls, no network API. Readers' and admins' choices are per site.",
+      "created_at": "2026-11-04T17:10:49.520362Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-11-04T12:59:54.166678Z",
+  "updated_at": "2026-11-04T17:10:49.520562Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

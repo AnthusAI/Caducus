@@ -1,0 +1,23 @@
+{
+  "id": "kanbus-3e30d1d7-17d4-4db6-b2e0-ca3cb1adc9fc",
+  "title": "Prospectus: staff alerts by grant, admin lists and Person deletions",
+  "description": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** Later, coarse\n\n**Goal.** Operators become 'Anthus staff by Prospectus grant', the settled decision, instead of the SSM mailbox. Later now: operator mail goes to one mailbox for the moment. Do not change Prospectus from here: file there, and tell the Prospectus implementation session before anything merges to its main; deploys must not overlap.\n\n**Build.**\n- Prospectus holds no email or name (`docs/SECURITY.md`), so a grant says who, and the address stays with the host, recorded when the person confirms it.\n- No Caducus product registration: sites already have Papyrus registrations and use them. New work: a role for the operator piece, needing Ryan's approval per Prospectus change control; a machine-readable answer to 'who holds the staff-alert grant'; a machine route for an Account's owners and admins; a feed of deleted or merged Person ids for editor sites (reader sites have `GET /v1/accounts/site-subjects/retired`).\n- Until then: SSM for operators, and admins join by signing in (kanbus-ff4727).\n\n**Acceptance.**\nProspectus issues exist and are linked here; that session has been told.",
+  "type": "task",
+  "status": "open",
+  "priority": 3,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-52b7c299-5df6-4da7-ace7-9fc00473ac77",
+  "labels": [
+    "prospectus",
+    "later"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-11-04T13:14:29.387246Z",
+  "updated_at": "2026-11-04T17:10:47.301910Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

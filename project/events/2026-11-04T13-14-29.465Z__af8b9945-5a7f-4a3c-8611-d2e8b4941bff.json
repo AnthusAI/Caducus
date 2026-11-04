@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "af8b9945-5a7f-4a3c-8611-d2e8b4941bff",
+  "issue_id": "kanbus-b47fadeb-4314-491b-a94d-7509868aa781",
+  "event_type": "issue_created",
+  "occurred_at": "2026-11-04T13:14:29.465Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "New-story notifications, grouped and paced",
+    "description": "**Milestone:** M3, public email and new stories\n\n**Goal.** As a subscriber, I hear when a site publishes a new Story, once. As a site admin, I choose automatic sending or my approval per site.\n\n**Build.**\n- Kind `story.published`, class public. Event comes from P_EMIT. Rules (sections, tags, types) as in the newsletter's alert lists, `src/papyrus_content/newsletter/alerts.py`, with one conditional dedupe row per list and lineage, so a republish or edit never alerts again.\n- Audience: confirmed subscribers of that site's lists. Fan out through the email queue paced to `MaxSendRate`; with several Stories published together, group by the reader into one message rather than dropping any. Not a digest, just a burst.\n- Approval per site: `auto` or `admin`, as `approval` and `instantAlerts` do today. `admin` holds the event as `awaiting_approval`; the console's button releases it (P_PANEL). Pause when the site's sending is paused, with a reason shown.\n\n**Acceptance.**\nBehave features; an end-to-end publish on Machines on Machines reaches a real subscriber.\n\n**Depends on:** kanbus-eedbbd, P_EMIT\n\n**Specification.**\n```gherkin\nFeature: New-story notifications\n  Scenario: A publish\n    Given a confirmed subscriber to a site's new stories\n    When a Story is published\n    Then they get one message linking to it\n\n  Scenario: An edit or republish\n    Given a Story already announced\n    When it is edited and republished\n    Then nobody is notified again\n\n  Scenario: A burst\n    Given a site publishes five Stories together\n    When notifications go out\n    Then a subscriber gets one message listing all five\n\n  Scenario: Admin approval\n    Given a site set to admin approval\n    When a Story is published\n    Then nothing is sent until an admin approves it\n```",
+    "issue_type": "story",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-454b52c2-9bb8-483d-aa06-b687a33f456c",
+    "labels": [
+      "m3"
+    ]
+  }
+}

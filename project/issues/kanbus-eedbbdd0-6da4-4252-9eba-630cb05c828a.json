@@ -1,0 +1,46 @@
+{
+  "id": "kanbus-eedbbdd0-6da4-4252-9eba-630cb05c828a",
+  "title": "Anyone can subscribe by email with double opt-in, and consent is recorded",
+  "description": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** M3, public email and new stories\n\n**Goal.** As any reader, with no account, I subscribe to a site's new stories, confirm from my inbox, and leave whenever I like.\n\n**Build.**\n- Port the behaviour of Papyrus `src/papyrus_content/newsletter/` (`handler.py`, `confirmation.py`, `tokens.py`, `store.py`, `rate.py`): always answer `check_email`; honeypot and minimum fill time; a fresh nonce; 72-hour single-use confirm; GET confirm page then POST.\n- Consent row `RCPT#<key>` / `CONSENT#<kind>`: requested and confirmed times, form id, page URL, exact wording, a keyed hash of the visitor address, or `migrated` with the source (kanbus-25c166).\n- Abuse limits protect real things (SES reputation, other people's inboxes), so they stay; `rate.py` is the model. Limits are per visitor and per address, and limited requests still answer `check_email` and record a metric.\n\n**Acceptance.**\nBehave features; live confirm through a site page on Machines on Machines.\n\n**Depends on:** kanbus-ff4727, kanbus-1c3618\n**Related:** PPY-f361ee, PPY-c522bf\n\n**Specification.**\n```gherkin\nFeature: Subscribe by email\n  Scenario: Double opt-in\n    When a reader subscribes to new stories on a site\n    Then they see \"check your email\" and get one confirmation\n    And they receive nothing else until they confirm\n\n  Scenario: The answer reveals nothing\n    Given an address that is already subscribed\n    When someone subscribes it again\n    Then they see the same \"check your email\"\n\n  Scenario: Consent is kept\n    When a reader confirms\n    Then the time, the form, the page and the exact wording are recorded\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-e5812c13-91be-4167-9221-8bc3c41ce2af",
+  "labels": [
+    "m3"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-ff4727b1-ce02-4255-a7b6-fa6b1a88f41b",
+      "type": "blocked-by"
+    },
+    {
+      "target": "kanbus-1c361806-538f-416f-a55b-22c2e0853014",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [
+    {
+      "id": "696bd3cc-0eda-45bc-bd2a-2013e5641bae",
+      "author": "home",
+      "text": "Papyrus side: PPY-ab9205",
+      "created_at": "2026-11-04T13:15:36.747497Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "c5554993-dc2b-4218-811f-55d0d12980f0",
+      "author": "home",
+      "text": "Papyrus side, corrected id: PPY-f361ee (replaces PPY-ab9205, deleted and refiled before it was ever pushed).",
+      "created_at": "2026-11-04T13:17:12.317033Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-11-04T13:14:29.443091Z",
+  "updated_at": "2026-11-04T17:10:47.380444Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

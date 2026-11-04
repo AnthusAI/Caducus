@@ -1,0 +1,27 @@
+{
+  "id": "kanbus-06de581f-78c8-4ab1-af95-6e309f8fcd77",
+  "title": "SES events update the log through EventBridge, not SNS",
+  "description": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** M1, first slice\n\n**Goal.** As the package, I learn about delivery, bounces and complaints from SES's EventBridge events, and stop mailing an address that hard-bounced. Hosts wire the rule; several senders share the account's default bus, so each host filters to its own configuration set.\n\n**Build.**\n- `handlers/ses_events.py`, mapping adapted from Papyrus `src/papyrus_content/newsletter/events.py`. Best effort and possibly out of order, so idempotent, with kanbus-53a88d's precedence.\n- Host rule on the default bus, `source` `aws.ses`, filter on `detail.mail.tags.ses:configuration-set`, to SQS. Operator piece: PPY-e92c8e. Site: PPY-44721a.\n- Hard bounce or complaint writes `SUPP#<hash>`, checked before every send; the account suppression list stays on as well. Gmail gives SES no complaint data.\n- Puts the heartbeat metric when the delivered mail is a heartbeat (PPY-dd8c18).\n\n**Acceptance.**\nSample events from the SES documentation as fixtures; a live run through the mailbox simulator once hosted.\n\n**Depends on:** kanbus-cfe4b9\n**Related:** PPY-e92c8e, PPY-dd8c18\n\n**Specification.**\n```gherkin\nFeature: Provider events\n  Scenario: A hard bounce suppresses the address\n    Given a delivery was sent\n    When SES reports a permanent bounce for it\n    Then the log shows \"bounced\"\n    And the next notification to that address is recorded \"suppressed\" and not sent\n\n  Scenario: A duplicate report changes nothing\n    Given a delivery is recorded as \"delivered\"\n    When the same report arrives again\n    Then the log is unchanged\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-28219b64-56ee-423d-bbee-480563eedef3",
+  "labels": [
+    "m1"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-cfe4b911-1716-4f8d-b7da-5811e880b1c7",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-11-04T13:14:29.232489Z",
+  "updated_at": "2026-11-04T17:10:47.128209Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,0 +1,22 @@
+{
+  "id": "kanbus-ecbda368-4806-4f55-955d-30a5efb672b0",
+  "title": "Adopt in Babulus",
+  "description": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** Later, coarse\n\n**Goal.** Same pattern in Babulus's own account. Its topics are in `packages/construct/src/index.ts` and `packages/control-plane/stacks/backend.py`; SNS email removed. SES status there not read.\n\n**Acceptance.**\nSpec'd when started.",
+  "type": "task",
+  "status": "open",
+  "priority": 3,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-dd394f79-6339-4bca-9a4c-259c93afaffe",
+  "labels": [
+    "later"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-11-04T13:14:29.610946Z",
+  "updated_at": "2026-11-04T17:10:47.625004Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

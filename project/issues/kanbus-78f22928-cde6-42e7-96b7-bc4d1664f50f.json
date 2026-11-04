@@ -1,0 +1,30 @@
+{
+  "id": "kanbus-78f22928-cde6-42e7-96b7-bc4d1664f50f",
+  "title": "Inventory every SNS topic and decide each one's end",
+  "description": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** M2, operators finished\n\n**Goal.** The exact list to retire, so 'exactly two' can be checked, plus machine-only topics. Each deployment's account answers for itself now.\n\n**Build.**\nLive read of papyrus-production on 2026-11-04, 11 topics, us-east-1 (no alarms in us-west-2, eu-west-1, us-east-2):\n- Human email: `papyrus-monitoring-alarms` (becomes the last-resort topic; one confirmed subscription and one stuck pending), two `papyrus-scheduled-job-knowledge-run-*` topics.\n- Machine: `papyrus-newsletter-alarms-{distinctive,shipped}` (Lambda, the automatic pause: must not be removed without moving the trigger, PPY-f66e91's comment), `papyrus-newsletter-events-{distinctive,shipped}` (Lambda), and the same topic for dataparade, machines-on-machines and pilobol-us, with no subscribers.\n- `papyrus-amplify-cost-alerts`: no subscribers. See `docs/amplify-cost-check.md`.\nSource only, other apps: Chatticus `infra/lib/alarms.ts`, `auth-stack.ts`, `budgets-stack.ts`, `control-plane-stack.ts`, `thin-turn-stack.ts`. Babulus `packages/construct/src/index.ts`, `packages/control-plane/stacks/backend.py`. Add a live read at adoption. Open: AWS Budgets, whose EventBridge support was not checked.\n\n**Acceptance.**\nTable on kanbus-2b9a27; each row has an owner issue.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-2b9a2773-23b2-4d66-bd5b-011f48f15f45",
+  "labels": [
+    "m2"
+  ],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "95b29f3c-fa34-4749-817e-0b45fd7f8f60",
+      "author": "home",
+      "text": "Papyrus side: PPY-f66e91, PPY-819117",
+      "created_at": "2026-11-04T13:15:36.710485Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-11-04T13:14:29.376294Z",
+  "updated_at": "2026-11-04T17:10:47.266799Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

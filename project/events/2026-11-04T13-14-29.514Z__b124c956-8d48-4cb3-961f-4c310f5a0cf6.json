@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "b124c956-8d48-4cb3-961f-4c310f5a0cf6",
+  "issue_id": "kanbus-ae40949d-4352-434d-b81d-e340b1e61c3a",
+  "event_type": "issue_created",
+  "occurred_at": "2026-11-04T13:14:29.514Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Slack: install, stored tokens, uninstall and signed inbound",
+    "description": "**Milestone:** Later, coarse\n\n**Goal.** Coarse until M3 ships. An admin connects a site to a workspace and channel.\n\n**Build.**\nOAuth install flow on the notification domain; connection row per site and workspace. Tokens encrypted with the service's KMS key in DynamoDB: per-install tokens are created at runtime, so IaC cannot generate them. Verify every inbound request (`v0:<timestamp>:<body>`, HMAC-SHA256 with the signing secret, reject beyond five minutes, constant-time compare, raw body). `app_uninstalled` and `tokens_revoked` can arrive in either order; either one marks the connection gone and the admin is told. Keep separate from the per-site inbound agent app in Papyrus `docs/slack-agent.md`; converging them is deferred. Stories with Gherkin are written when this starts.\n\n**Acceptance.**\nSpec'd when started: forged signature refused; uninstall stops sends and tells the admin.\n\n**Depends on:** kanbus-ff4727",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 3,
+    "assignee": null,
+    "parent": "kanbus-05bb3908-bd7e-461e-ad69-9089f5daa972",
+    "labels": [
+      "later"
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "id": "kanbus-d680361e-7c9d-4a89-befb-6fed7e3ca6cf",
+  "title": "A message I can act on without logging in to AWS",
+  "description": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** M1, first slice\n\n**Goal.** As an operator, each alarm message says what broke, where, the impact and the next step, with one link into the right AWS account. This is the problem that started the initiative.\n\n**Build.**\n- `catalog.py`, `triage.py`. The catalog format is generic; each host owns its catalog. Papyrus's moves to `infra/monitoring/alarm-catalog.yaml` (PPY-e92c8e).\n- Message: subject `[ALARM] <product>/<site>: <what broke>`; what broke, impact, next step, the alarm's reason in words, AWS account's friendly name, and an IAM Identity Center shortcut link built at runtime from the host's SSM parameter. All values URL-encoded. It grants nothing new.\n- An unknown alarm still sends, labelled `No triage notes yet`, with the raw reason.\n\n**Acceptance.**\nRendered samples for each seeded alarm reviewed by Ryan in the session; a test that every message has all four fields or the label.\n\n**Depends on:** kanbus-9a3b85, kanbus-cfe4b9\n\n**Specification.**\n```gherkin\nFeature: Triage content\n  Scenario: A known alarm\n    Given the alarm \"papyrus-monitoring-router-errors\" is in the catalog\n    When it fires\n    Then the message names what broke, the site, the impact and the next step\n    And it links straight to that alarm in the right AWS account\n\n  Scenario: An alarm with no notes still reaches me\n    Given an alarm that is not in the catalog\n    When it fires\n    Then the message gives its name, its account and its reason\n    And it is labelled \"No triage notes yet\"\n```",
+  "type": "story",
+  "status": "in_progress",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-886a10c9-95a8-432f-a12a-8367b5579777",
+  "labels": [
+    "m1"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-9a3b85ab-fc69-43b1-9a16-cc3b410ec994",
+      "type": "blocked-by"
+    },
+    {
+      "target": "kanbus-cfe4b911-1716-4f8d-b7da-5811e880b1c7",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [
+    {
+      "id": "69e6eaae-2abe-45f7-83e1-7c90dd5cf984",
+      "author": "home",
+      "text": "Built in PR #5: triage content, direct IAM Identity Center link, named HTML link with the full URL kept in plain text, unknown alarms labelled 'No triage notes yet'. The catalog is now host-supplied (CADUCUS_CONFIG_DIR); Papyrus's real catalog goes in Papyrus infra/monitoring/alarm-catalog.yaml under PPY-e92c8e. The package keeps a small test fixture only. Specs triage.feature.",
+      "created_at": "2026-11-04T17:16:18.236215Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-11-04T13:14:29.268514Z",
+  "updated_at": "2026-11-04T17:16:18.236405Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

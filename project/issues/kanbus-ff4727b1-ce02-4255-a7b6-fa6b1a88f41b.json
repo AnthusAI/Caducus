@@ -1,0 +1,35 @@
+{
+  "id": "kanbus-ff4727b1-ce02-4255-a7b6-fa6b1a88f41b",
+  "title": "Library API for hosts: preferences, subscriptions, contact points",
+  "description": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** M3, public email and new stories\n\n**Goal.** As a host's server code, I read and change a person's choices through plain functions in the package, in my own table. There is no network API: Papyrus's CMS routes invoke the site's own function, and only the CMS role may.\n\n**Build.**\n- `api.py`: `get_preferences`, `set_preferences`, `subscribe`, `unsubscribe`, `record_contact`, `erase`, dispatched as function actions by each host.\n- Identity: `PERSON#<id>` for account members; `SUBJECT#<ss1_...>` for signed-in readers of a public-reader site; `ADDR#<hmac>` for an email-only subscriber. All within one site's table, so the site part of the key goes.\n- Contact points: Prospectus has no email. On sign-in the host records the verified email claim with the role, as the Papyrus newsletter test send already trusts its `email` claim. Admin alerts reach people who have signed in since launch; the console says so. No realtime subscriptions anywhere.\n- A person who administers two sites has two sets of choices. Accepted.\n\n**Acceptance.**\nBehave features against fakes; moto for the store.\n\n**Depends on:** kanbus-222bcf\n**Related:** PPY-44721a\n\n**Specification.**\n```gherkin\nFeature: Library API\n  Scenario: A host changes a reader's choice\n    When the host turns off new-story email for its reader\n    Then that reader's choice changes\n\n  Scenario: An admin joins by signing in\n    Given an admin signs in to a site for the first time since launch\n    When the host records their verified address and role\n    Then they are in the audience for that site's admin alerts\n\n  Scenario: Sites are separate\n    Given a person subscribed on two sites\n    When they turn notifications off on one\n    Then they are still subscribed on the other\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-e5812c13-91be-4167-9221-8bc3c41ce2af",
+  "labels": [
+    "m3"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-222bcf30-ca2f-4c89-a9c8-b46627d2fd72",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [
+    {
+      "id": "d57d2da2-24e0-4831-86ae-56ef0f8357fa",
+      "author": "home",
+      "text": "Papyrus side: PPY-44721a, PPY-d7443d",
+      "created_at": "2026-11-04T13:15:36.722727Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-11-04T13:14:29.431639Z",
+  "updated_at": "2026-11-04T17:10:47.350901Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

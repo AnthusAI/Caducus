@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "5e49a6ea-d661-4197-932b-702c456dca2c",
+  "issue_id": "kanbus-3e30d1d7-17d4-4db6-b2e0-ca3cb1adc9fc",
+  "event_type": "field_updated",
+  "occurred_at": "2026-11-04T13:14:31.974Z",
+  "actor_id": "home",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "**Milestone:** M2, operators finished\n\n**Goal.** Operators become 'Anthus staff by Prospectus grant', the settled decision, rather than the SSM list used until then. Do not change Prospectus from here: file there, and tell the Prospectus implementation session before anything merges to its main; deploys must not overlap.\n\n**Build.**\n- Prospectus holds no email or name (`docs/SECURITY.md`), so grants say who, and the address remains with Caducus: recorded when the person confirms it (S_API).\n- Ask for: a registration for Caducus (a new role; new persistent IAM needs Ryan's approval per Prospectus change control), and a machine-readable answer to 'which Person ids hold the staff-alert grant'. `accounts/operator-grants.json` today gives directory read only, and its routes need a live human session, so this is new Prospectus work. Same request: a machine route for an Account's owners and admins for a site, and a feed of deleted or merged Person ids for editor sites (reader sites already have `GET /v1/accounts/site-subjects/retired`; Person deletion itself is not built).\n- Until then the SSM list stands. Nothing in M1 or M2 waits for this.\n\n**Acceptance.**\nProspectus issues exist and are linked here; the Prospectus session has been told; Caducus reads the grant and the SSM list is removed.\n\n**Depends on:** kanbus-222bcf",
+        "to": "**Milestone:** M2, operators finished\n\n**Goal.** Operators become 'Anthus staff by Prospectus grant', the settled decision, rather than the SSM list used until then. Do not change Prospectus from here: file there, and tell the Prospectus implementation session before anything merges to its main; deploys must not overlap.\n\n**Build.**\n- Prospectus holds no email or name (`docs/SECURITY.md`), so grants say who, and the address remains with Caducus: recorded when the person confirms it (kanbus-ff4727).\n- Ask for: a registration for Caducus (a new role; new persistent IAM needs Ryan's approval per Prospectus change control), and a machine-readable answer to 'which Person ids hold the staff-alert grant'. `accounts/operator-grants.json` today gives directory read only, and its routes need a live human session, so this is new Prospectus work. Same request: a machine route for an Account's owners and admins for a site, and a feed of deleted or merged Person ids for editor sites (reader sites already have `GET /v1/accounts/site-subjects/retired`; Person deletion itself is not built).\n- Until then the SSM list stands. Nothing in M1 or M2 waits for this.\n\n**Acceptance.**\nProspectus issues exist and are linked here; the Prospectus session has been told; Caducus reads the grant and the SSM list is removed.\n\n**Depends on:** kanbus-222bcf"
+      }
+    }
+  }
+}

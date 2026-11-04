@@ -1,0 +1,35 @@
+{
+  "id": "kanbus-4eba7132-7515-43f1-ad0b-1ea1dd3977d6",
+  "title": "Group alarms that fire together",
+  "description": "**Milestone:** M1, first slice\n\n**Goal.** As an operator, a storm of related alarms reaches me as one or two messages with everything in them. No caps: group and pace.\n\n**Build.**\n- `grouping` in the kind registry: `groupKey` for alarms is product and site, or product alone when no site. `src/caducus/notify/grouping.py`.\n- The first alarm in a group goes at once. Others within the window are collected and sent as one message listing each, each with its own link and next step; nothing is dropped. EventBridge schedule each minute to flush due groups; rows `GROUP#<key>`.\n- The window is one setting per kind, tuned from observed gaps between alarms. Clearing messages group the same way.\n\n**Acceptance.**\nBehave features; a replay of a synthetic 50-alarm burst produces two messages and 50 logged deliveries or `grouped` rows.\n\n**Depends on:** kanbus-d68036\n\n**Specification.**\n```gherkin\nFeature: Storm grouping\n  Scenario: A burst\n    Given alarms for one site\n    When ten fire within the grouping window\n    Then the first sends at once\n    And one further message lists the other nine, each with its link\n    And all ten are in the delivery log\n\n  Scenario: Different sites stay separate\n    When alarms fire for two different sites\n    Then each site has its own message\n```",
+  "type": "story",
+  "status": "in_progress",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-886a10c9-95a8-432f-a12a-8367b5579777",
+  "labels": [
+    "m1"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-d680361e-7c9d-4a89-befb-6fed7e3ca6cf",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [
+    {
+      "id": "9217907a-e5af-4f3c-9287-59507c42efcb",
+      "author": "home",
+      "text": "Built in PR #5: grouping per recipient, channel, message state and product/site; 50-alarm burst is 2 messages and 50 log rows; interrupted flush cannot double-send. Specs grouping.feature.",
+      "created_at": "2026-11-04T17:16:18.247807Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-11-04T13:14:29.279300Z",
+  "updated_at": "2026-11-04T17:16:18.247998Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

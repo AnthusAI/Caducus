@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "1ec6d9be-7c65-4888-8950-42517fe3f021",
+  "issue_id": "kanbus-efec6028-aaad-4389-827d-b915980f353e",
+  "event_type": "issue_created",
+  "occurred_at": "2026-11-04T12:59:54.326Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Weekly digest newsletter built from new-story notifications",
+    "description": "Ryan, 2026-11-04: the vision for the newsletter is that it starts, by default, as a weekly digest of a site's new-story notifications. This is the last milestone in the initiative, after everything else has shipped. No digests are in the first version. Recorded here so the earlier milestones keep it possible: the new-story notification events, the shared brand definition and one subscriber record are what the digest will build on.",
+    "issue_type": "epic",
+    "status": "open",
+    "priority": 3,
+    "assignee": null,
+    "parent": "kanbus-90737cee-7479-4411-bb09-5f5ca4b08818",
+    "labels": []
+  }
+}

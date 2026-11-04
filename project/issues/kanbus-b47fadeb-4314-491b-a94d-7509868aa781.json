@@ -1,0 +1,39 @@
+{
+  "id": "kanbus-b47fadeb-4314-491b-a94d-7509868aa781",
+  "title": "New-story notifications, grouped and paced",
+  "description": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** M3, public email and new stories\n\n**Goal.** As a subscriber, I hear when a site publishes a new Story, once. As a site admin, I choose automatic sending or my approval per site.\n\n**Build.**\n- Kind `story.published`, class public, in Papyrus's kinds file. Event from PPY-38be08. Rules (sections, tags, types) as in the newsletter's alert lists, `src/papyrus_content/newsletter/alerts.py`, with one conditional dedupe row per list and lineage, so a republish or edit never alerts again.\n- Audience: confirmed subscribers in the site's table. Fan out through the site's email queue; with several Stories published together, group by reader into one message rather than dropping any.\n- Approval per site: `auto` or `admin`, as `approval` and `instantAlerts` do today. `admin` holds it as `awaiting_approval`; the console releases it (PPY-17cf09). Stop when the site's sending is paused, with a reason shown.\n\n**Acceptance.**\nBehave features; an end-to-end publish on Machines on Machines reaches a real subscriber.\n\n**Depends on:** kanbus-eedbbd, kanbus-602759\n**Related:** PPY-38be08, PPY-c522bf, PPY-bbc8e5\n\n**Specification.**\n```gherkin\nFeature: New-story notifications\n  Scenario: A publish\n    Given a confirmed subscriber to a site's new stories\n    When a Story is published\n    Then they get one message linking to it\n\n  Scenario: An edit or republish\n    Given a Story already announced\n    When it is edited and republished\n    Then nobody is notified again\n\n  Scenario: A burst\n    Given a site publishes five Stories together\n    When notifications go out\n    Then a subscriber gets one message listing all five\n\n  Scenario: Admin approval\n    Given a site set to admin approval\n    When a Story is published\n    Then nothing is sent until an admin approves it\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-454b52c2-9bb8-483d-aa06-b687a33f456c",
+  "labels": [
+    "m3"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-eedbbdd0-6da4-4252-9eba-630cb05c828a",
+      "type": "blocked-by"
+    },
+    {
+      "target": "kanbus-602759c3-da3e-44e1-9394-901c08b1dc85",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [
+    {
+      "id": "6c528325-dd81-4255-9605-d68e90a9a2dd",
+      "author": "home",
+      "text": "Papyrus side: PPY-17cf09",
+      "created_at": "2026-11-04T13:15:36.773073Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-11-04T13:14:29.465743Z",
+  "updated_at": "2026-11-04T17:10:47.427278Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

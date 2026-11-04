@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "event_id": "1adcd1a6-2a61-413e-9861-62c7cfacfd5d",
+  "issue_id": "kanbus-5acd4ef2-fb7e-478d-a01d-3ca8cef87d0e",
+  "event_type": "issue_created",
+  "occurred_at": "2026-11-04T13:14:29.538Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Ryan: create the Anthus Discord app",
+    "description": "**Milestone:** Later, coarse\n\n**Goal.** Only Ryan can create the app, and the verification step is identity-bound to him. Discord's verification page refused automated reads; those parts come from a search of Discord's own pages and should be re-read in the portal.\n\n**Build.**\n1. In the Discord Developer Portal create a Team and an application named Anthus under it, with the icon, and the Privacy Policy and Terms URLs from T_LEGAL.\n2. OAuth2: add the redirect URL on the notification domain. Scope `webhook.incoming` for channel posts. A bot user only if reader DMs go ahead.\n3. Set the Webhook Events URL, enable `APPLICATION_AUTHORIZED` and `APPLICATION_DEAUTHORIZED`, and note the Public Key.\n4. Give Client ID, Client Secret, Public Key and, if any, the bot token to `scripts/put-channel-secrets.py` from your own shell. Do not paste them into chat or Kanbus.\n5. Later: verification is needed to grow past 100 servers; the team owner verifies identity through Stripe. Check the App Verification tab for the current list.\n\n**Acceptance.**\nInstall on a test server; a test post.\n\n**Depends on:** T_LEGAL",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 3,
+    "assignee": null,
+    "parent": "kanbus-34bdf037-bde8-46ba-85b5-fd0f38d84373",
+    "labels": [
+      "later",
+      "ryan-step"
+    ]
+  }
+}

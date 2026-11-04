@@ -1,0 +1,35 @@
+{
+  "id": "kanbus-6a008767-14d2-4dd8-a3d9-78fda7ab7330",
+  "title": "Documentation and marketing for notifications",
+  "description": "Ryan, 2026-11-04: internal docs, public documentation on the Papyrus marketing site (p.apyr.us) explaining the features, and marketing on the landing pages about the notification options. Claims describe only what has shipped, so pages land with each milestone, labelled if they are placeholders. Includes the privacy policy and terms pages Slack and Discord require for an installable app.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-90737cee-7479-4411-bb09-5f5ca4b08818",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "a45df467-e598-4a95-9207-cc6d9c42f7ec",
+      "author": "home",
+      "text": "Docs land with each milestone. Licence: kanbus-e364c7.",
+      "created_at": "2026-11-04T13:15:37.477671Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "c5afb393-bfde-48ac-a087-81b6b9d89777",
+      "author": "home",
+      "text": "Reworked 2026-11-04: operator runbook goes in Papyrus (PPY-e82423).",
+      "created_at": "2026-11-04T17:10:49.601090Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-11-04T12:59:54.305753Z",
+  "updated_at": "2026-11-04T17:10:49.601292Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

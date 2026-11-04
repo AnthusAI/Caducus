@@ -1,0 +1,63 @@
+{
+  "id": "kanbus-90737cee-7479-4411-bb09-5f5ca4b08818",
+  "title": "Anthus notifications: our own routing, channels and per-person choices, replacing SNS",
+  "description": "Ryan, 2026-11-04. SNS alarm email is hard to triage: too many messages, each one needs logging in to the right AWS account to understand it. Too many notifications is the same as none. Replace it with notification features that use our own logic and connectors, built once and reused by every Anthus cloud app: Papyrus, Chatticus, Babulus, Cyclotron.\n\nScope: per-person choice of what they receive and on which channels; SES outbound email; Slack and Discord connectors, with console UI for admins to connect them; branding per product, and per site for Papyrus, consistent across notifications and public mail such as newsletters and new-story notices; any person, not only admins, can subscribe to new-story notifications on any supported channel; notifications from CloudWatch for operators and from the apps themselves.\n\nOut of scope for now: the newsletter as a weekly digest of new-story notifications.\n\nSNS stays only for an absolute minimum of really serious problems, such as SES failing so that nothing else could be seen.\n\nEach milestone is its own Epic. Stories are filed after the open questions are answered. Plan and build with sub-agents in a separate worktree.\n\nExisting work to build on: newsletter plugin (double opt-in, unsubscribe, alert lists, per-site SES, email_render), Prospectus (people, accounts, roles), the Papyrus Slack agent app (inbound only). The console's existing Notification Center means review requests; do not reuse that name.\n\nOPEN QUESTIONS, asked 2026-11-04, not yet answered. These are recommendations, not decisions:\n1. Where it lives: recommended a new small central service with its own repo, board and AWS account, plus a shared client and preferences UI. Issues start on the Papyrus board and may move.\n2. Who can subscribe: recommended email with double opt-in and no account; Slack and Discord need Google sign-in.\n3. What a reader's Slack or Discord subscription is: recommended DMs for readers, channel posts when that workspace's or server's admin installs the app.\n4. One app per platform or one per site: recommended one Anthus app per platform with the site's name and icon per message.\n5. Operators and triage: recommended Anthus staff only by Prospectus grant; one message per incident saying what broke, where, the impact and the next step, with a direct link, acknowledge or mute, one message on clearing.\n6. What stays on SNS: recommended two alerts only, SES unable to send or at risk of suspension, and a dead-man's switch for the notification service.\n7. What a person controls: recommended type by channel, immediate or daily digest, all off until chosen except operator alerts and account mail. Digests in the first version?\n8. New-story versus the newsletter's alert lists: recommended replacing them and moving subscribers without re-confirming; per-site setting for automatic send or admin approval.\n\nDECISIONS SINCE:\nRyan, 2026-11-04: accepted the eight recommendations in the description ('That all makes sense'). They are decisions now. Still to settle in planning: digests in the first version (question 7 was recommended with digests, and asked whether immediate is enough).\n\nRyan, 2026-11-04, further decisions. (1) Site admins get app-level alerts by default, and anyone can turn off any notification or whole classes of notifications. (2) Only some kinds of alert require acknowledgement, optionally; really important things get an escalation path. (3) No open or click tracking in email: when we need an acknowledgement we ask for it directly and overtly. (4) This is a new public project with no settled name; Ryan asks whether it belongs in AnthusAI/Caducus. (5) No digests in the first version. Ryan expects it will need a logging schema.\n\nRyan, 2026-11-04: this goes in Caducus, broadened: Caducus decides what deserves your attention and gets it to you. The log radar stays as one part and connects later as a source of incidents; CloudWatch alarms come first. Papyrus-side work such as console pages is filed on the Papyrus board.",
+  "type": "initiative",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "128395f7-9bdc-47ab-8883-e116d3bdf14f",
+      "author": "home",
+      "text": "Plan filed 2026-11-04: docs/notifications-plan.md. Issues labelled m1, m2, m3, later; ryan-step marks Ryan's own. Papyrus side: PPY-4d1143.\n\nThe earlier decisions stand, with later ones winning: admins get app alerts by default (replaces 'all off until chosen' for them); acknowledgement is opt-in per kind (replaces acknowledge on every incident).\n\nDECISIONS FOR RYAN, each with a recommendation:\n1. Operator sending domain: notify.anth.us, delegated to a zone in the new AWS account.\n2. MIT licence for Caducus: yes (kanbus-e364c7).\n3. 'Exactly two' SNS alerts: two kinds, with the SES alert copied into every AWS account that sends mail, so papyrus-production as well as caducus-production, because roundups and Prospectus mail stay there. Yes.\n4. Machine-only SNS (SNS invoking a Lambda, with no person subscribed): replaced by EventBridge where it can carry them, and AWS Budgets checked case by case. Recommend treating 'exactly two' as human alerts, and accepting a machine topic only where there is no alternative.\n5. Delivery-log retention: 90 days, matching the newsletter's event log. Consent kept until deletion; address-free suppression hash kept after.\n6. Reader DMs (settled as yes, but docs raise two limits). Slack can only DM people in workspaces with the app installed, so most readers could not use it unless their admin installs it. Discord says DMs should generally come from a user action, and that many DMs quickly can get a bot blocked. Recommend: channel posts first; Slack DMs with that limit stated on the page; Discord DMs only after a small paced trial, dropped if it hits limits.\n7. Per-message site name and icon on Slack (settled as yes). Slack says chat:write.customize should be used in response to a user action and heavily signposted. Recommend no override on Slack: show the site's name and icon inside the message. Discord's webhooks allow it per message, so use it there.\n8. One SES account for public and operator mail: yes, protected by per-site pausing and the last-resort alert. A second account is deferred.\n9. Who counts as a site admin for default alerts: the owners and admins in Prospectus of the Account holding the site, and only after they have signed in since launch, since Prospectus holds no address.\n10. Does sending feed the weekly quota: report only at first, percent only, never blocking operator, last-resort or consent mail (kanbus-95686d). Blocking new-story mail at 100% is a later choice.\n11. Where privacy and terms pages live: anth.us, and whether a lawyer reads them. App name on Slack and Discord: Anthus.\n12. One AWS account, no staging, us-east-1: yes for now.\n13. Kinds that ask for acknowledgement to start: site sending paused and dead-letter incidents, reviewed after real use.",
+      "created_at": "2026-11-04T13:15:52.745143Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "48d2a356-a9db-4138-8dad-32f467325b2b",
+      "author": "home",
+      "text": "Correction to decision 2 above: not needed. MIT is already on develop (AnthusAI/Caducus#4, merged while this plan was being filed).",
+      "created_at": "2026-11-04T13:18:23.182609Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "804c4324-b458-4baf-a3c4-7d967f8ef24c",
+      "author": "home",
+      "text": "Ryan, 2026-11-04: accepted all twelve plan recommendations. (1) Operator sending domain notify.anth.us. (2) Two kinds of last-resort SNS alert, the SES one copied to every account that sends mail. (3) Machine-only SNS topics move to EventBridge unless there is no alternative. (4) Delivery log 90 days, consent until deletion, address-free suppression hash kept. (5) Reader channel posts first, small paced Discord DM trial, Slack DMs only where the app is installed, said so on the page. (6) No per-message override on Slack, site name and icon inside the message; override on Discord webhooks. (7) One SES account for public and operator mail, per-site pausing. (8) Site admins are Prospectus owners and admins of the Account holding the site. (9) Sending volume is report only, percent only, never blocking operator, last-resort or consent mail. (10) Privacy and terms on anth.us, apps named Anthus, Ryan decides on a lawyer. (11) One account, no staging, us-east-1. (12) Acknowledgement first for site sending paused and dead-letter incidents, reviewed after real use.",
+      "created_at": "2026-11-04T16:07:04.050572Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "7f37710e-a867-4e26-b3a3-1926a501588f",
+      "author": "home",
+      "text": "Ryan, 2026-11-04: REVERSES the new-account decision (11) and the central service in docs/notifications-plan.md. Caducus runs as a dependency inside the existing Papyrus site deployments in the papyrus-production account, not as its own service in caducus-production. Plan to be reworked before more building.",
+      "created_at": "2026-11-04T16:42:19.002853Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "5bbbb5e7-8126-4c5e-aa92-17a05091ceae",
+      "author": "home",
+      "text": "Ryan, 2026-11-04: account-level operator alarms run in the papyrus-monitoring stack as a small operator piece, since they belong to no one site. Other apps use the same package in their own deployments and accounts.",
+      "created_at": "2026-11-04T17:02:39.408075Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "27784f66-32ad-4500-9a14-f2307a40c29a",
+      "author": "home",
+      "text": "Plan reworked 2026-11-04 for Ryan's reversal: docs/notifications-plan.md. Package on this board; hosting on the Papyrus board, PPY-4d1143. First slice: kanbus-9cc7ec, kanbus-6eb0c5, kanbus-53a88d, kanbus-ad0a0d, kanbus-cfe4b9, kanbus-06de58, kanbus-9a3b85, kanbus-d68036, kanbus-4eba71, kanbus-0c7a2c here; PPY-d21c7f, PPY-bf63d5, PPY-e92c8e, PPY-dd8c18, PPY-e82423 there.\n\nEffect on the accepted decisions: (1) notify.anth.us kept, simpler since the zone is in the same account. (2) The SES alert exists once per AWS account that sends mail; in papyrus-production it covers sites and Prospectus. (3) unchanged; the newsletter pause moves to EventBridge in PPY-819117. (7) Stands, and is now shared with Prospectus and the newsletter. (11) Reversed.\n\nNEW DECISIONS FOR RYAN, with recommendations:\nA. Listen to every alarm in papyrus-production, including 34 of the 47 with no action today (Amplify site alarms, Prospectus's, email): yes. Seven alarms were already in ALARM on 2026-11-04, five of them Amplify site alarms nobody hears.\nB. Slack and Discord with no central endpoint: no Events URL; detect uninstall at the next send. Yes. The alternative is a small signed endpoint in papyrus-monitoring.\nC. No outside watcher for the dead-man's switch: accept for now. It cannot catch account or Region failure. A cheap later option is a scheduled GitHub Action with a read-only OIDC role checking the heartbeat metric.\nD. Operator mute and acknowledge pages on a Lambda function URL, with no custom domain: yes.",
+      "created_at": "2026-11-04T17:10:49.775363Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-11-04T12:59:54.087777Z",
+  "updated_at": "2026-11-04T17:11:39.167835Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

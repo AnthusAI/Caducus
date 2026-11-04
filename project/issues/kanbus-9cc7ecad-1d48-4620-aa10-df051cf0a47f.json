@@ -1,0 +1,30 @@
+{
+  "id": "kanbus-9cc7ecad-1d48-4620-aa10-df051cf0a47f",
+  "title": "Publish the notify package to PyPI: no infrastructure in this repo",
+  "description": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** M1, first slice\n\n**Goal.** Caducus is a dependency, so 'deployed' here means published. Each host pins an exact version. This repo holds no AWS account, CDK or OIDC deploy.\n\n**Build.**\n- Keep `src/caducus/notify/`, standard library plus boto3, lazily imported.\n- `pyproject.toml`: move `PyYAML` and `virtuus` from base dependencies to a `radar` extra, so a Lambda takes the package with no Rust wheel. `notify` extra: boto3.\n- Package data: `src/caducus/notify/schemas/*.json` and the base kinds as JSON, in the wheel. Hosts add their own kinds and alarm catalog from their own repos.\n- `release.yml`: fix the install line the same way as `ci.yml`, or nothing releases: the last run failed and PyPI still has only 0.1.0 while tags reach v0.1.4. Use trusted publishing once Ryan sets it up (PPY-d21c7f), dropping `password`.\n- Merging to main publishes; site and stack deploys stay in Papyrus.\n\n**Acceptance.**\n`pip install caducus[notify]==<new>` in a clean venv, then `from caducus.notify import handlers` works with no PyYAML or virtuus; the wheel holds schemas and base kinds.\n\n**Related:** PPY-d21c7f, PPY-e92c8e, PPY-44721a",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-52b7c299-5df6-4da7-ace7-9fc00473ac77",
+  "labels": [
+    "m1"
+  ],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "6d6675e8-23f0-48a5-82d2-fb33ff46dcab",
+      "author": "home",
+      "text": "Reworked in PR #5: no CDK, no OIDC bootstrap, no deploy workflow, no account (dropped). What remains of this task: the package builds, ships its schemas and base kinds as package data, installs cleanly with only caducus[notify] (boto3) and imports without PyYAML; PyYAML and virtuus moved to a radar extra; ci.yml and release.yml install Biblicus from PyPI and CI runs on develop. Publishing to PyPI still needs the release job fixed after merge.",
+      "created_at": "2026-11-04T17:16:18.272135Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-11-04T13:14:29.167339Z",
+  "updated_at": "2026-11-04T17:16:18.272325Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

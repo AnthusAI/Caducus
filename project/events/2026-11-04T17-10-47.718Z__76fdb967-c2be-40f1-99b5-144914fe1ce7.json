@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "76fdb967-c2be-40f1-99b5-144914fe1ce7",
+  "issue_id": "kanbus-e364c7e2-e3c9-4bcf-94a9-ddd4caa3150d",
+  "event_type": "field_updated",
+  "occurred_at": "2026-11-04T17:10:47.718Z",
+  "actor_id": "home",
+  "payload": {
+    "changes": {
+      "title": {
+        "from": "Broaden the README to the new direction",
+        "to": "Broaden the README and document the package"
+      },
+      "description": {
+        "from": "**Milestone:** M1, first slice\n\n**Goal.** MIT is already in place: AnthusAI/Caducus#4 added LICENSE on develop while this plan was being filed. What remains: open the README with the new direction, that Caducus decides what deserves your attention and gets it to you, with the radar as one part. Claims describe only what has shipped.\n\n**Acceptance.**\nREADME states the direction without claiming unbuilt features.",
+        "to": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** M1, first slice\n\n**Goal.** MIT is in (AnthusAI/Caducus#4). Open the README with the new direction, that Caducus decides what deserves your attention and gets it to you, with the radar as one part. Document how a host uses `caducus.notify`: environment, handlers, kinds, catalog, renderer. Claims describe only what has shipped.\n\n**Acceptance.**\nREADME states the direction without claiming unbuilt features."
+      }
+    }
+  }
+}

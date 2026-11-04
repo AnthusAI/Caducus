@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "920a1594-6bf3-4079-837a-98ac5b4d63fc",
+  "issue_id": "kanbus-be0e9d0d-4996-4eaa-853a-d2108befc2b4",
+  "event_type": "field_updated",
+  "occurred_at": "2026-11-04T13:14:31.561Z",
+  "actor_id": "home",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "**Milestone:** M1, first slice\n\n**Goal.** Alarms in any of our AWS accounts arrive centrally, with no SNS and no change to the alarms themselves. CloudWatch sends state changes to the account's default bus whether or not an alarm has actions, and documents that delivery as guaranteed.\n\n**Build.**\n- `infra/forwarder/alarm-forwarder.yaml`: rule on the default bus matching `source` `aws.cloudwatch`, `detail-type` `CloudWatch Alarm State Change`; target the central bus with an IAM role (EventBridge requires one for cross-account targets) and an SQS dead-letter queue in the source account.\n- Central bus policy allows `events:PutEvents` by `aws:PrincipalOrgID`; the id comes from SSM. Central rule to `caducus-ingest`, with an input step converting to the event format in `handlers/alarm_adapter.py`.\n- Deploy as a service-managed StackSet from the delegated admin account, papyrus-production first, us-east-1. Accounts outside this AWS Organizations tree (the local profiles list some) need an explicit grant; see T_ALLACCTS.\n- Note from the docs: forwarded events are billed to the sender as custom events; a rule cannot hop a third account.\n\n**Acceptance.**\nForce a labelled test alarm with `aws cloudwatch set-alarm-state` in papyrus-production; the event appears in the delivery log. Remove the test alarm afterwards. This is a write in papyrus-production: get Ryan's yes first.\n\n**Depends on:** kanbus-9cc7ec, kanbus-d0987c",
+        "to": "**Milestone:** M1, first slice\n\n**Goal.** Alarms in any of our AWS accounts arrive centrally, with no SNS and no change to the alarms themselves. CloudWatch sends state changes to the account's default bus whether or not an alarm has actions, and documents that delivery as guaranteed.\n\n**Build.**\n- `infra/forwarder/alarm-forwarder.yaml`: rule on the default bus matching `source` `aws.cloudwatch`, `detail-type` `CloudWatch Alarm State Change`; target the central bus with an IAM role (EventBridge requires one for cross-account targets) and an SQS dead-letter queue in the source account.\n- Central bus policy allows `events:PutEvents` by `aws:PrincipalOrgID`; the id comes from SSM. Central rule to `caducus-ingest`, with an input step converting to the event format in `handlers/alarm_adapter.py`.\n- Deploy as a service-managed StackSet from the delegated admin account, papyrus-production first, us-east-1. Accounts outside this AWS Organizations tree (the local profiles list some) need an explicit grant; see kanbus-64fc60.\n- Note from the docs: forwarded events are billed to the sender as custom events; a rule cannot hop a third account.\n\n**Acceptance.**\nForce a labelled test alarm with `aws cloudwatch set-alarm-state` in papyrus-production; the event appears in the delivery log. Remove the test alarm afterwards. This is a write in papyrus-production: get Ryan's yes first.\n\n**Depends on:** kanbus-9cc7ec, kanbus-d0987c"
+      }
+    }
+  }
+}

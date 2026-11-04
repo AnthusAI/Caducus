@@ -1,0 +1,46 @@
+{
+  "id": "kanbus-1c361806-538f-416f-a55b-22c2e0853014",
+  "title": "Turn it off from the message: signed links, a page and one-click unsubscribe",
+  "description": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** M2, operators finished\n\n**Goal.** As a recipient, every message lets me stop this kind, mute this incident or stop everything, without signing in. This is package logic; hosts serve the pages.\n\n**Build.**\n- `manage.py`, `handlers/public.py`: tokens per Papyrus `src/papyrus_content/newsletter/tokens.py`, key given by the host, no address in a link. GET shows a button and changes nothing, because mail scanners fetch links. POST acts. RFC 8058 `List-Unsubscribe` and `List-Unsubscribe-Post` on every message that is not a one-off to one person.\n- Hosts: operator mail uses a function URL (PPY-3e260c). Site mail uses real pages of the site (PPY-f361ee), with `/api/notifications/*` as the machine endpoints.\n\n**Acceptance.**\nBehave features plus a test that GET changes no state. Ryan's screenshot approval is on the Papyrus pages.\n\n**Depends on:** kanbus-222bcf, kanbus-cfe4b9\n**Related:** PPY-3e260c, PPY-f361ee\n\n**Specification.**\n```gherkin\nFeature: Turning off from a message\n  Scenario: A mail scanner follows the link\n    When the manage link is fetched with GET\n    Then nothing changes\n\n  Scenario: One click\n    When a mail provider posts the one-click unsubscribe for a kind\n    Then that person gets no more of that kind and the answer is 200\n\n  Scenario: Muting one incident\n    Given an open incident\n    When an operator presses \"Mute this incident\"\n    Then they get no clearing message for it and other incidents still reach them\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-52b7c299-5df6-4da7-ace7-9fc00473ac77",
+  "labels": [
+    "m2"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-222bcf30-ca2f-4c89-a9c8-b46627d2fd72",
+      "type": "blocked-by"
+    },
+    {
+      "target": "kanbus-cfe4b911-1716-4f8d-b7da-5811e880b1c7",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [
+    {
+      "id": "8494929a-dcf6-470f-9e3e-e241435d3c00",
+      "author": "home",
+      "text": "Papyrus side: PPY-ab9205",
+      "created_at": "2026-11-04T13:15:36.760423Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "3271b95b-db6f-4f4f-8f11-ab8249cfe94e",
+      "author": "home",
+      "text": "Papyrus side, corrected id: PPY-f361ee (replaces PPY-ab9205, deleted and refiled before it was ever pushed).",
+      "created_at": "2026-11-04T13:17:12.339894Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-11-04T13:14:29.322356Z",
+  "updated_at": "2026-11-04T17:10:47.206359Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

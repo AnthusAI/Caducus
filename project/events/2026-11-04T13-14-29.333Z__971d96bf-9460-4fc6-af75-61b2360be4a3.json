@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "971d96bf-9460-4fc6-af75-61b2360be4a3",
+  "issue_id": "kanbus-c68e03b2-8482-49d4-95ea-b01b181d71c0",
+  "event_type": "issue_created",
+  "occurred_at": "2026-11-04T13:14:29.333Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Send a test, and see delivery history",
+    "description": "**Milestone:** M2, operators finished\n\n**Goal.** As a person or an admin, I can prove a channel works and see what was sent. Console buttons come with P_PANEL and P_PERSONAL; this is the service side and the `caducus` CLI.\n\n**Build.**\n- API routes `POST /v1/test`, `GET /v1/history` (IAM, see S_API; for M2 the CLI uses the operator's AWS session). `caducus notify test <channel>`, `caducus notify history [--person|--site|--kind]`.\n- A test is a real send through the channel and logged with kind `caducus.test`, sent only to the caller's own destination.\n- A person sees their own history. Admins see their site's, addresses masked unless they are the owner or admin of that Account, as in the Papyrus newsletter panel.\n\n**Acceptance.**\nBehave features; live test via the mailbox simulator.\n\n**Depends on:** kanbus-53a88d, kanbus-cfe4b9\n\n**Specification.**\n```gherkin\nFeature: Test and history\n  Scenario: Send a test\n    When I press send a test for my email channel\n    Then one test message goes only to my own address\n    And it appears in my history with its result\n\n  Scenario: An admin reads history\n    Given an admin of a site\n    When they read the site's delivery history\n    Then they see kind, channel, result and time for each delivery\n```",
+    "issue_type": "story",
+    "status": "open",
+    "priority": 1,
+    "assignee": null,
+    "parent": "kanbus-52b7c299-5df6-4da7-ace7-9fc00473ac77",
+    "labels": [
+      "m2"
+    ]
+  }
+}

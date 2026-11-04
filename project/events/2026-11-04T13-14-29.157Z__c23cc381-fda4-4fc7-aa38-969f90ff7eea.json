@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "event_id": "c23cc381-fda4-4fc7-aa38-969f90ff7eea",
+  "issue_id": "kanbus-20d4c29e-6532-4fda-8f5d-635030ffb49a",
+  "event_type": "issue_created",
+  "occurred_at": "2026-11-04T13:14:29.157Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Ryan: request SES production access for the new account, then ramp",
+    "description": "**Milestone:** M2, operators finished\n\n**Goal.** Public mail cannot start before this. The request carries a legal acknowledgement, so it is Ryan's. AWS's first reply is within 96 hours by its documentation; submit it during M1 so it does not hold M3.\n\n**Build.**\n1. Run `aws sesv2 put-account-details --production-access-enabled --mail-type MARKETING --website-url https://p.apyr.us --additional-contact-email-addresses <Ryan's choice> --contact-language EN` in `caducus-production`, or use the console. MARKETING because AWS defines one-to-many mail that way and new-story mail will be the majority. If asked about list mail, say truthfully: double opt-in, one-click unsubscribe, bounce and complaint suppression, no open or click tracking.\n2. Sandbox status is per Region: us-east-1 only for now.\n\nRamp (agents do this after approval): operators only, then Machines on Machines subscribers, then a batch of sites. Pace with `MaxSendRate`, read live from `sesv2 get_account` as `src/papyrus_content/newsletter/worker.py` does; no fixed daily caps of our own. Watch Reputation.BounceRate and Reputation.ComplaintRate between steps.\n\n**Acceptance.**\n`aws sesv2 get-account` shows ProductionAccessEnabled true.\n\n**Depends on:** kanbus-d0987c",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 1,
+    "assignee": null,
+    "parent": "kanbus-28219b64-56ee-423d-bbee-480563eedef3",
+    "labels": [
+      "m2",
+      "ryan-step"
+    ]
+  }
+}

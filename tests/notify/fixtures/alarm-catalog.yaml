@@ -1,0 +1,31 @@
+# Test data only. Hosts supply their own catalog (Papyrus's lives in its own
+# infra/monitoring/alarm-catalog.yaml) and point CADUCUS_CONFIG_DIR at it.
+#
+# pattern   regular expression matched against the whole alarm name; a named
+#           group (?P<site>...) says how to read the site from the name
+# what, impact, next   the triage notes shown in the message
+# holdDownSeconds      optional per alarm; how long it must stay OK before clearing
+defaults:
+  holdDownSeconds: 300
+
+alarms:
+  - pattern: '^papyrus-monitoring-search-provider-failing$'
+    product: papyrus
+    what: A web-search provider refused the collector's key or reported its plan used up.
+    impact: Monitors that search through that provider find nothing new until it answers again.
+    next: Read the search_provider_failing log lines for the provider, kind and monitor, then renew the key or top up the plan on that provider's account.
+  - pattern: '^papyrus-monitoring-router-errors$'
+    product: papyrus
+    what: The router Lambda reported an error (a crash or a timeout).
+    impact: Items wait unrouted, so they do not reach Cyclotron decisions or the newsroom.
+    next: Read the latest ROUTERUN receipt and the router's log group.
+  - pattern: '^papyrus-newsletter-(?P<site>.+)-bounce-rate$'
+    product: papyrus
+    what: The newsletter bounce rate is above its limit over 24 hours.
+    impact: Newsletter sending for this site is paused automatically to protect the sending reputation.
+    next: Read the site's newsletter event log for the addresses that bounced, remove bad addresses, then resume sending.
+  - pattern: '^papyrus-newsletter-(?P<site>.+)-complaint-rate$'
+    product: papyrus
+    what: The newsletter complaint rate is above its limit over 24 hours.
+    impact: Newsletter sending for this site is paused automatically to protect the sending reputation.
+    next: Read the site's newsletter event log for who complained and check what was sent, then resume sending.

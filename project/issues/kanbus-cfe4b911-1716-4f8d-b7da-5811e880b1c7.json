@@ -1,0 +1,35 @@
+{
+  "id": "kanbus-cfe4b911-1716-4f8d-b7da-5811e880b1c7",
+  "title": "Send a notification email, paced, with retries, never tracked",
+  "description": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** M1, first slice\n\n**Goal.** As an operator, I get a readable HTML and plain-text email with no pixel and no rewritten link.\n\n**Build.**\n- `channels/email.py`, `render/operator.py`, `handlers/email_sender.py`, behind a `Mailer` and a `Renderer` interface, so a host can pass its own (Papyrus: `email_render`).\n- Claim the row with `attribute_not_exists` before SES; backoff 1, 2, 4 seconds; pace to `MaxSendRate`, shared across a whole AWS account's senders, so backoff matters.\n- Inline styles, links underlined, state in words and a mark. Escape everything. Tags `delivery`, `kind`.\n\n**Acceptance.**\nRendered samples checked by test for no `<img>` pixel, no tracking host, a text part and the state as a word.\n\n**Depends on:** kanbus-ad0a0d\n**Related:** PPY-bf63d5\n\n**Specification.**\n```gherkin\nFeature: Email channel\n  Scenario: An email goes out once\n    Given a queued email delivery\n    When the sender handles it twice\n    Then SES was called once\n    And the log shows \"sent\" with the provider id\n\n  Scenario: SES throttles\n    Given SES answers with a throttling error\n    When the sender handles a delivery\n    Then it retries with backoff and the delivery is still sent once\n\n  Scenario: Nothing in the mail tracks the reader\n    When any notification email is rendered\n    Then it has no tracking image and every link points at its real destination\n```",
+  "type": "story",
+  "status": "in_progress",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-28219b64-56ee-423d-bbee-480563eedef3",
+  "labels": [
+    "m1"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-ad0a0d56-6db5-46c1-8f03-77eb99ffc07d",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [
+    {
+      "id": "516f649d-849c-4f87-b4ae-d2151add8fba",
+      "author": "home",
+      "text": "Built in PR #5: email channel with claim-before-send, backoff 1/2/4 s, pacing to MaxSendRate, Mailer interface, new Renderer interface (default operator template, no tracking), SES v2 mailer tested against moto. Specs email.feature.",
+      "created_at": "2026-11-04T17:16:18.259857Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-11-04T13:14:29.221930Z",
+  "updated_at": "2026-11-04T17:16:18.260044Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
