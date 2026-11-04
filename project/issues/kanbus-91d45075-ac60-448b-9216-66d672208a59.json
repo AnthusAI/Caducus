@@ -9,8 +9,7 @@
   "creator": null,
   "parent": "kanbus-52b7c299-5df6-4da7-ace7-9fc00473ac77",
   "labels": [
-    "m1",
-    "ryan-step"
+    "m1"
   ],
   "dependencies": [
     {
@@ -28,7 +27,7 @@
     }
   ],
   "created_at": "2026-11-04T13:14:29.147027Z",
-  "updated_at": "2026-11-04T17:10:49.096590Z",
+  "updated_at": "2026-11-04T17:12:13.367456Z",
   "closed_at": "2026-11-04T17:10:49.096560Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
