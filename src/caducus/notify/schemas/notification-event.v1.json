@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Notification Requested, detail (schema 1)",
+  "description": "EventBridge source anthus.<product>, detail-type 'Notification Requested'. Apps name a kind, never recipients; only account mail may name one Person in audience.",
+  "type": "object",
+  "required": ["schema", "eventId", "kind", "product", "occurredAt", "severity", "facts"],
+  "properties": {
+    "schema": { "const": 1 },
+    "eventId": { "type": "string", "minLength": 1, "description": "The caller's idempotency key." },
+    "kind": { "type": "string", "minLength": 1 },
+    "product": { "type": "string", "minLength": 1 },
+    "site": { "type": "string", "minLength": 1 },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "severity": { "enum": ["info", "warning", "critical"] },
+    "groupKey": { "type": "string", "minLength": 1 },
+    "audience": { "type": "string", "minLength": 1 },
+    "facts": {
+      "type": "object",
+      "required": ["title"],
+      "properties": {
+        "title": { "type": "string", "minLength": 1 },
+        "summary": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

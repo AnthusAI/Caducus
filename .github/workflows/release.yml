@@ -19,8 +19,7 @@ jobs:
           python-version: "3.12"
       - name: Install dependencies
         run: |
-          pip install "biblicus @ git+https://github.com/AnthusAI/Biblicus.git@dev"
-          pip install -e ".[dev,reinforcement-memory]"
+          pip install -e ".[dev,radar,reinforcement-memory]"
       - name: Workaround virtuus VERSION bug
         run: |
           SITE_PKG=$(python -c "import site; print(site.getsitepackages()[0])")
