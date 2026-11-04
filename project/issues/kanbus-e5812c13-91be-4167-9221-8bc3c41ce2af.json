@@ -24,10 +24,17 @@
       "text": "Pages are PPY-f361ee, not PPY-ab9205, which was refiled before it was ever pushed.",
       "created_at": "2026-11-04T13:17:12.352284Z",
       "comment_type": "default"
+    },
+    {
+      "id": "5061b828-54a2-44dc-8bcc-5127dec05e45",
+      "author": "home",
+      "text": "Rollout is PPY-e28679, not PPY-dc8593, which was refiled to clear a dangling dependency.",
+      "created_at": "2026-11-04T13:19:03.850463Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-11-04T12:59:54.166678Z",
-  "updated_at": "2026-11-04T13:17:12.352473Z",
+  "updated_at": "2026-11-04T13:19:03.850650Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
