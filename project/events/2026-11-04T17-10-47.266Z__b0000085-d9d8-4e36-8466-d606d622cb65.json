@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "b0000085-d9d8-4e36-8466-d606d622cb65",
+  "issue_id": "kanbus-78f22928-cde6-42e7-96b7-bc4d1664f50f",
+  "event_type": "field_updated",
+  "occurred_at": "2026-11-04T17:10:47.266Z",
+  "actor_id": "home",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "**Milestone:** M2, operators finished\n\n**Goal.** The exact list to retire, so 'exactly two' can be checked, plus machine-only topics.\n\n**Build.**\nFrom source so far (not a live read):\n- Papyrus: `infra/monitoring/papyrus-monitoring.yaml` (email), `infra/scheduled-jobs/lib/scheduled-container-job.ts` (email per site), `amplify/cli-login/remote-login.ts` and related alarms through `PAPYRUS_ALARM_TOPIC_ARN`, `amplify/publication/invalidation-alarm.ts`, `amplify/publication/reproject-on-deploy.ts`, `infra/email/papyrus-email-submissions.yaml`; the Amplify cost check in `docs/amplify-cost-check.md`.\n- Papyrus machine-only: `papyrus-newsletter-events-<site>` (sending stack), `papyrus-newsletter-alarms-<site>` (plugin, invokes the function to pause), the event topic in `infra/amplify-app-shell/lib/cloud-email.ts`.\n- Chatticus: `infra/lib/alarms.ts`, `auth-stack.ts`, `budgets-stack.ts`, `control-plane-stack.ts`, `thin-turn-stack.ts`. Babulus: `packages/construct/src/index.ts`, `packages/control-plane/stacks/backend.py`.\nAdd a live `sns list-topics` and subscriptions per account. Table: topic, who hears it, replacement (alarm to Caducus; SES to EventBridge; machine alarm to EventBridge rule), and open cases such as AWS Budgets, whose EventBridge support was not checked.\n\n**Acceptance.**\nTable on kanbus-2b9a27; each row has an owner issue.",
+        "to": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** M2, operators finished\n\n**Goal.** The exact list to retire, so 'exactly two' can be checked, plus machine-only topics. Each deployment's account answers for itself now.\n\n**Build.**\nLive read of papyrus-production on 2026-11-04, 11 topics, us-east-1 (no alarms in us-west-2, eu-west-1, us-east-2):\n- Human email: `papyrus-monitoring-alarms` (becomes the last-resort topic; one confirmed subscription and one stuck pending), two `papyrus-scheduled-job-knowledge-run-*` topics.\n- Machine: `papyrus-newsletter-alarms-{distinctive,shipped}` (Lambda, the automatic pause: must not be removed without moving the trigger, PPY-f66e91's comment), `papyrus-newsletter-events-{distinctive,shipped}` (Lambda), and the same topic for dataparade, machines-on-machines and pilobol-us, with no subscribers.\n- `papyrus-amplify-cost-alerts`: no subscribers. See `docs/amplify-cost-check.md`.\nSource only, other apps: Chatticus `infra/lib/alarms.ts`, `auth-stack.ts`, `budgets-stack.ts`, `control-plane-stack.ts`, `thin-turn-stack.ts`. Babulus `packages/construct/src/index.ts`, `packages/control-plane/stacks/backend.py`. Add a live read at adoption. Open: AWS Budgets, whose EventBridge support was not checked.\n\n**Acceptance.**\nTable on kanbus-2b9a27; each row has an owner issue."
+      }
+    }
+  }
+}

@@ -3,7 +3,7 @@
   "title": "Alarm forwarder: CloudWatch alarm state changes from other AWS accounts reach the central bus",
   "description": "**Milestone:** M1, first slice\n\n**Goal.** Alarms in any of our AWS accounts arrive centrally, with no SNS and no change to the alarms themselves. CloudWatch sends state changes to the account's default bus whether or not an alarm has actions, and documents that delivery as guaranteed.\n\n**Build.**\n- `infra/forwarder/alarm-forwarder.yaml`: rule on the default bus matching `source` `aws.cloudwatch`, `detail-type` `CloudWatch Alarm State Change`; target the central bus with an IAM role (EventBridge requires one for cross-account targets) and an SQS dead-letter queue in the source account.\n- Central bus policy allows `events:PutEvents` by `aws:PrincipalOrgID`; the id comes from SSM. Central rule to `caducus-ingest`, with an input step converting to the event format in `handlers/alarm_adapter.py`.\n- Deploy as a service-managed StackSet from the delegated admin account, papyrus-production first, us-east-1. Accounts outside this AWS Organizations tree (the local profiles list some) need an explicit grant; see kanbus-64fc60.\n- Note from the docs: forwarded events are billed to the sender as custom events; a rule cannot hop a third account.\n\n**Acceptance.**\nForce a labelled test alarm with `aws cloudwatch set-alarm-state` in papyrus-production; the event appears in the delivery log. Remove the test alarm afterwards. This is a write in papyrus-production: get Ryan's yes first.\n\n**Depends on:** kanbus-9cc7ec, kanbus-d0987c",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 0,
   "assignee": null,
   "creator": null,
@@ -21,10 +21,18 @@
       "type": "blocked-by"
     }
   ],
-  "comments": [],
+  "comments": [
+    {
+      "id": "1b23eb32-385a-4ed2-ae42-ff51f5ae94f4",
+      "author": "home",
+      "text": "No longer applies: no central account, no forwarder, StackSet or bus policy. The listener is one rule on papyrus-production's own default bus, in PPY-e92c8e.",
+      "created_at": "2026-11-04T17:10:49.025119Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-11-04T13:14:29.243121Z",
-  "updated_at": "2026-11-04T13:14:31.589851Z",
-  "closed_at": null,
+  "updated_at": "2026-11-04T17:10:49.031629Z",
+  "closed_at": "2026-11-04T17:10:49.031601Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}

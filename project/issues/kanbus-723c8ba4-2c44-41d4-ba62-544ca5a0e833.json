@@ -1,7 +1,7 @@
 {
   "id": "kanbus-723c8ba4-2c44-41d4-ba62-544ca5a0e833",
   "title": "Adopt in Cyclotron",
-  "description": "**Milestone:** Later, coarse\n\n**Goal.** Brand, app events (for example a retrain finished, or a decision queue backed up). Cyclotron's session owns the merge and takes approval from Ryan directly. Its repo has no SNS topic by source search.\n\n**Acceptance.**\nSpec'd when started.\n\n**Depends on:** kanbus-0c3a43",
+  "description": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** Later, coarse\n\n**Goal.** Same pattern in Cyclotron's own account: operator listener, catalog, table, SES identity, last-resort alerts; app events (a retrain finished, a decision queue backed up). SES sandbox on 2026-11-04: fine for verified operators. Cyclotron's session owns the merge and takes approval from Ryan directly. No SNS topic found by source search.\n\n**Acceptance.**\nSpec'd when started.",
   "type": "task",
   "status": "open",
   "priority": 3,
@@ -11,15 +11,10 @@
   "labels": [
     "later"
   ],
-  "dependencies": [
-    {
-      "target": "kanbus-0c3a43e6-c96e-4339-92b8-ea087208c1a7",
-      "type": "blocked-by"
-    }
-  ],
+  "dependencies": [],
   "comments": [],
   "created_at": "2026-11-04T13:14:29.598825Z",
-  "updated_at": "2026-11-04T13:14:32.515333Z",
+  "updated_at": "2026-11-04T17:10:47.593699Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

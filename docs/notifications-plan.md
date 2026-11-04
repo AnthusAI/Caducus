@@ -1,52 +1,83 @@
 # Notifications: architecture and plan
 
-Status: planned, nothing built. Initiative `kanbus-90737c`; Papyrus side `PPY-4d1143`. Goal, scope and decisions are in the initiative; this says how.
+Status: planned, reworked 2026-11-04 after Ryan reversed the first design. Nothing is deployed. Initiative `kanbus-90737c`; Papyrus side `PPY-4d1143`.
 
-Caducus decides what deserves your attention and gets it to you. The log radar stays as one part and connects later as a source of incidents (`kanbus-d7b6ac`). CloudWatch alarms come first, because too many alarm emails are the same as none.
+Caducus decides what deserves your attention and gets it to you. The log radar stays as one part and connects later as a source of incidents. CloudWatch alarms come first, because too many alarm emails are the same as none.
 
 ## The shape
 
-One small central service in its own AWS account, `caducus-production`. Apps do not call a mail API: they put one JSON event on a bus. The service decides who hears about it, on which channel, and records what happened.
+No new AWS account and no central service. Caducus is a Python package that runs inside each deployment. Nothing is shared at runtime.
 
 ```mermaid
 flowchart LR
-  subgraph sources[Other AWS accounts]
-    A[CloudWatch alarm] -->|state change on default bus| F[forwarder rule]
-    P[Papyrus and other apps] -->|PutEvents| B
-    F -->|IAM role, DLQ| B
+  subgraph acct[papyrus-production]
+    A[All CloudWatch alarms] -->|default bus| Q
+    subgraph mon[papyrus-monitoring stack: operator piece]
+      Q[queue] --> R[caducus router, incidents, grouping]
+      R --> T[(operator table)]
+      R --> E[email queue] --> S1[caducus sender]
+      H[heartbeat schedule] --> Q
+      V[SES events] --> T
+      V --> M[heartbeat metric]
+    end
+    S1 --> SES[SES: one account]
+    SES -->|default bus, by configuration set| V
+    M --> LR[two last-resort alarms] --> SNS[SNS email to Ryan]
+    SES --> LR
+    subgraph site[each site's notifications plugin stack]
+      P[publish, app events] --> F[caducus router]
+      W[/api/notifications routes/] --> F
+      F --> ST[(site table)]
+      F --> SQ[email queue] --> S2[caducus sender]
+    end
+    S2 --> SES
+    SES -->|by configuration set| ST
   end
-  subgraph central[caducus-production]
-    B[event bus] --> Q[ingest queue] --> R[router: dedupe, incident, grouping, audience, preferences]
-    R --> L[(delivery log and state, DynamoDB)]
-    R --> E[email queue] --> SES
-    R -.later.-> S[Slack queue]
-    R -.later.-> D[Discord queue]
-    SES -->|events on default bus| V[SES events] --> L
-    H[heartbeat schedule] --> B
-    V --> M[heartbeat metric] --> AL[two last-resort alarms] --> SNS[SNS email to Ryan]
-    API[signed client API and public pages]
-    API --> L
-  end
-  W[Site /api/notifications routes] -->|SigV4| API
-  Reader[Reader or admin] --> W
 ```
 
 | Where | What |
 | --- | --- |
-| Central service (this repo) | Event format, kind registry, routing, incidents, grouping, preferences, consent, suppression, delivery log, channel senders, public manage pages, Slack and Discord install flows |
-| Client | Almost nothing: the JSON schema and `PutEvents`. A thin Python helper, then a thin TypeScript one when Chatticus adopts. `caducus-email-render` is a shared package |
-| Per app | Emits events; supplies its brand at deploy; its own console pages and CLI, which call the signed API |
-| Per AWS account | One forwarder stack, from a StackSet |
+| Package `caducus`, extra `notify` | Event format, base kinds, routing, incidents, grouping, preferences, consent, suppression, delivery log, channels, tokens, SES-event handling, handlers. Stores and mailers are interfaces. No AWS account, CDK or deploy in this repo |
+| Papyrus plugin `notifications` | Per-site table, key, queues, functions, routes and pages. Model: `amplify/plugins/newsletter/` |
+| Operator piece in `papyrus-monitoring` | One listener for the whole account, because these alarms belong to no one site and listening per site would send one email per site |
+| Other apps, later | The same package in their own deployments and accounts |
 
-**Language and hosting.** Python 3.12 Lambdas on arm64, with SQS between steps, DynamoDB, EventBridge and CDK in Python. Caducus is already Python, and the code worth reusing (newsletter sender, tokens, email renderer) is Python, so one language runs through the repo. The load is small and bursty, which suits Lambda with no idle cost. DynamoDB rather than the Virtuus files the radar CLI uses, because this needs TTL for retention, conditional writes for dedupe, and an index by recipient. CI in GitHub Actions; CD by OIDC on merge to main; no stored keys.
+**Package.** Published to PyPI from this repo when `main` changes, like other Anthus packages. Hosts pin an exact version. Lambdas take the wheel plus the runtime's boto3; `PyYAML` and `virtuus` move to a `radar` extra so the radar's dependencies stay out. Python, because Caducus and the code worth reusing are Python. Today publishing does not work: PyPI holds only 0.1.0 and the release job last failed (`kanbus-9cc7ec`).
 
-**Account.** A new AWS account keeps delivery reachable when a product account is broken, and keeps reader data out of the product accounts. One account to start, us-east-1, no staging: the SES mailbox simulator and a site under test cover the risky parts.
+**Operator piece** (`PPY-e92c8e`). In `infra/monitoring/papyrus-monitoring.yaml`, zip from `infra/monitoring/build.py --operator`. A rule on the account's default bus takes every `CloudWatch Alarm State Change`, with or without alarm actions: no forwarder, no cross-account anything. A scheduled reconcile with `describe-alarms` opens incidents for what is already firing and catches lost events. Papyrus's alarm catalog lives in Papyrus, not here. Operators come from the stack's existing mailbox parameter for now.
 
-**CloudWatch across accounts.** CloudWatch sends every alarm state change to its account's default bus, with or without alarm actions, and documents that delivery as guaranteed. So alarms need no change and SNS actions can simply go. Each account has one rule forwarding those events to the central bus; the bus policy allows the AWS Organizations tree by `aws:PrincipalOrgID`. A stale-source heartbeat catches a broken forwarder.
+**Site piece.** Table, KMS key, queues and functions per site, as with the newsletter. The site's CMS routes invoke the site's own function, and `publish_alerts.py` invokes it asynchronously on a real publish, so there is no event bus or network API. Readers, subscriptions and consent live in that site's table.
 
-## Event format
+**SES.** papyrus-production has production access. No new identity per site: a site uses the identity and configuration set `papyrus-<site>` from the newsletter's sending stack, so one reputation and one pause per site. The newsletter handler already ignores events with no `sub` tag. Anth.us and Threat Intelligence have no identity yet and get the same stack. Operator mail: `notify.anth.us`, same stack, set `papyrus-operators`. The anth.us zone is in this account, so no delegation and no collision found. Open and click events are never enabled, and a test fails if they appear.
 
-EventBridge `source` `anthus.<product>`, `detail-type` `Notification Requested`, detail:
+**Brand.** A site's `theme` in `papyrus.config.ts` is validated at synth and reaches the function as `THEME_JSON`, as the newsletter's does. The package takes a renderer: Papyrus passes `email_render`, which has Markus in its bundle. Operator mail uses the package's plain template and neutral brand. A shared renderer waits until a second app wants branded public mail.
+
+**Other apps.** Same package, one operator listener per AWS account, their own catalog, table, SES identity and last-resort alerts. Their SES accounts read as sandbox on 2026-11-04, which is enough for verified operators; production access is their own request when they mail customers.
+
+## What this gives up
+
+- **Independence from account problems.** Operator mail shares an AWS account and an SES reputation with every site, the newsletter and Prospectus. Trouble with the account takes alerts down with what they report on.
+- **One view across sites.** No cross-site subscriber list or history. A person who administers two sites has two sets of choices. Each host's delivery log is its own.
+- **Shared capacity with no coordination.** 14 a second and 50,000 a day on the 2026-11-04 reading, across all senders. Each pacer reads `MaxSendRate` and can't see the others, so throttling backoff does the rest.
+- **Fast upgrades.** A package change means a Caducus release, then a Papyrus release and a site batch, or a hand-run change set on `papyrus-monitoring`.
+- **One-app ease on Slack and Discord.** A Slack app has one Events URL, and no central endpoint exists. So no inbound events: uninstall shows at the next send.
+
+It gains: no account to run, no SES request, no bus policy or API auth, and each site's data staying with the site.
+
+## The last-resort alerts
+
+Exactly two human alerts stay on SNS, in papyrus-production, on the existing `papyrus-monitoring-alarms` topic, whose subscription is already confirmed.
+
+1. **SES in trouble.** `Reputation.BounceRate` >= 5%, `Reputation.ComplaintRate` >= 0.1%, the lines SES recommends, or a refused heartbeat send, since SES documents no account-paused event. Account-wide, so it covers sites and Prospectus too.
+2. **Dead-man's switch.** Every 15 minutes a heartbeat runs the real path: queue, router, email queue, SES to the mailbox simulator, delivery event on the default bus, handler, metric. An alarm with missing data as breaching fires after three missed periods.
+
+In the same account this catches a broken Lambda, queue, IAM change, bad package release, EventBridge rule or SES refusal, because CloudWatch alarms and SNS do not depend on any of them. It cannot catch account suspension, a Region-wide CloudWatch or SNS failure, or Ryan's mailbox, because nothing outside the account is watching. Site plugin stacks are not on the heartbeat; their dead-letter and error alarms reach the operator listener.
+
+The newsletter's bounce and complaint alarms pause sending through an SNS action (`src/papyrus_content/newsletter/events.py`). That is machine use, and it moves to an EventBridge rule (`PPY-819117`) before those actions are removed; the human-alarm cleanup (`PPY-f66e91`) leaves it alone.
+
+## Event format and data
+
+Same shape whichever way a host delivers it:
 
 ```json
 {"schema": 1, "eventId": "idempotency key", "kind": "story.published", "product": "papyrus", "site": "shipped",
@@ -54,75 +85,44 @@ EventBridge `source` `anthus.<product>`, `detail-type` `Notification Requested`,
  "facts": {"title": "...", "summary": "...", "url": "..."}}
 ```
 
-Apps name a kind, never recipients; only account mail may name one Person. `config/notification-kinds.yaml` says each kind's class (operator, admin, account, public), defaults, channels, grouping and whether it asks for acknowledgement.
+Apps name a kind, never recipients; only account mail may name one Person. Base kinds ship in the wheel; a host adds its own.
 
-## Data model
-
-One DynamoDB table, keys `pk`, `sk`, TTL `expiresAt`, customer-managed KMS key, point-in-time recovery off so erasure is real.
+One DynamoDB table per host, keys `pk`, `sk`, TTL `expiresAt`, customer-managed KMS key, point-in-time recovery off so erasure is real:
 
 | pk / sk | Holds |
 | --- | --- |
-| `EVENT#id` / `META` | The accepted event; dedupe by conditional put |
-| `EVENT#id` / `DELIVERY#id` | **The delivery log**, below; GSI `byRecipient` |
-| `INCIDENT#awsaccount#region#alarm` / `STATE` | Open or cleared, times, flap count, acknowledgement |
+| `EVENT#id` / `META` | The event; dedupe by conditional put |
+| `EVENT#id` / `DELIVERY#id` | **The delivery log**; GSI `byRecipient` |
+| `INCIDENT#...` / `STATE` | Open or cleared, times, flaps, acknowledgement |
 | `GROUP#key` / `OPEN` | Events waiting for one grouped message |
-| `RCPT#key` / `PROFILE`, `CONTACT#channel`, `PREF#scope`, `CONSENT#kind`, `SUB#site#list` | The person's address or channel id, choices, consent evidence, subscriptions |
+| `RCPT#key` / `CONTACT#channel`, `PREF#scope`, `CONSENT#kind`, `SUB#list` | Address or channel id, choices, consent evidence, subscriptions |
 | `SUPP#hash` / `SUPP` | Suppression, holding no address |
-| `BRAND#id` / `BRAND` | One brand per product or site, from the newsletter's theme fields |
-| `CONN#site#platform#id` / `CONN` | Slack or Discord connection, token encrypted with KMS |
+| `CONN#platform#id` / `CONN` | Slack or Discord connection, token encrypted with KMS |
 
-**Delivery log** (`schemas/delivery-log.v1.json`, `kanbus-53a88d`): `deliveryId`, `eventId`, `kind`, `class`, `product`, `site`, `recipientKey`, `channel`, `destinationMask`, `status`, `reason`, `providerMessageId`, `attempts`, `groupId`, `incidentKey`, `queuedAt`, `sentAt`, `finalAt`, `ackRequested`, `ackAt`, `expiresAt`. A status never moves backward, since SES events can arrive out of order. "Why not" is recorded too: `skipped_preference`, `suppressed`, `grouped`, `refused`, `dead_lettered`. Addresses are never logged.
+Delivery log fields: `deliveryId`, `eventId`, `kind`, `class`, `product`, `site`, `recipientKey`, `channel`, `destinationMask`, `status`, `reason`, `providerMessageId`, `attempts`, `groupId`, `incidentKey`, `queuedAt`, `sentAt`, `finalAt`, `ackRequested`, `ackAt`, `expiresAt`. A status never moves backward, since SES events can arrive out of order. "Why not" is recorded too: `skipped_preference`, `suppressed`, `grouped`, `refused`, `dead_lettered`. Retention 90 days. Addresses are never logged.
 
-**People.** A recipient is `PERSON#id` for account members, `SUBJECT#product#ss1_...` for a signed-in reader, `ADDR#site#hmac` for an email-only subscriber. Readers' pairwise subjects cannot be linked across sites, on purpose, so a reader's choices are per site. Prospectus holds no email, so the service holds addresses: confirmed by double opt-in, or the verified claim sent by the app at sign-in. Until Prospectus adds a machine route (`kanbus-3e30d1`), the operator list is SSM, and an admin joins the audience by signing in after launch.
-
-## What is reused
-
-| From | Reuse |
-| --- | --- |
-| Papyrus `src/papyrus_content/newsletter/` | Double opt-in, tokens, claim-before-send, throttling and pacing to `MaxSendRate`, event mapping, per-set pause, erasure by index |
-| Papyrus `src/papyrus_content/email_render/` | Split so Markus stays in Papyrus; the rest becomes `caducus-email-render` |
-| Papyrus `infra/newsletter/papyrus-newsletter-sending.yaml` | Identity, DKIM, MAIL FROM, DMARC, configuration set without tracking |
-| Papyrus `docs/newsletter.md`, `src/papyrus_content/projection/standard/newsletter_pages.py` | Clean pages for people, `/api` for machines, same-origin rules |
-| Papyrus `src/papyrus_content/publish_alerts.py` | The one place a real publish is announced |
-| Papyrus `amplify/plugins/newsletter/secure-string-parameter.ts` | Create-only SSM SecureString |
-| Papyrus `infra/monitoring/papyrus-monitoring.yaml` and `infra/scheduled-jobs` | Alarm descriptions seed the triage catalog; their SNS email is removed in `PPY-f66e91` |
-| Prospectus `docs/SECURITY.md`, `docs/accounts/PAPYRUS_SITES.md`, `docs/QUOTA.md` | Pairwise subjects, retired subjects, percent-only quota; mail-scanner rule for links in `docs/ARCHITECTURE.md` |
-
-Papyrus connects through a `notifications` plugin (`PPY-44721a`): one block in `papyrus.config.ts`, brand sent at deploy, `/api/notifications/*` routes, projected pages. The Papyrus console's Notification Center stays review requests; a message may link to it.
-
-## SES
-
-- The first slice sends only to verified operators, so it needs no production access. Sandbox limits: verified recipients, 200 a day, 1 a second. Public mail waits for production access, requested early (`kanbus-20d4c2`).
-- SES events go to the default bus (the only bus SES publishes to), best effort and possibly out of order. Open and Click events are never enabled, and a test fails if they appear.
-- Site mail reuses each site's identity in papyrus-production by sending authorization: no DNS change. Quota, reputation and billing fall on the new account. AWS's page on delegates does not list EventBridge, so `kanbus-313b10` tests that first and has a fallback.
-- Public and operator mail share one SES reputation. A per-site alarm pauses that site's configuration set well before SES would act (4% and 0.08%, as today; SES says it may pause at 10% and 0.5%). Gmail gives SES no complaint data, so complaint rates undercount.
+People: `PERSON#id` for account members, `SUBJECT#ss1_...` for a signed-in reader, `ADDR#hmac` for an email-only subscriber. Prospectus holds no email, so the host holds addresses, confirmed by double opt-in or from the verified claim at sign-in. An admin joins the audience by signing in after launch.
 
 ## Keeping the noise down
 
-One message per incident and one on clearing (`kanbus-9a3b85`). Alarms firing together become one message listing all of them (`kanbus-4eba71`). Nothing is capped or dropped: group and pace. Acknowledgement only for kinds that opt in (`kanbus-42a682`), asked for in plain words; GET changes nothing, so a mail scanner cannot acknowledge. Starting list to confirm after real use: site sending paused, and dead-letter incidents.
-
-A dead letter becomes one operator incident naming the queue and the command to redrive, and clears when the queue is empty (`kanbus-b9f48f`). Exactly two alerts remain on SNS (`kanbus-a402b9`): SES at risk or unable to send, and a dead-man's switch whose heartbeat runs the real path through SES to the mailbox simulator.
+One message per incident and one on clearing. Alarms firing together become one message listing them all. Nothing is capped or dropped: group and pace. Acknowledgement only for kinds that opt in, asked for in plain words; GET changes nothing, so a mail scanner cannot acknowledge. Alarms go only to operators; a site's own events go to its admins. A dead-letter queue is just another alarm, whose message names the command to redrive.
 
 ## Secrets and channels
 
-Generated secrets: SSM SecureString, created once by IaC. Per-install Slack and Discord tokens are created at runtime, so they are KMS-encrypted in DynamoDB. App credentials issued by Slack and Discord are the one thing typed by hand, by Ryan, through a script into IaC-created parameters. Every inbound request is signature-checked; titles and reader text are escaped so a headline cannot ping anyone (Slack: escape `& < >`; Discord: `allowed_mentions: {"parse": []}`). Uninstall stops sends and tells the admin. Details: `kanbus-ae4094`, `kanbus-2c455a`, `kanbus-f4ad82`, `kanbus-26003f`.
+Generated secrets: SSM SecureString, created once by IaC. Per-install Slack and Discord tokens are created at runtime, so they are KMS-encrypted in the site's table. App credentials issued by Slack and Discord are typed by Ryan, through a script, into shared `/papyrus/shared/*` parameters. Titles and reader text are escaped so a headline cannot ping anyone (Slack: escape `& < >`; Discord: `allowed_mentions: {"parse": []}`).
 
 ## Build order
 
-| | Delivers | Epics |
+| | Delivers | Where |
 | --- | --- | --- |
-| **M1** | CloudWatch alarms from papyrus-production reach Ryan as triage-ready email, beside the SNS email | Core, Email, CloudWatch, last-resort part of SNS |
-| **M2** | Anyone can turn things off; test and history; dead letters; acknowledgement; every AWS account; Papyrus SNS email gone | Core, CloudWatch, SNS |
-| **M3** | Brand; site mail; anyone can subscribe; new-story replaces alert lists; console and CLI; all sites in one batch; docs | Brand, Settings, App, Email, Papyrus side |
-| Later | Slack, then Discord; adoption in Chatticus, Cyclotron, Babulus; rest of SNS; radar; quota | Coarse on purpose |
+| **M1** | Every alarm in papyrus-production reaches Ryan as triage-ready email, beside the SNS email | Package (`kanbus-`), operator piece (`PPY-`) |
+| **M2** | Turning things off; test and history; dead letters; acknowledgement; human SNS email removed | Both |
+| **M3** | Plugin, site mail, anyone can subscribe, new-story replaces alert lists, console and CLI, all sites in one batch, docs | Mostly Papyrus |
+| Later | Slack, then Discord; adoption in Chatticus, Cyclotron, Babulus; rest of SNS; radar; quota; Prospectus grants | Coarse on purpose |
 | Last | Weekly digest | Untouched |
-
-M1 cuts across three epics because a slice must run end to end. Issues carry labels `m1`, `m2`, `m3`, `later`, and `ryan-step`.
 
 ## Deliberately deferred
 
-Digests. Phone paging (never). Generic webhook channel: designed only, an HTTPS POST of the delivery as JSON through the `Channel` interface, signed per connection, same queues and SSRF checks on the URL (`kanbus-93a4f9`). A shared preferences UI package, until a second app needs one. Merging with the inbound Papyrus Slack agent app. Log lines in alarm messages. Alarm-tag routing: tags can travel in the event, but name patterns work without changing any alarm. A staging account. A second SES account for operator mail.
+Digests. Phone paging (never). Generic webhook channel: designed only, an HTTPS POST of the delivery as JSON through the `Channel` interface, signed per connection, same queues, SSRF checks on the URL (`kanbus-93a4f9`). Inbound Slack and Discord events. A shared renderer or UI package. Custom domain for operator pages. An outside watcher for the dead-man's switch. Merging with the inbound Papyrus Slack agent app.
 
-## Ryan's decisions and steps
-
-Current list with recommendations is on the initiative `kanbus-90737c`. His steps are the issues labelled `ryan-step`.
+Decisions and Ryan's steps are on `kanbus-90737c` and `PPY-4d1143`.

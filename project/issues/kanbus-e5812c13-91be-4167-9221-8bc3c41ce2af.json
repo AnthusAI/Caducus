@@ -31,10 +31,17 @@
       "text": "Rollout is PPY-e28679, not PPY-dc8593, which was refiled to clear a dangling dependency.",
       "created_at": "2026-11-04T13:19:03.850463Z",
       "comment_type": "default"
+    },
+    {
+      "id": "f43303a4-138f-4a19-8de0-50811d9f9e09",
+      "author": "home",
+      "text": "Reworked 2026-11-04: per-site tables and library calls, no network API. Readers' and admins' choices are per site.",
+      "created_at": "2026-11-04T17:10:49.520362Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-11-04T12:59:54.166678Z",
-  "updated_at": "2026-11-04T13:19:03.850650Z",
+  "updated_at": "2026-11-04T17:10:49.520562Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

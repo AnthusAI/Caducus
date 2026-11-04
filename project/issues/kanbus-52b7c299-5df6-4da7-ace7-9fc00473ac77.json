@@ -17,10 +17,17 @@
       "text": "Build order and architecture: docs/notifications-plan.md. Delivery log: kanbus-53a88d. Papyrus side: PPY-4d1143.",
       "created_at": "2026-11-04T13:15:37.369089Z",
       "comment_type": "default"
+    },
+    {
+      "id": "2e53156c-6393-4080-adbb-9e60167e7970",
+      "author": "home",
+      "text": "Reworked 2026-11-04: this epic is now the `caducus.notify` package, published to PyPI (kanbus-9cc7ec). Tables, queues and Lambdas belong to each host. Plan: docs/notifications-plan.md.",
+      "created_at": "2026-11-04T17:10:49.438961Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-11-04T12:59:54.108257Z",
-  "updated_at": "2026-11-04T13:15:37.369274Z",
+  "updated_at": "2026-11-04T17:10:49.439263Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

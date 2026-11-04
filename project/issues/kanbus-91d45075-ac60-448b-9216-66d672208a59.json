@@ -3,7 +3,7 @@
   "title": "Ryan: choose operator addresses and confirm them",
   "description": "**Milestone:** M1, first slice\n\n**Goal.** Addresses never go in Git, so they live in SSM and only Ryan can confirm them.\n\n**Build.**\n1. Give the operator address and the last-resort address (may be the same) for the SSM parameters `/caducus/operators` and `/caducus/last-resort-address`. kanbus-9cc7ec creates them empty; a script in the repo writes them from Ryan's shell.\n2. Click the SES verification mail for the operator address. While the account is in the SES sandbox it can only send to verified addresses, which is enough for the first slice.\n3. Click the SNS subscription confirmation for the last-resort topic once kanbus-a402b9 deploys.\n\n**Acceptance.**\n`aws sesv2 get-email-identity` shows the address verified; the SNS subscription is confirmed.\n\n**Depends on:** kanbus-d0987c",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 0,
   "assignee": null,
   "creator": null,
@@ -18,10 +18,18 @@
       "type": "blocked-by"
     }
   ],
-  "comments": [],
+  "comments": [
+    {
+      "id": "e03b4316-1c8c-40f3-afb0-9cac32cad40c",
+      "author": "home",
+      "text": "No longer a separate step. No verification is needed in a production SES account; the stack's existing mailbox parameter and confirmed SNS subscription are reused. What remains is one line in PPY-d21c7f.",
+      "created_at": "2026-11-04T17:10:49.090258Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-11-04T13:14:29.147027Z",
-  "updated_at": "2026-11-04T13:14:31.339362Z",
-  "closed_at": null,
+  "updated_at": "2026-11-04T17:10:49.096590Z",
+  "closed_at": "2026-11-04T17:10:49.096560Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}

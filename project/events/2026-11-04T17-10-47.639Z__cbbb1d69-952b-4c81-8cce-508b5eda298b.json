@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "cbbb1d69-952b-4c81-8cce-508b5eda298b",
+  "issue_id": "kanbus-92b1a18c-850b-4996-a785-fa076c5428f0",
+  "event_type": "field_updated",
+  "occurred_at": "2026-11-04T17:10:47.639Z",
+  "actor_id": "home",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "**Milestone:** Later, coarse\n\n**Goal.** Removes everything kanbus-78f229 lists outside Papyrus, confirms exactly two human alerts remain, and ends with the p.apyr.us docs for the feature set, as the epic says.\n\n**Acceptance.**\nA check across accounts lists only the two last-resort topics plus any machine-only topic Ryan accepted.\n\n**Depends on:** kanbus-78f229, kanbus-49f7bd, kanbus-ecbda3, PPY-f66e91, PPY-819117",
+        "to": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** Later, coarse\n\n**Goal.** Removes what kanbus-78f229 lists outside Papyrus. Each AWS account then has only its own two last-resort alerts, plus any machine-only topic Ryan accepted. Ends with the p.apyr.us docs, as the epic says.\n\n**Acceptance.**\nA check per account lists only the two last-resort alarms on human topics.\n\n**Depends on:** kanbus-78f229, kanbus-49f7bd, kanbus-ecbda3\n**Related:** PPY-f66e91, PPY-819117"
+      }
+    }
+  }
+}

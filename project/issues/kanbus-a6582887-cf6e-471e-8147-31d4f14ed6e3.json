@@ -1,7 +1,7 @@
 {
   "id": "kanbus-a6582887-cf6e-471e-8147-31d4f14ed6e3",
   "title": "Privacy policy and terms for the Slack and Discord apps",
-  "description": "**Milestone:** M3, public email and new stories\n\n**Goal.** Slack's Marketplace guide requires a clear privacy policy: what is collected, how it is used, how long it is kept, how to access or delete it, and a contact method. Discord's portal has fields for both. Draft for Ryan's review; Ryan decides if a lawyer reads it. Write what the system really does: no tracking, retention from the plan, deletion per kanbus-98e489. Host per the plan's decision (recommended anth.us, through the newsroom as an ordinary page, not Git; the Anth.us articles rule applies).\n\n**Acceptance.**\nPublic URLs exist, approved by Ryan. No claims about features not yet shipped.\n\n**Depends on:** kanbus-98e489",
+  "description": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** M3, public email and new stories\n\n**Goal.** Slack's Marketplace guide requires a clear privacy policy: what is collected, how it is used, how long it is kept, how to access or delete it, and a contact method. Discord's portal has fields for both. Draft for Ryan's review; Ryan decides if a lawyer reads it. Write what the system really does: no tracking, retention from the plan, deletion per kanbus-98e489. Host per the plan's decision (recommended anth.us, through the newsroom as an ordinary page, not Git; the Anth.us articles rule applies).\n\n**Acceptance.**\nPublic URLs exist, approved by Ryan. No claims about features not yet shipped.\n\n**Depends on:** kanbus-98e489",
   "type": "task",
   "status": "open",
   "priority": 2,
@@ -20,7 +20,7 @@
   ],
   "comments": [],
   "created_at": "2026-11-04T13:14:29.696848Z",
-  "updated_at": "2026-11-04T13:14:32.705487Z",
+  "updated_at": "2026-11-04T17:10:47.733476Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

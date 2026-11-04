@@ -45,10 +45,17 @@
       "text": "Ryan, 2026-11-04: account-level operator alarms run in the papyrus-monitoring stack as a small operator piece, since they belong to no one site. Other apps use the same package in their own deployments and accounts.",
       "created_at": "2026-11-04T17:02:39.408075Z",
       "comment_type": "default"
+    },
+    {
+      "id": "27784f66-32ad-4500-9a14-f2307a40c29a",
+      "author": "home",
+      "text": "Plan reworked 2026-11-04 for Ryan's reversal: docs/notifications-plan.md. Package on this board; hosting on the Papyrus board, PPY-4d1143. First slice: kanbus-9cc7ec, kanbus-6eb0c5, kanbus-53a88d, kanbus-ad0a0d, kanbus-cfe4b9, kanbus-06de58, kanbus-9a3b85, kanbus-d68036, kanbus-4eba71, kanbus-0c7a2c here; PPY-d21c7f, PPY-bf63d5, PPY-e92c8e, PPY-dd8c18, PPY-e82423 there.\n\nEffect on the accepted decisions: (1) notify.anth.us kept, simpler since the zone is in the same account. (2) The SES alert exists once per AWS account that sends mail; in papyrus-production it covers sites and Prospectus. (3) unchanged; the newsletter pause moves to EventBridge in PPY-819117. (7) Stands, and is now shared with Prospectus and the newsletter. (11) Reversed.\n\nNEW DECISIONS FOR RYAN, with recommendations:\nA. Listen to every alarm in papyrus-production, including 34 of the 47 with no action today (Amplify site alarms, Prospectus's, email): yes. Seven alarms were already in ALARM on 2026-11-04, five of them Amplify site alarms nobody hears.\nB. Slack and Discord with no central endpoint: no Events URL; detect uninstall at the next send. Yes. The alternative is a small signed endpoint in papyrus-monitoring.\nC. No outside watcher for the dead-man's switch: accept for now. It cannot catch account or Region failure. A cheap later option is a scheduled GitHub Action with a read-only OIDC role checking the heartbeat metric.\nD. Operator mute and acknowledge pages on a Lambda function URL, with no custom domain: yes.",
+      "created_at": "2026-11-04T17:10:49.775363Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-11-04T12:59:54.087777Z",
-  "updated_at": "2026-11-04T17:02:39.409042Z",
+  "updated_at": "2026-11-04T17:11:39.167835Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
