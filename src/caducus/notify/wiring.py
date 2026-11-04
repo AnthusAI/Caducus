@@ -62,6 +62,14 @@ def triage_settings(
     )
 
 
+def metrics_from_env(env: Optional[Mapping[str, str]] = None) -> Metrics:
+    """Just the metrics client, for handlers that need nothing else (no table, no SSM)."""
+    import boto3
+
+    env = env if env is not None else os.environ
+    return CloudWatchMetrics(boto3.client("cloudwatch"), env.get("METRIC_NAMESPACE", "Caducus"))
+
+
 def build_runtime(env: Optional[Mapping[str, str]] = None) -> Runtime:
     import boto3
 
@@ -97,9 +105,7 @@ def build_runtime(env: Optional[Mapping[str, str]] = None) -> Runtime:
         boto3.client("sesv2"), env["FROM_ADDRESS"], env.get("CONFIGURATION_SET", "")
     )
     email = EmailChannel(store, log, directory, mailer, pacer=Pacer(mailer.max_send_rate))
-    metrics = CloudWatchMetrics(
-        boto3.client("cloudwatch"), env.get("METRIC_NAMESPACE", "Caducus")
-    )
+    metrics = metrics_from_env(env)
     return Runtime(
         store=store, router=router, catalog=catalog, email=email, metrics=metrics
     )

@@ -181,3 +181,16 @@ def test_site_names_replace_ids_in_the_email_item():
     event = cloudwatch.event_from_alarm_change(envelope, world.catalog)
     item = build_alarm_item(event, world.catalog, TriageSettings(sites={"d1": "shipped"}))
     assert item["site"] == "shipped"
+
+
+def test_ses_events_handler_needs_only_cloudwatch(monkeypatch):
+    """The handler's role can be PutMetricData alone: it must not build the table or SSM runtime."""
+    import caducus.notify.wiring as wiring
+
+    counted = MemoryMetrics()
+    monkeypatch.setattr(wiring, "metrics_from_env", lambda env=None: counted)
+    monkeypatch.setattr(wiring, "runtime", lambda: (_ for _ in ()).throw(AssertionError("runtime built")))
+    out = ses_events.handler(
+        {"detail": {"eventType": "Delivery", "mail": {"tags": {"kind": ["caducus.heartbeat"]}}}}
+    )
+    assert out == {"metric": "HeartbeatDelivered"} and counted.counted == ["HeartbeatDelivered"]

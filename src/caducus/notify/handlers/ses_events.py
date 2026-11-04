@@ -43,6 +43,6 @@ def handle_event(metrics: Metrics, envelope: Mapping[str, Any]) -> Optional[str]
 
 
 def handler(event: Mapping[str, Any], context: Any = None) -> Mapping[str, Any]:
-    from ..wiring import runtime
+    from ..wiring import metrics_from_env  # only CloudWatch: no table, no SSM
 
-    return {"metric": handle_event(runtime().metrics, event)}
+    return {"metric": handle_event(metrics_from_env(), event)}
