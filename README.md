@@ -77,6 +77,10 @@ flowchart TD
     C2 ==>|"initializes"| B2
 ```
 
+## How a change ships
+
+Merge pull requests into `develop` (CI runs, nothing is published). A release, `develop` merged into `main`, tags a version and publishes the package to PyPI; see [`AGENTS.md`](AGENTS.md).
+
 ## Run The Working Demo
 
 Install dependencies:
