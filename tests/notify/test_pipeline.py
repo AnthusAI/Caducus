@@ -461,3 +461,14 @@ def test_no_log_line_in_a_full_run_holds_an_address(caplog):
     from caducus.notify.logs import contains_address
 
     assert not any(contains_address(r.getMessage()) for r in caplog.records)
+
+
+def test_html_shows_a_named_link_not_the_raw_url_and_text_keeps_the_full_url():
+    world = World()
+    world.alarm(ALARM)
+    world.send_all_queued()
+    mail = world.mailer.calls[0]
+    link = re.search(r"^Open the alarm: (\S+)$", mail["text"], re.M).group(1)
+    assert re.search(r'<a [^>]*href="[^"]+"[^>]*>Open the alarm in CloudWatch</a>', mail["html"])
+    assert 'href="%s"' % link.replace("&", "&amp;") in mail["html"]
+    assert ">https://" not in mail["html"]

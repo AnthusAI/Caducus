@@ -126,9 +126,9 @@ def _html_item(item: Mapping[str, Any]) -> str:
     link = item.get("link", "")
     if link.startswith("https://"):
         out.append(
-            '<p style="margin:12px 0 0 0;line-height:1.45;"><strong>Open the alarm:</strong> '
+            '<p style="margin:12px 0 0 0;line-height:1.45;">'
             '<a class="link" href="%s" style="color:#0b57d0;text-decoration:underline;'
-            'word-break:break-all;">%s</a></p>' % (escape(link, quote=True), escape(link))
+            'font-weight:700;">Open the alarm in CloudWatch</a></p>' % escape(link, quote=True)
         )
     out.append("</div>")
     return "\n".join(out)
