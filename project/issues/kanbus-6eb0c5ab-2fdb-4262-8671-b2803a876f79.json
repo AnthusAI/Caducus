@@ -3,7 +3,7 @@
   "title": "One event format and a registry of notification kinds",
   "description": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** M1, first slice\n\n**Goal.** As any Anthus app, I hand one small JSON event to the package in my own deployment, so it decides who hears about it and how.\n\n**Build.**\n- `src/caducus/notify/schemas/notification-event.v1.json`, `events.py`, `kinds.py`. Base kinds ship in the wheel; a host adds its own (`CADUCUS_CONFIG_DIR`).\n- Detail: `schema` 1, `eventId` (caller's idempotency key), `kind`, `product`, `site?`, `occurredAt`, `severity`, `groupKey?`, `facts`, `audience?`. A host delivers it however suits: Papyrus invokes the site's function asynchronously, as it does for the newsletter; the operator piece reads an EventBridge envelope from a queue. The same shape either way.\n- A kind: `kind`, `class`, `defaultOn`, `channels`, `ack`, `grouping`, `lifecycle`.\n\n**Acceptance.**\nSchema tests in `tests/`, `features/notifications/events.feature` green.\n\n**Depends on:** kanbus-9cc7ec\n\n**Specification.**\n```gherkin\nFeature: One event format\n  Scenario: A valid event is accepted\n    Given the kind \"cloudwatch.alarm\" is registered\n    When an event of that kind arrives with a title and an event id\n    Then it is accepted for routing\n\n  Scenario: An unknown kind is refused and recorded, not dropped silently\n    When an event of an unregistered kind arrives\n    Then no one is notified\n    And the delivery log records the event as refused with the reason \"unknown kind\"\n\n  Scenario: The same event twice is one event\n    Given an event with id \"e1\" was accepted\n    When an event with id \"e1\" arrives again\n    Then nothing further is routed\n```",
   "type": "story",
-  "status": "open",
+  "status": "in_progress",
   "priority": 0,
   "assignee": null,
   "creator": null,
@@ -17,9 +17,17 @@
       "type": "blocked-by"
     }
   ],
-  "comments": [],
+  "comments": [
+    {
+      "id": "4e554610-b746-4e85-92cd-8434824a614f",
+      "author": "home",
+      "text": "Built in PR #5 (package caducus[notify], reworked for no central service): schema in src/caducus/notify/schemas/, base kind in src/caducus/notify/data/notification-kinds.json, hosts add kinds through CADUCUS_CONFIG_DIR. Specs features/notifications/events.feature; tests tests/notify/test_events_kinds.py.",
+      "created_at": "2026-11-04T17:16:18.187348Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-11-04T13:14:29.177392Z",
-  "updated_at": "2026-11-04T17:10:47.064706Z",
+  "updated_at": "2026-11-04T17:16:18.187776Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
