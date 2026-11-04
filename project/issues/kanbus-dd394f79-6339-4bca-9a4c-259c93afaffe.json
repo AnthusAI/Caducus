@@ -1,0 +1,20 @@
+{
+  "id": "kanbus-dd394f79-6339-4bca-9a4c-259c93afaffe",
+  "title": "Adopt notifications in Cyclotron, Chatticus and Babulus",
+  "description": "Move the other Anthus cloud apps onto the shared client, UI and brand definition, each with its own app events. This is the proof that it is reusable rather than Papyrus-only.",
+  "type": "epic",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-90737cee-7479-4411-bb09-5f5ca4b08818",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-11-04T12:59:54.265796Z",
+  "updated_at": "2026-11-04T12:59:54.265810Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

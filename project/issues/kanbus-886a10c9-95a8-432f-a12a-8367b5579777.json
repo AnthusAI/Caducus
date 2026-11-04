@@ -1,0 +1,20 @@
+{
+  "id": "kanbus-886a10c9-95a8-432f-a12a-8367b5579777",
+  "title": "CloudWatch operator alerts built for triage",
+  "description": "Turn CloudWatch alarms and events into operator notifications someone can act on without logging in to AWS: one message per incident, what broke, which site, the impact, the next step, a direct link, acknowledge or mute, one message on clearing. First slice, because this is the problem that started the initiative. Interim: the papyrus-monitoring alarm email stays until this replaces it.",
+  "type": "epic",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-90737cee-7479-4411-bb09-5f5ca4b08818",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-11-04T12:59:54.186827Z",
+  "updated_at": "2026-11-04T12:59:54.186845Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,0 +1,20 @@
+{
+  "id": "kanbus-2c2dad3a-fbda-4948-96da-02852a114e2a",
+  "title": "One brand definition for every notification",
+  "description": "One brand definition per product, and per site for Papyrus, feeding email, Slack, Discord and public mail so they look consistent. Starts from the newsletter's email theme fields.",
+  "type": "epic",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-90737cee-7479-4411-bb09-5f5ca4b08818",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-11-04T12:59:54.128200Z",
+  "updated_at": "2026-11-04T12:59:54.128214Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

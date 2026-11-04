@@ -1,0 +1,20 @@
+{
+  "id": "kanbus-6a008767-14d2-4dd8-a3d9-78fda7ab7330",
+  "title": "Documentation and marketing for notifications",
+  "description": "Ryan, 2026-11-04: internal docs, public documentation on the Papyrus marketing site (p.apyr.us) explaining the features, and marketing on the landing pages about the notification options. Claims describe only what has shipped, so pages land with each milestone, labelled if they are placeholders. Includes the privacy policy and terms pages Slack and Discord require for an installable app.",
+  "type": "epic",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-90737cee-7479-4411-bb09-5f5ca4b08818",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-11-04T12:59:54.305753Z",
+  "updated_at": "2026-11-04T12:59:54.305772Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
