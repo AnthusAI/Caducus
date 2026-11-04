@@ -229,7 +229,7 @@ def test_suppressed_rows_say_why():
 def test_every_catalog_entry_has_all_four_fields():
     world = World()
     entries = world.catalog._entries
-    assert len(entries) == 4
+    assert len(entries) == 5  # four fixtures and the storm family
     for entry in entries:
         assert entry.what.strip() and entry.impact.strip() and entry.next_step.strip()
         assert entry.product == "papyrus"
