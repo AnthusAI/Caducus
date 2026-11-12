@@ -424,6 +424,7 @@ class PublicWorld(World):
         )
         self.domains = StaticDomains()
         self.fanout_pages = 0
+        self._networks_used = 0
         self.unsuppressed: List[str] = []
         self.settings = AudienceSettings(
             lists=(
@@ -459,8 +460,13 @@ class PublicWorld(World):
 
     # -- reader actions, as a host's routes send them ------------------------
 
-    def subscribe(self, address: str, lists=("stories",), consent: str = CONSENT, ip: str = "203.0.113.7", **extra: Any):  # type: ignore[no-untyped-def]
+    def subscribe(self, address: str, lists=("stories",), consent: str = CONSENT, ip: Optional[str] = None, **extra: Any):  # type: ignore[no-untyped-def]
+        """`ip` defaults to a network of its own per call, as readers' signups mostly are."""
         from .handlers.public import dispatch
+
+        if ip is None:
+            self._networks_used += 1
+            ip = "100.%d.%d.1" % (64 + self._networks_used // 250 % 64, self._networks_used % 250)
 
         event = {"action": "subscribe", "email": address, "lists": list(lists), "consent": consent,
                  "formId": "notifications", "page": FakeLinks.ORIGIN + "/notifications/?utm=x",
