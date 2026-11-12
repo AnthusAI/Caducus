@@ -49,14 +49,15 @@ class FakeMailer(Mailer):
         self.rate = rate
         self.attempts = 0
 
-    def send(self, *, to_address, subject, text, html, tags):  # type: ignore[no-untyped-def]
+    def send(self, *, to_address, subject, text, html, tags, headers=None):  # type: ignore[no-untyped-def]
         self.attempts += 1
         if self.script:
             problem = self.script.pop(0)
             if problem is not None:
                 raise problem
         self.calls.append(
-            {"to": to_address, "subject": subject, "text": text, "html": html, "tags": dict(tags)}
+            {"to": to_address, "subject": subject, "text": text, "html": html, "tags": dict(tags),
+             "headers": dict(headers or {})}
         )
         return "fake-message-%d" % len(self.calls)
 
@@ -386,4 +387,142 @@ class XWorld(World):
         self.x_server.close()
 
 
-__all__ = ["FakeClock", "FakeMailer", "Throttled", "World", "XWorld"]
+class FakeLinks:
+    """The host's pages and one-click endpoint at a made-up origin."""
+
+    ORIGIN = "https://news.example.com"
+
+    def confirm_page(self, token: str) -> str:
+        return "%s/notifications/confirm/?token=%s" % (self.ORIGIN, token)
+
+    def preferences_page(self, token: str) -> str:
+        return "%s/notifications/preferences/?token=%s" % (self.ORIGIN, token)
+
+    def unsubscribe_page(self, token: str, list_id: Optional[str]) -> str:
+        return "%s/notifications/unsubscribe/?token=%s%s" % (
+            self.ORIGIN, token, "&list=" + list_id if list_id else "")
+
+    def one_click(self, token: str, list_id: Optional[str]) -> str:
+        return "%s/api/notifications/unsubscribe?t=%s%s" % (
+            self.ORIGIN, token, "&l=" + list_id if list_id else "")
+
+
+CONSENT = "I agree to receive the emails I choose from Example News and can unsubscribe at any time."
+PUBLIC_KIND = "story.published"
+
+
+class PublicWorld(World):
+    """The World plus a public audience with two lists, on fakes. Nothing reaches SES or DNS."""
+
+    def __init__(self, confirm_window_seconds: int = 72 * 3600) -> None:
+        from .audience import (
+            AudienceDirectory, AudienceKeys, AudienceList, AudienceSettings, PublicAudience, StaticDomains,
+        )
+
+        super().__init__(
+            extra_kinds=[Kind(name=PUBLIC_KIND, klass="public", default_on=False, channels=("email",))]
+        )
+        self.domains = StaticDomains()
+        self.fanout_pages = 0
+        self.unsuppressed: List[str] = []
+        self.settings = AudienceSettings(
+            lists=(
+                AudienceList("stories", PUBLIC_KIND, "New stories", "One email per new story."),
+                AudienceList("weekly", PUBLIC_KIND, "The weekly issue"),
+            ),
+            consent=CONSENT,
+            confirm_window_seconds=confirm_window_seconds,
+            links=FakeLinks(),  # type: ignore[arg-type]
+            product="papyrus",
+            site="example",
+            provider_unsuppress=self.unsuppressed.append,
+        )
+        self.keys = AudienceKeys.from_secret("test-key-secret")
+        self.directory = AudienceDirectory(self.directory)  # type: ignore[assignment]
+        nonces = itertools.count(1)
+        self.router = Router(
+            store=self.store, kinds=self.kinds, log=self.log, directory=self.directory,
+            dispatcher=self.dispatcher, incidents=IncidentTracker(self.store, self.clock),
+            catalog=self.catalog, triage=TriageSettings(portal_url=PORTAL, role_name="", accounts={}),
+            clock=self.clock, preferences=self.preferences, fanout_queues=self.queues,
+        )
+        self.audience = PublicAudience(
+            self.store, self.settings, self.keys, self.domains, self.clock,
+            self.router.handle_detail, new_nonce=lambda: "n%04d" % next(nonces),
+        )
+        self.directory.audience = self.audience  # type: ignore[attr-defined]
+        self.router._audience_source = self.audience
+        self.email = EmailChannel(
+            self.store, self.log, self.directory, self.mailer,
+            sleep=self.sleeps.append, audience=self.audience,
+        )
+
+    # -- reader actions, as a host's routes send them ------------------------
+
+    def subscribe(self, address: str, lists=("stories",), consent: str = CONSENT, ip: str = "203.0.113.7", **extra: Any):  # type: ignore[no-untyped-def]
+        from .handlers.public import dispatch
+
+        event = {"action": "subscribe", "email": address, "lists": list(lists), "consent": consent,
+                 "formId": "notifications", "page": FakeLinks.ORIGIN + "/notifications/?utm=x",
+                 "origin": FakeLinks.ORIGIN, "ip": ip, "userAgent": "Reader/1.0"}
+        event.update(extra)
+        return dispatch(self.audience, event)
+
+    def act(self, action: str, **fields: Any) -> Dict[str, Any]:
+        from .handlers.public import dispatch
+
+        return dispatch(self.audience, dict(fields, action=action))
+
+    def key(self, address: str) -> str:
+        return self.keys.recipient(address)
+
+    def deliver(self) -> int:
+        """Play the email queue (pages and deliveries) until it is empty, as SQS would."""
+        from .handlers.email_sender import handle_batch
+
+        handled = 0
+        while self.queues.sent:
+            channel, body = self.queues.sent.pop(0)
+            if "fanout" in body:
+                self.fanout_pages += 1
+            if channel == "email":
+                handle_batch(self.store, self.email, {"Records": [{"messageId": "m", "body": json.dumps(body)}]},
+                             fan_out=self.router.fan_out_page)
+                handled += 1
+        return handled
+
+    def fan_out_only(self) -> None:
+        """Run the queued fan-out pages, leaving the deliveries they queue unsent."""
+        pages = [b for c, b in self.queues.sent if "fanout" in b]
+        self.queues.sent = [(c, b) for c, b in self.queues.sent if "fanout" not in b]
+        while pages:
+            self.fanout_pages += 1
+            self.router.fan_out_page(pages.pop(0))
+            pages += [b for c, b in self.queues.sent if "fanout" in b]
+            self.queues.sent = [(c, b) for c, b in self.queues.sent if "fanout" not in b]
+
+    def mail_to(self, address: str) -> List[Mapping[str, Any]]:
+        return [c for c in self.mailer.calls if c["to"] == address]
+
+    def confirm_token(self, address: str) -> str:
+        """The token in the newest confirmation link mailed to `address`."""
+        from urllib.parse import parse_qs, urlparse
+
+        rows = [i for (pk, sk), i in self.store.items.items()
+                if sk.startswith("CONTENT#") and i["items"][0].get("kind") == "audience.confirmation"]
+        for row in reversed(rows):
+            delivery = self.store.get(row["pk"], "DELIVERY#" + row["sk"][len("CONTENT#"):])
+            if delivery and delivery["recipientKey"] == self.key(address):
+                url = row["items"][0]["link"]
+                return parse_qs(urlparse(url).query)["token"][0]
+        raise AssertionError("no confirmation for that address")
+
+    def publish(self, event_id: str, lists=("stories",)):  # type: ignore[no-untyped-def]
+        return self.router.handle_detail(
+            {"schema": 1, "eventId": event_id, "kind": PUBLIC_KIND, "product": "papyrus", "site": "example",
+             "occurredAt": "2026-11-04T12:00:00Z", "severity": "info", "lists": list(lists),
+             "facts": {"title": "A new story", "url": FakeLinks.ORIGIN + "/a-new-story/"}}
+        )
+
+
+__all__ = ["FakeClock", "FakeMailer", "PublicWorld", "Throttled", "World", "XWorld"]

@@ -1,5 +1,21 @@
 {
   "kinds": {
+    "audience.confirmation": {
+      "ack": "none",
+      "channels": [
+        "email"
+      ],
+      "class": "account",
+      "defaultOn": true
+    },
+    "audience.surge": {
+      "ack": "none",
+      "channels": [
+        "email"
+      ],
+      "class": "operator",
+      "defaultOn": true
+    },
     "caducus.heartbeat": {
       "ack": "none",
       "audience": "probe",

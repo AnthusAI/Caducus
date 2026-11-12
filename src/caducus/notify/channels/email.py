@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import logging
 import time
+from dataclasses import dataclass
 from typing import Any, Callable, Dict, Mapping, Optional, Sequence
 
 from ..delivery_log import DeliveryLog
@@ -35,18 +36,40 @@ class Throttled(Exception):
     """The provider asked us to slow down."""
 
 
+@dataclass(frozen=True)
+class RenderContext:
+    """What a renderer may need besides the items: the kind, the class, and for public
+    mail the reader's own links (`manage`, `unsubscribe`, `oneClick`)."""
+
+    kind: str
+    klass: str
+    links: Optional[Mapping[str, str]] = None
+
+
 class Renderer:
     """Turns a delivery's items into an email. Hosts pass their own for branded mail."""
 
-    def render(self, items: Sequence[Mapping[str, Any]]) -> RenderedEmail:
+    def render(
+        self, items: Sequence[Mapping[str, Any]], context: Optional[RenderContext] = None
+    ) -> RenderedEmail:
         raise NotImplementedError
 
 
 class OperatorRenderer(Renderer):
     """The package's plain, neutral operator template."""
 
-    def render(self, items: Sequence[Mapping[str, Any]]) -> RenderedEmail:
+    def render(
+        self, items: Sequence[Mapping[str, Any]], context: Optional[RenderContext] = None
+    ) -> RenderedEmail:
         return render_operator_email(items)
+
+
+def unsubscribe_headers(one_click_url: str) -> Dict[str, str]:
+    """RFC 8058 one-click unsubscribe, which Gmail and Yahoo require of bulk senders."""
+    return {
+        "List-Unsubscribe": "<%s>" % one_click_url,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    }
 
 
 class Mailer:
@@ -60,8 +83,9 @@ class Mailer:
         text: str,
         html: str,
         tags: Mapping[str, str],
+        headers: Optional[Mapping[str, str]] = None,
     ) -> str:
-        """Send one message and return the provider's message id."""
+        """Send one message and return the provider's message id. `headers` are extra mail headers."""
         raise NotImplementedError
 
     def max_send_rate(self) -> float:
@@ -77,7 +101,7 @@ class SesMailer(Mailer):
         self._from = from_address
         self._set = configuration_set
 
-    def send(self, *, to_address, subject, text, html, tags):  # type: ignore[no-untyped-def]
+    def send(self, *, to_address, subject, text, html, tags, headers=None):  # type: ignore[no-untyped-def]
         from botocore.exceptions import ClientError
 
         request: Dict[str, Any] = {
@@ -94,6 +118,11 @@ class SesMailer(Mailer):
             },
             "EmailTags": [{"Name": k, "Value": v} for k, v in tags.items()],
         }
+        if headers:
+            # SES v2 Simple.Headers needs boto3 1.35.8 or later.
+            request["Content"]["Simple"]["Headers"] = [
+                {"Name": k, "Value": v} for k, v in headers.items()
+            ]
         if self._set:
             request["ConfigurationSetName"] = self._set
         try:
@@ -145,7 +174,11 @@ class EmailChannel(Channel):
         renderer: Optional[Renderer] = None,
         sleep: Callable[[float], None] = time.sleep,
         backoff: Sequence[float] = BACKOFF_SECONDS,
+        audience: Any = None,
     ):
+        """`audience` (a `PublicAudience`) is needed for public-class mail: it is re-checked
+        just before sending and supplies the reader's links and the RFC 8058 headers."""
+        self._audience = audience
         self._store = store
         self._log = log
         self._directory = directory
@@ -177,20 +210,44 @@ class EmailChannel(Channel):
             self._log.advance(event_id, delivery_id, "failed", reason=reason)
             emit(LOGGER, "email_failed", eventId=event_id, deliveryId=delivery_id, reason=reason)
             return Outcome("failed", reason=reason)
+        context = RenderContext(kind=delivery["kind"], klass=delivery.get("class", ""))
+        headers: Dict[str, str] = {}
+        if delivery.get("class") == "public":
+            lists = [lid for item in content["items"] for lid in item.get("lists", [])]
+            receiving, why = (
+                self._audience.receiving(delivery["recipientKey"], lists)
+                if self._audience is not None
+                else (False, "refused")
+            )
+            links = self._audience.links_for(delivery["recipientKey"], lists) if receiving else None
+            if not receiving or links is None:
+                reason = {
+                    "suppressed": "the reader is suppressed",
+                    "skipped_preference": "the reader no longer takes this list",
+                }.get(why, "no public audience configured")
+                status = why if why in ("suppressed", "skipped_preference") else "refused"
+                self._log.advance(event_id, delivery_id, status, reason=reason)
+                emit(LOGGER, "email_skipped", eventId=event_id, deliveryId=delivery_id, reason=status)
+                return Outcome(status, reason=reason)
+            context = RenderContext(kind=context.kind, klass=context.klass, links=links)
+            headers = unsubscribe_headers(links["oneClick"])
         claimed = self._store.put_if_absent(
             {"pk": pk, "sk": "CLAIM#" + delivery_id, "expiresAt": delivery["expiresAt"]}
         )
         if not claimed:
             return Outcome("duplicate")
-        rendered = self._renderer.render(content["items"])
+        rendered = self._renderer.render(content["items"], context)
         try:
-            message_id = self._send_with_backoff(
+            message = dict(
                 to_address=recipient.address,
                 subject=rendered.subject,
                 text=rendered.text,
                 html=rendered.html,
                 tags={"delivery": delivery_id, "kind": delivery["kind"]},
             )
+            if headers:
+                message["headers"] = headers
+            message_id = self._send_with_backoff(**message)
         except Exception:
             self._store.delete(pk, "CLAIM#" + delivery_id)
             self._log.advance(

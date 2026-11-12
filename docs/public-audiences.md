@@ -1,6 +1,6 @@
 # Public audiences: design
 
-Status: designed 2026-11-12, being built (`kanbus-` story under epic `kanbus-e5812c`; Papyrus `PPY-1081ad`, epic `PPY-824c14`). Nothing is deployed or released.
+Status: built on develop 2026-11-12, not released (`kanbus-2bba4f` under epic `kanbus-e5812c`; Papyrus `PPY-1081ad`, epic `PPY-824c14`). Nothing is deployed. Specification: `features/notifications/public_audience.feature`.
 
 A **public audience** is the set of anonymous readers of one host (one Papyrus site, one table) who asked, by email, to receive some of its mail. It sits beside the `operator`, `admin`, `account` and `broadcast` classes. It is generic: no Papyrus words, so every Anthus product can reuse it. This document is the package side; the Papyrus side (routes, pages, plugin) is `docs/plans/public-audiences.md` in AnthusAI/Papyrus.
 
@@ -22,7 +22,7 @@ stateDiagram-v2
     confirmed --> unsubscribed: unsubscribe from everything (one click or page)
     confirmed --> suppressed: permanent bounce or complaint
     unsubscribed --> confirmed: re-subscribe by manage link, or a new double opt-in
-    suppressed --> confirmed: a deliberate opt-in by manage link, or a new double opt-in
+    suppressed --> confirmed: a deliberate opt-in by manage link (bounce, complaint)
     confirmed --> erased: erasure (person or admin)
     unsubscribed --> erased
     suppressed --> erased
@@ -46,13 +46,13 @@ The pending record holds the address, the requested lists, the nonce, `requested
 
 ### Confirm
 
-The confirmation email links to the host's confirm **page**, which shows a button; the button POSTs. A GET never confirms, because mail scanners fetch links. `confirm(token, ip, userAgent)` checks the signature, purpose `confirm`, expiry and that the nonce is the profile's current one (single use: it is cleared at once). The profile becomes confirmed, the lists become subscribed, the consent record is completed with `confirmedAt`, and the answer carries a manage token for the confirmed page. Confirming also clears a bounce or complaint suppression, since the person just proved the mailbox works and asked again. `confirm_state(token)` is read only, for the page (list names).
+The confirmation email links to the host's confirm **page**, which shows a button; the button POSTs. A GET never confirms, because mail scanners fetch links. `confirm(token, ip, userAgent)` checks the signature, purpose `confirm`, expiry and that the nonce is the profile's current one (single use: it is cleared at once). The profile becomes confirmed, the lists become subscribed, the consent record is completed with `confirmedAt`, and the answer carries a manage token for the confirmed page. Confirming lifts an `unsubscribed` or `erased` suppression, since the person asked again. A bounce or complaint suppression is never reached this way, because a suppressed address is sent no confirmation (step 5): mailing an address that bounced would risk the site's reputation. It is lifted only by a manage-link opt-in, where the person proves they read that inbox. `confirm_state(token)` is read only, for the page (list names).
 
 ### Preferences, unsubscribe, re-subscribe
 
 - `preferences_state(token)`: the masked address (`r***@example.com`) and every list with on or off.
 - `update_preferences(token, lists)`: the chosen set becomes the subscription. Turning a list on again needs no new double opt-in: the manage token proves control of the inbox. A consent record of source `manage_link` is appended, and a bounce or complaint suppression is lifted.
-- `unsubscribe(token, list=None, method)`: one list, or everything. Everything also writes `SUPP#` with reason `unsubscribed`, so nothing of the public class reaches the key until a new opt-in. Idempotent: a repeat, or a token whose subscriber was erased, still succeeds, so a mail provider's retry is harmless.
+- `unsubscribe(token, list=None)`: one list, or everything; turning off the last list counts as everything. Everything also writes `SUPP#` with reason `unsubscribed`, so nothing of the public class reaches the key until a new opt-in. Idempotent: a repeat, or a token whose subscriber was erased, still succeeds, so a mail provider's retry is harmless.
 - **RFC 8058.** Every public-class message carries `List-Unsubscribe: <one-click URL>` and `List-Unsubscribe-Post: List-Unsubscribe=One-Click`. The URL is the host's machine endpoint with the manage token and the list, never an address. The host answers that POST without an origin check (mail providers post from their servers) and calls `unsubscribe` in the same request, as RFC 8058 and Gmail's bulk-sender rules require.
 
 ### Tokens
@@ -85,11 +85,25 @@ Each refusal writes a structured log line and a metric (`SubscribeLimited`, dime
 ## Sending
 
 - **One send path.** The confirmation is an ordinary event of the base kind `audience.confirmation` (class `account`, its `audience` the recipient key), so it goes through the router, the email queue, the email channel, the delivery log and SES event handling like everything else. A public kind's event is fanned out page by page: the router records `EVENT#<id>` / `FANOUT` and queues the first page; each page (one DynamoDB query page of the `byList` index) is one message on the email queue, which queues that page's deliveries and the next page. A retry resumes from the stored cursor; deterministic delivery ids make every step idempotent. No Lambda timeout bounds the audience size.
-- **Index.** One new GSI on the host table, `byList` (partition `gsiList` = list id, sort `recipientKey`, keys only), written only while a subscription is confirmed and the key is not suppressed. That is the only new index in this change (Papyrus rule: at most one per table per deploy).
+- **Index.** One new GSI on the host table, `byList` (partition `gsiList` = list id, no sort key, keys only), written only while a subscription is confirmed and the key is not suppressed. That is the only new index in this change (Papyrus rule: at most one per table per deploy).
 - **Channel.** For public-class mail the email channel re-checks subscription and suppression, adds the RFC 8058 headers, and passes the reader's manage and unsubscribe page links to the host's renderer for the footer. `Mailer.send` gains `headers`; `SesMailer` sends them as SES v2 `Simple.Headers` (boto3 1.35.8 or later).
-- **Pause.** The pause switch is the SES configuration set's own sending switch, already turned off by the site's bounce and complaint alarms (Papyrus PR #1427), and an operator can turn it off by hand. There is no second flag in the table.
+- **Pause.** The pause switch is the SES configuration set's own sending switch, turned off by the site's bounce and complaint alarms (Papyrus PR #1427) or by an operator. There is no second flag in the table. See "The pause assumption" below.
 - **Thresholds**, from the providers' published rules: SES puts an account under review at a 5% bounce rate or 0.1% complaint rate and may pause it at 10% or 0.5%; Gmail and Yahoo require bulk senders to stay under a 0.3% spam rate, with 0.1% the target. A site therefore pauses itself at 4% bounces or 0.08% complaints over 24 hours, below the account lines, so one site's bad week cannot pause the others. The newsletter plugin already uses these values.
 - **No tracking.** No open or click tracking, no pixel, no rewritten link (the existing test that fails if they appear stays).
+
+## The pause assumption
+
+Pausing a site rests on one fact not yet seen on a live account: that SES refuses `SendEmail` through a configuration set whose sending is off, with the error code `SendingPausedException` (botocore's model lists it; the SES documentation describes it for the account). Papyrus PR #1427 is held until a forced pause confirms it. What depends on it, and what a wrong guess does:
+
+| Part | Depends on it? | If the guess is wrong |
+| --- | --- | --- |
+| Turning sending off (`PutConfigurationSetSendingOptions` from the rate alarms) | No: that call is documented | If it fails, the pause function errors and its alarm reaches operators |
+| Recording a refused send as `failed` with "sending is paused" (#1427's site mailer) | Yes: it matches the code | A different code is not recognised: the channel releases its claim, the delivery stays `queued`, SQS retries it, and after the retries the message lands in the dead-letter queue, whose alarm reaches operators. Nothing is sent and nothing is lost silently |
+| SES still accepting mail through a disabled set | Would break the pause itself | Not an error code question; this is what the drill below must rule out |
+
+None of these keeps sending silently: either SES refuses (and the refusal is recorded or dead-lettered), or the drill shows SES accepts, and then the public send path stays Off.
+
+**A required step before any site turns its public send path On** (Papyrus PPY-a85725): a forced pause drill on a test configuration set with the SES mailbox simulator: turn the set's sending off, send to `success@simulator.amazonses.com`, and record the exact error code; confirm the delivery shows `failed` with the pause reason (or, if the code differs, correct the site mailer and repeat); turn sending back on and confirm the next send goes out. Until that drill passes, the confirmation and public kinds stay off (no lists configured on any site).
 
 ## Data (one table per host)
 
@@ -97,7 +111,7 @@ Each refusal writes a structured log line and a metric (`SubscribeLimited`, dime
 | --- | --- | --- |
 | `RCPT#<key>` | `PROFILE` | `address` (normalized), `status` pending / confirmed / unsubscribed, `generation`, `createdAt`, `updatedAt`, `pending` {`lists`, `nonce`, `requestedAt`, `confirmBy`, `consent`}, `expiresAt` only while pending |
 | `RCPT#<key>` | `SUB#<list>` | `status` subscribed / unsubscribed, `at`, `gsiList` only while subscribed and not suppressed |
-| `RCPT#<key>` | `CONSENT#<at>#<n>` | append-only evidence: `source` form / manage_link / migrated, `lists`, `wordingHash`, `formId`, `page` (path, no query), `origin`, `ipHash`, `requestedAt`, `confirmedAt`, `userAgent` (truncated) |
+| `RCPT#<key>` | `CONSENT#<at>#<n>` | append-only evidence: `source` form / manage_link / migrated, `lists`, `wordingHash`, `formId`, `page` (path, no query), `origin`, `networkHash` (a keyed hash of the visitor's /24 or /48, never the IP itself), `requestedAt`, `confirmedAt`, `userAgent` and `confirmUserAgent` (truncated) |
 | `WORDING#<sha256>` | `TEXT` | the wording itself, written once per distinct sentence: a short catalog row, not per subscriber, never deleted (it is not personal data) |
 | `SUPP#<key>` | `SUPP` | reason, `at`; no address |
 | `ALIAS#<source>#<id>` | `ALIAS` | recipient key; TTL = the retirement date |
@@ -111,7 +125,7 @@ Personal data is the profile's address, the consent record (an IP hash, a trunca
 ```python
 from caducus.notify.audience import PublicAudience, AudienceSettings, AudienceList
 
-audience = PublicAudience(store, settings, keys, domains, clock, router)
+audience = PublicAudience(store, settings, AudienceKeys.from_secret(secret), DnsDomainChecker(), clock, router.handle_detail)
 audience.subscribe(request)            # -> Answer(status_code, body)
 audience.confirm_state(token); audience.confirm(token, ip=..., user_agent=...)
 audience.preferences_state(token); audience.update_preferences(token, lists)
@@ -124,6 +138,8 @@ audience.provider_event(recipient_key, status)                  # from the host'
 `caducus.notify.handlers.public.dispatch(audience, event)` maps the host's reader actions (`subscribe`, `confirm`, `confirm_page_state`, `preferences_state`, `update_preferences`, `unsubscribe`, `delete_subscriber`) to these calls and answers `{"statusCode", "body"}`. `AudienceSettings`: the lists, the consent wording, the confirm window and the host's link builder (the URLs of its confirm, preferences and unsubscribe pages and of its one-click endpoint).
 
 The confirm window is a host setting with a reason, not a constant: it is how long a stranger's address may be held without consent and how long the link works. The default is 72 hours, the newsletter plugin's promise to readers today.
+
+**Wiring a host.** Wrap the host's directory in `AudienceDirectory(directory, audience)` so the email channel can find readers; pass `audience=` and `fanout_queues=` (the host's queues) to `Router`, `audience=` to `EmailChannel`, and `fan_out=router.fan_out_page` to `handlers.email_sender.handle_batch`. Register the public kinds in the host's `notification-kinds.json` with class `public`. The host renderer receives a `RenderContext` (`kind`, `klass`, and for public mail `links`: `manage`, `unsubscribe`, `oneClick`) as the second argument of `render`, and puts the postal address and the two page links in the footer. The confirmation item carries `facts.url` (the confirm page) and `facts.lists` (the list names).
 
 ## What this does not do
 

@@ -27,10 +27,12 @@ radar = [
 ]
 # Notifications, run inside a host's own deployment. boto3 is already in the Lambda runtime.
 notify = [
-  "boto3>=1.34",
+  "boto3>=1.35.8",  # SES v2 Simple.Headers, for RFC 8058 one-click unsubscribe
+  "dnspython>=2.6",  # the public audience's check that a domain takes mail
 ]
 notify-dev = [
-  "boto3>=1.34",
+  "boto3>=1.35.8",
+  "dnspython>=2.6",
   "moto[dynamodb,sqs,ssm,ses]>=5.0",
   "jsonschema>=4.0",
   "PyYAML>=6.0",
