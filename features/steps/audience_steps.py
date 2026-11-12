@@ -90,7 +90,7 @@ def step_many_confirmed(context, count):
     w = _world(context)
     for n in range(count):
         address = "r%d@example.com" % n
-        w.subscribe(address, ["stories"], ip="198.51.%d.%d" % (n // 250, n % 250))
+        w.subscribe(address, ["stories"])
         w.deliver()
         w.clock.advance(300)
         assert w.act("confirm", token=w.confirm_token(address))["body"]["status"] == "confirmed"
@@ -101,6 +101,11 @@ def step_networks(context, count):
     w = _world(context)
     for n in range(count):
         w.subscribe("n%d@example.com" % n, ["stories"], ip="10.%d.%d.1" % (n // 250, n % 250))
+
+
+@given("a new host where nobody has subscribed yet")
+def step_new_host(context):
+    context.public = PublicWorld()
 
 
 @given("readers on {count:d} networks each subscribed once in earlier hours")

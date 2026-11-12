@@ -59,15 +59,22 @@ class RateTest:
     def _stats(self):  # type: ignore[no-untyped-def]
         return self._store.get("STATS#" + self._scope, "STATS") or {}
 
-    def mean(self) -> float:
+    def mean(self, leave_out: int = 0) -> float:
+        """Mean accepted requests per key-hour, leaving out one cell holding `leave_out` requests.
+
+        The cell under test is left out, so a key cannot raise the baseline it is tested against:
+        at a host's start, one busy network would otherwise be the whole of the data.
+        """
         stats = self._stats()
-        return (stats.get("requests", 0) + 1) / (stats.get("keyHours", 0) + 1)
+        requests = stats.get("requests", 0) - leave_out
+        cells = stats.get("keyHours", 0) - (1 if leave_out else 0)
+        return (requests + 1) / (cells + 1)
 
     def improbable(self, key: str, extra: int = 1) -> bool:
         """Would one more accepted request from `key` this hour be improbable for this host?"""
         pk, sk = self._bucket(key)
         current = (self._store.get(pk, sk) or {}).get("count", 0)
-        return poisson_tail(current + extra, self.mean()) < ALPHA
+        return poisson_tail(current + extra, self.mean(leave_out=current)) < ALPHA
 
     def record(self, key: str) -> int:
         """Count one accepted request. Returns the key's count this hour."""

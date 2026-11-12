@@ -83,6 +83,11 @@ Feature: Public audiences
     And no confirmation is mailed for them
     And a signup from another network is still answered 202 "check_email"
 
+  Scenario: One network cannot teach the limit to accept itself
+    Given a new host where nobody has subscribed yet
+    When one network sends 30 signups for different addresses
+    Then the later signups from it are answered 429 "slow_down"
+
   Scenario: A surge raises a notice and refuses nothing
     Given readers on 300 networks each subscribed once in earlier hours
     When 60 readers on different networks subscribe within one hour
