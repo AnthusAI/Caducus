@@ -14,7 +14,7 @@ from typing import Any, Dict, List, Mapping, Optional
 from .catalog import Catalog
 from .cloudwatch import KIND as ALARM_KIND, STATES
 from .delivery_log import DeliveryLog
-from .directory import Directory, Recipient
+from .directory import ChannelAccount, Directory, Recipient
 from .events import Event, EventInvalid, parse_event
 from .grouping import Dispatcher, delivery_id_for
 from .incidents import IncidentTracker
@@ -128,6 +128,8 @@ class Router:
             return Result("refused", "unknown kind")
         if kind.lifecycle == "incident":
             return self._handle_alarm(event, kind)
+        if kind.klass == "broadcast":
+            return self._broadcast(event, kind)
         item = {
             "state": "NOTICE",
             "alarmName": event.facts["title"],
@@ -140,6 +142,36 @@ class Router:
             "notesLabel": "",
         }
         return self._send(event.event_id, kind, event.product, event.site, item)
+
+    # -- broadcasts ----------------------------------------------------------
+
+    def _broadcast(self, event: Event, kind: Kind) -> Result:
+        """Post to the one connected account the event names: no person, no choices.
+
+        `event.audience` is the account's `CHANNELACCT#<channel>#<id>` key. The
+        host names the account; nothing here looks it up for anyone else.
+        """
+        text = event.facts.get("text")
+        if not isinstance(text, str) or not text.strip():
+            reason = "invalid event: a broadcast needs facts.text"
+            row = self._refuse(
+                event_id=event.event_id, kind=kind.name, klass=kind.klass,
+                product=event.product, site=event.site, reason=reason,
+            )
+            return Result("refused", reason, [row])
+        account = self._directory.account(event.audience) if event.audience else None
+        if account is None or account.channel not in kind.channels:
+            row = self._refuse(
+                event_id=event.event_id, kind=kind.name, klass=kind.klass,
+                product=event.product, site=event.site, reason="no audience",
+            )
+            return Result("refused", "no audience", [row])
+        item = {"text": text, "url": event.facts.get("url", "")}
+        row = self._dispatcher.dispatch(
+            event_id=event.event_id, kind=kind, product=event.product,
+            site=event.site, recipient=account, channel=account.channel, item=item,
+        )
+        return Result("accepted", deliveries=[row])
 
     # -- alarms --------------------------------------------------------------
 
