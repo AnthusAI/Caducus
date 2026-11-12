@@ -3,17 +3,32 @@
   "title": "Announcement channels: an x channel, a broadcast recipient class and a cost on deliveries",
   "description": "Papyrus needs Caducus to post announcements to a publication's own X (Twitter) account, as part of Ryan's one-notification-system decision (Papyrus PPY-824c14). Papyrus epic: AnthusAI/Papyrus PPY-09ee86 \"Scheduled publishing and automated announcements\"; Papyrus story PPY-9f4d66 waits on this. Design: Papyrus docs/plans/scheduled-publishing-and-announcements.md (PR AnthusAI/Papyrus#1459).\n\nGoal: three small additions, released in one Caducus version, so a host can deliver a kind to a site's connected public account and record what it cost.\n\n1. **`x` channel** (`caducus.notify.channels.x`), a `Channel` like `email`: `send` creates a post (POST https://api.x.com/2/tweets, OAuth 2.0 user token) and returns `Outcome(status=\"sent\", provider_message_id=<post id>)`; `delete(provider_message_id)` deletes it (DELETE /2/tweets/:id); `find_recent(text_or_url)` reads the account's latest posts so an unknown outcome (timeout, 5xx) is resolved before any retry, because X documents no idempotency key. Rate limits: wait until `x-rate-limit-reset`. Escapes nothing that X would turn into a mention unless the text already has it. Tokens come from a **token provider** the host passes in (Papyrus stores the rotating refresh token in SSM SecureString and refreshes under its own lock); the channel never stores or logs tokens.\n2. **`broadcast` recipient class**: the recipient is a site's connected channel account (`CHANNELACCT#<channel>#<accountId>`), not a Person; no consent, preference or suppression applies; routing sends a broadcast kind only to the accounts the host names for it. Dedupe on `eventId` as today (Papyrus sends `story.announce:<accountId>:<lineageId>`).\n3. **`cost` on deliveries**: an optional `cost` (decimal string) and `costCurrency` on the delivery log, set by channels that charge per request (X: post with link $0.200, delete $0.010, read $0.005 per docs.x.com pricing, 2026-11-12; the host passes prices as configuration, never constants in code). Never moves backward, like status.\n\n```gherkin\nFeature: A host announces on a publication's X account through Caducus\n  A publication posts each qualifying Story to its own X account once, and the\n  host can see the post and what it cost.\n\n  Scenario: A broadcast kind is posted once\n    Given a host that connected the X account \"@example_pub\" as a broadcast recipient\n    When it sends the event \"story.announce:acct1:lineage9\" twice\n    Then exactly one post is made\n    And the delivery records the post id and a cost of 0.200 USD\n\n  Scenario: An unknown outcome is checked before retrying\n    Given the post request timed out\n    When the delivery is retried\n    Then the account's recent posts are read first\n    And if the post is there the delivery is marked sent without posting again\n\n  Scenario: X asks us to wait\n    Given X answers 429 with a reset time\n    Then the delivery waits until that time and then posts\n\n  Scenario: A broadcast ignores reader preferences\n    Given a broadcast kind\n    Then no consent, preference or suppression lookup is made for it\n\n  Scenario: Deleting a post records its cost\n    When the host deletes a delivered post\n    Then the post is deleted at X\n    And the delivery shows it was withdrawn and adds the delete cost\n\n  Scenario: Tokens never appear in the log\n    Given any delivery on the X channel\n    Then no token appears in the delivery log or in the function's logs\n```\n\nOpen questions: whether `find_recent` should match on the link (preferred: UTM-tagged canonical link is unique per Story) or the exact text.",
   "type": "story",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "kanbus-90737cee-7479-4411-bb09-5f5ca4b08818",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "2efc7ccd-ef53-4b3c-aca5-6f4ee70fc093",
+      "author": "home",
+      "text": "Merged to develop as PR #13 (feat). Adds channels/x.py, broadcast class, cost fields; contract in docs/notifications-plan.md. Not released; the next release of develop into main carries it (expected 0.2.0).",
+      "created_at": "2026-11-12T22:45:26.973314Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "84490644-e2ee-46ef-a951-d255f75971a7",
+      "author": "home",
+      "text": "Landed in PR #13 (merged to develop); awaiting a release.",
+      "created_at": "2026-11-12T22:45:26.996644Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-11-12T18:48:17.315798Z",
-  "updated_at": "2026-11-12T18:48:17.315871Z",
-  "closed_at": null,
+  "updated_at": "2026-11-12T22:45:27.003665Z",
+  "closed_at": "2026-11-12T22:45:27.003214Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
