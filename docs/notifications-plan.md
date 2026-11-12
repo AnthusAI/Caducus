@@ -131,6 +131,10 @@ Added 2026-11-12 for Papyrus `PPY-09ee86` (`kanbus-ea2644`). Three additions, al
 
 **Exactly once.** X has no idempotency key. The delivery is claimed before the request. A timeout, a dropped connection or a 5xx is an unknown outcome: the delivery stays claimed and queued, `send` raises `UnknownOutcome`, and the queue's redelivery finds the claim, reads the account's recent posts first (priced per post returned) and records the post as sent if it is there. Only when it is not there does the post go out. A 4xx is final (`failed`, with X's message). A 429 waits until `x-rate-limit-reset` and repeats the request, since X did not process it; with no reset header it fails rather than guess. X's duplicate-content refusal counts as posted only if the read confirms it. The `Guard` is asked before every post; a pause or budget refusal records `refused` with the host's reason (the delivery is final, so the host re-announces under a new event id when it resumes). Withdrawing is never blocked by the guard.
 
+## Public audiences
+
+Anonymous readers who subscribe by email (double opt-in, consent evidence, lists, one-click unsubscribe, suppression, erasure, learned abuse limits) are designed in [public-audiences.md](public-audiences.md) (`kanbus-2bba4f`, Papyrus `PPY-1081ad`).
+
 ## Deliberately deferred
 
 Digests. Phone paging (never). Generic webhook channel: designed only, an HTTPS POST of the delivery as JSON through the `Channel` interface, signed per connection, same queues, SSRF checks on the URL (`kanbus-93a4f9`). Inbound Slack and Discord events. A shared renderer or UI package. Custom domain for operator pages. An outside watcher for the dead-man's switch. Merging with the inbound Papyrus Slack agent app.
