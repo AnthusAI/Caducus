@@ -1,0 +1,25 @@
+{
+  "id": "kanbus-2bba4f09-776f-4a09-a220-d3c0025727f9",
+  "title": "Public audiences: anonymous readers subscribe, confirm, manage and leave by email",
+  "description": "**Goal.** As an anonymous reader of a publication, I subscribe by email to the lists I choose, confirm from my inbox, change my choices and leave from any message, and the host keeps proof of my consent. Papyrus PPY-1081ad (epic PPY-824c14); Papyrus pages PPY-f361ee. Design: docs/public-audiences.md. Covers the public parts of kanbus-eedbbd, kanbus-1c3618, kanbus-ff4727 and kanbus-98e489.\n\n**Not included.** Sign-in subscription, consent per language, digests, Slack and Discord readers.\n\n```gherkin\nFeature: Public audiences\n  Anonymous readers subscribe to a host's lists by email with double opt-in,\n  manage their choices by signed links, and leave in one click.\n\n  Scenario: Double opt-in\n    Given a host with a public list \"stories\"\n    When a reader subscribes with the form's own consent wording\n    Then they are told to check their email and exactly one confirmation is queued\n    And nothing else reaches them until they confirm\n\n  Scenario: The answer reveals nothing\n    Given an address already confirmed for \"stories\"\n    When someone subscribes it again\n    Then the answer is the same \"check your email\" and nothing is sent\n\n  Scenario: Consent evidence matches the form\n    When a reader confirms\n    Then the consent record holds the wording hash, the form, the page path, the origin and both times\n    And a subscribe whose wording differs from the form's is refused\n\n  Scenario: A confirmation bomb\n    Given a confirmation for an address is still outstanding\n    When the address is submitted again and again\n    Then no second confirmation is sent until the learned resend gap has passed\n\n  Scenario: The resend gap is learned\n    Given at least 59 readers confirmed, almost all within ten minutes\n    Then the resend gap is the 95% upper bound of their 95th percentile lag\n\n  Scenario: A network far above what readers do\n    Given the host's readers send about one signup per network per hour\n    When one network sends far more\n    Then further signups from it are told to slow down and nothing is sent\n\n  Scenario: A domain that takes no mail\n    When a reader subscribes an address whose domain has no mail server\n    Then they are told the address is not valid and nothing is sent\n\n  Scenario: Preferences\n    Given a confirmed subscriber of \"stories\" and \"weekly\" follows the manage link\n    When they turn \"weekly\" off\n    Then a \"weekly\" event reaches them no more and a \"stories\" event still does\n\n  Scenario: One-click unsubscribe\n    When a mail provider posts the one-click unsubscribe from a message\n    Then the reader is unsubscribed in that request and the key stays suppressed\n    And every public message carries List-Unsubscribe and List-Unsubscribe-Post\n\n  Scenario: Re-subscribing by manage link\n    Given a reader who unsubscribed from everything\n    When they turn a list on from the manage link\n    Then they are subscribed without a new confirmation and a manage_link consent is recorded\n\n  Scenario: Bounces and complaints\n    When SES reports a permanent bounce or a complaint for a reader\n    Then they are suppressed and unsubscribed from every list\n\n  Scenario: Erasure\n    When an admin erases a reader\n    Then the address, choices, consent and delivery history are gone\n    And an import cannot bring the address back, though the person may subscribe again by the form\n\n  Scenario: Export\n    When an admin exports a reader\n    Then they get the profile, lists, consent records with wording and delivery history\n\n  Scenario: Import without re-confirming\n    When a host imports a confirmed subscriber with their original evidence\n    Then they are subscribed with the evidence marked migrated and no mail is sent\n    And importing again changes nothing\n\n  Scenario: Fan-out by list\n    Given readers subscribed to two lists\n    When an event names both lists\n    Then each confirmed reader gets exactly one delivery, page by page\n```",
+  "type": "story",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-e5812c13-91be-4167-9221-8bc3c41ce2af",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-11-12T22:50:05.581295Z",
+  "updated_at": "2026-11-12T22:50:09.723998Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Opus 5.5",
+    "name": "public-audiences"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

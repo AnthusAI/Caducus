@@ -24,10 +24,17 @@
       "text": "Papyrus side: PPY-44721a, PPY-d7443d",
       "created_at": "2026-11-04T13:15:36.722727Z",
       "comment_type": "default"
+    },
+    {
+      "id": "0b246407-e8e7-4254-99b6-71e06d47908a",
+      "author": "home",
+      "text": "Public-audience parts designed and being built in kanbus-2bba4f (docs/public-audiences.md, Papyrus PPY-1081ad).",
+      "created_at": "2026-11-12T22:50:09.777661Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-11-04T13:14:29.431639Z",
-  "updated_at": "2026-11-04T17:10:47.350901Z",
+  "updated_at": "2026-11-12T22:50:09.777877Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
