@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from caducus.notify.store import DynamoStore, MemoryStore
+from caducus.notify.store import DynamoStore, MemoryStore, Write
 
 
 @pytest.fixture(params=["memory", "dynamo"])
@@ -23,6 +23,7 @@ def store(request):
                 {"AttributeName": "sk", "AttributeType": "S"},
                 {"AttributeName": "recipientKey", "AttributeType": "S"},
                 {"AttributeName": "queuedAt", "AttributeType": "S"},
+                {"AttributeName": "gsiList", "AttributeType": "S"},
             ],
             KeySchema=[
                 {"AttributeName": "pk", "KeyType": "HASH"},
@@ -36,7 +37,12 @@ def store(request):
                         {"AttributeName": "queuedAt", "KeyType": "RANGE"},
                     ],
                     "Projection": {"ProjectionType": "ALL"},
-                }
+                },
+                {
+                    "IndexName": "byList",
+                    "KeySchema": [{"AttributeName": "gsiList", "KeyType": "HASH"}],
+                    "Projection": {"ProjectionType": "KEYS_ONLY"},
+                },
             ],
         )
         yield DynamoStore(boto3.resource("dynamodb", region_name="us-east-1").Table("t"))
@@ -110,3 +116,42 @@ def test_update_retries_when_another_writer_wins():
 
         store.update("p", "s", change)
         assert store.get("p", "s")["n"] == 11 and calls == [0, 10]
+
+
+def test_increment_adds_atomically_and_sets_the_expiry_once(store):
+    assert store.increment("r", "1", {"count": 1}, 100)["count"] == 1
+    row = store.increment("r", "1", {"count": 2, "other": 1}, 999)
+    assert row["count"] == 3 and row["other"] == 1 and row["expiresAt"] == 100
+
+
+def test_transact_writes_all_or_nothing(store):
+    assert store.transact([Write(item={"pk": "p", "sk": "PROFILE", "n": 1}, absent=True),
+                           Write(item={"pk": "p", "sk": "SUB#a", "status": "subscribed"})])
+    assert store.get("p", "PROFILE")["version"] == 1
+    assert not store.transact([Write(item={"pk": "p", "sk": "PROFILE", "n": 2}, expect_version=7),
+                               Write(item={"pk": "p", "sk": "SUB#b", "status": "subscribed"})])
+    assert store.get("p", "SUB#b") is None and store.get("p", "PROFILE")["n"] == 1
+    assert store.transact([Write(item={"pk": "p", "sk": "PROFILE", "n": 3}, expect_version=1),
+                           Write(delete=("p", "SUB#a"))])
+    assert store.get("p", "PROFILE")["version"] == 2 and store.get("p", "SUB#a") is None
+    assert not store.transact([Write(item={"pk": "p", "sk": "PROFILE"}, absent=True)])
+
+
+def test_transact_refuses_more_than_dynamodb_allows(store):
+    with pytest.raises(ValueError):
+        store.transact([Write(item={"pk": "p", "sk": str(n)}) for n in range(101)])
+
+
+def test_index_page_follows_the_cursor(store):
+    for n in range(5):
+        store.put({"pk": "RCPT#ADDR#%d" % n, "sk": "SUB#stories", "gsiList": "stories"})
+    store.put({"pk": "RCPT#ADDR#9", "sk": "SUB#weekly", "gsiList": "weekly"})
+    if isinstance(store, MemoryStore):
+        store.page_size = 2
+    seen, cursor = [], None
+    while True:
+        page, cursor = store.index_page("byList", "gsiList", "stories", cursor)
+        seen += [row["pk"] for row in page]
+        if not cursor:
+            break
+    assert sorted(seen) == ["RCPT#ADDR#%d" % n for n in range(5)]
