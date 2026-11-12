@@ -11,9 +11,11 @@ from __future__ import annotations
 import hashlib
 import hmac
 import uuid
+from decimal import Decimal
 from datetime import datetime, timedelta, timezone
 from typing import Callable, List, Optional
 
+from .prices import Price
 from .store import Item, Store
 
 # Lowest to highest. Equal rank keeps the first result.
@@ -26,6 +28,7 @@ RANK = {
     "complained": 4,
     "rejected": 4,
     "failed": 4,
+    "withdrawn": 5,  # the post was taken down at the provider; nothing outranks it
 }
 WORST = 4
 # Decided outcomes that nothing later may change.
@@ -33,7 +36,10 @@ TERMINAL = frozenset(
     ["suppressed", "skipped_preference", "grouped", "refused", "dead_lettered"]
 )
 STATUSES = tuple(sorted(set(RANK) | TERMINAL))
-FINAL = frozenset([s for s, r in RANK.items() if r == WORST] + ["delivered"]) | TERMINAL
+FINAL = (
+    frozenset([s for s, r in RANK.items() if r == WORST] + ["delivered", "withdrawn"])
+    | TERMINAL
+)
 
 DEFAULT_RETENTION_DAYS = 90
 
@@ -71,6 +77,20 @@ def event_key(event_id: str) -> str:
 
 def new_id() -> str:
     return uuid.uuid4().hex
+
+
+def _add_cost(row: Item, charge: Price) -> None:
+    """Add `charge` to the row's cost. The total never goes down and never mixes currencies."""
+    if "cost" in row and row["costCurrency"] != charge.currency:
+        raise ValueError(
+            "delivery cost is in %s; cannot add %s" % (row["costCurrency"], charge.currency)
+        )
+    row["cost"] = str(Decimal(row.get("cost", "0")) + Decimal(charge.amount))
+    row["costCurrency"] = charge.currency
+    notes = [n for n in row.get("costNote", "").split("; ") if n]
+    if charge.note not in notes:
+        notes.append(charge.note)
+    row["costNote"] = "; ".join(notes)
 
 
 class DeliveryLog:
@@ -164,10 +184,18 @@ class DeliveryLog:
         reason: Optional[str] = None,
         provider_message_id: Optional[str] = None,
         attempts: Optional[int] = None,
+        charge: Optional[Price] = None,
+        actor: Optional[str] = None,
     ) -> Item:
-        """Report a new status. The row keeps the worse of what it has and what arrived."""
+        """Report a new status. The row keeps the worse of what it has and what arrived.
+
+        `charge` adds to the delivery's cost, which only ever grows. `actor`
+        says who withdrew a post and is required with the status "withdrawn".
+        """
         if status not in RANK and status not in TERMINAL:
             raise ValueError("unknown status %s" % status)
+        if status == "withdrawn" and not actor:
+            raise ValueError("a withdrawal records who withdrew it")
         now = iso(self._clock())
 
         def change(row: Optional[Item]) -> Item:
@@ -184,10 +212,15 @@ class DeliveryLog:
                     updated["sentAt"] = now
                 if after in FINAL:
                     updated["finalAt"] = now
+                if after == "withdrawn":
+                    updated["withdrawnAt"] = now
+                    updated["withdrawnBy"] = actor
             if provider_message_id and "providerMessageId" not in updated:
                 updated["providerMessageId"] = provider_message_id
             if attempts is not None:
                 updated["attempts"] = max(attempts, updated.get("attempts", 0))
+            if charge is not None:
+                _add_cost(updated, charge)
             return updated
 
         return self._store.update(event_key(event_id), "DELIVERY#" + delivery_id, change)

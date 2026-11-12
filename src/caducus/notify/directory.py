@@ -18,6 +18,26 @@ class Recipient:
         return mask_address(self.address)
 
 
+@dataclass(frozen=True)
+class ChannelAccount(Recipient):
+    """A site's connected public account on a channel: the recipient of a broadcast.
+
+    `key` is `CHANNELACCT#<channel>#<accountId>`, `address` is the public handle
+    (shown as is: it is public), and `external_id` is the provider's own id for it.
+    """
+
+    channel: str = ""
+    external_id: str = ""
+
+    @property
+    def mask(self) -> str:
+        return self.address
+
+
+def account_key(channel: str, account_id: str) -> str:
+    return "CHANNELACCT#%s#%s" % (channel, account_id)
+
+
 class Directory:
     def operators(self) -> List[Recipient]:
         raise NotImplementedError
@@ -29,6 +49,10 @@ class Directory:
         """The mailbox heartbeats go to (the SES mailbox simulator), or None."""
         return None
 
+    def account(self, key: str) -> Optional[ChannelAccount]:
+        """A connected channel account by its `CHANNELACCT#...` key, or None."""
+        return None
+
 
 class StaticDirectory(Directory):
     def __init__(
@@ -36,7 +60,9 @@ class StaticDirectory(Directory):
         addresses: Sequence[str],
         key_secret: str,
         probe_address: Optional[str] = None,
+        accounts: Sequence[ChannelAccount] = (),
     ):
+        self._accounts = {a.key: a for a in accounts}
         self._recipients = [
             Recipient(recipient_key_for_address(a, key_secret), a) for a in addresses
         ]
@@ -48,6 +74,12 @@ class StaticDirectory(Directory):
 
     def probe(self) -> Optional[Recipient]:
         return self._probe
+
+    def account(self, key: str) -> Optional[ChannelAccount]:
+        return self._accounts.get(key)
+
+    def connect(self, account: ChannelAccount) -> None:
+        self._accounts[account.key] = account
 
     def operators(self) -> List[Recipient]:
         return list(self._recipients)

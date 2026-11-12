@@ -121,6 +121,16 @@ Generated secrets: SSM SecureString, created once by IaC. Per-install Slack and 
 | Later | Slack, then Discord; adoption in Chatticus, Cyclotron, Babulus; rest of SNS; radar; quota; Prospectus grants | Coarse on purpose |
 | Last | Weekly digest | Untouched |
 
+## Announcements on X (broadcast)
+
+Added 2026-11-12 for Papyrus `PPY-09ee86` (`kanbus-ea2644`). Three additions, all in the package:
+
+- **`broadcast` recipient class.** A kind of class `broadcast` is addressed to one connected channel account, `CHANNELACCT#<channel>#<accountId>`, named in the event's `audience`. There is no person, so no preference, consent or suppression applies. The host's `Directory.account(key)` resolves the account; an unknown account, or one whose channel the kind does not list, is refused with "no audience". The post text is `facts.text` (required); `facts.url` is the link used to recognise the post later. A broadcast kind cannot group or have a lifecycle. Dedupe is the caller's `eventId`, as for every event: Papyrus sends `story.announce:<accountId>:<lineageId>`, so one delivery exists per account per Story.
+- **`x` channel** (`caducus.notify.channels.x`). `send` posts the text exactly as drafted (`POST /2/tweets`, OAuth 2.0 user token); `delete(delivery, by=...)` takes it down (`DELETE /2/tweets/:id`). The host supplies a `TokenProvider` (tokens are never stored or logged here), a `PriceTable`, a `Guard` (pause and budget) and optionally a `RecentPosts` reader; the built-in one reads `GET /2/users/:id/tweets` and matches the link, else the exact text. The contract is in the module docstring.
+- **Cost on deliveries.** `cost` (decimal string, a running total that only grows), `costCurrency`, `costNote` (the price list the host named, with its date). Set by the channel from the host's `PriceTable`, never guessed: X returns no price. Also `withdrawn` (the highest status), `withdrawnAt`, `withdrawnBy`.
+
+**Exactly once.** X has no idempotency key. The delivery is claimed before the request. A timeout, a dropped connection or a 5xx is an unknown outcome: the delivery stays claimed and queued, `send` raises `UnknownOutcome`, and the queue's redelivery finds the claim, reads the account's recent posts first (priced per post returned) and records the post as sent if it is there. Only when it is not there does the post go out. A 4xx is final (`failed`, with X's message). A 429 waits until `x-rate-limit-reset` and repeats the request, since X did not process it; with no reset header it fails rather than guess. X's duplicate-content refusal counts as posted only if the read confirms it. The `Guard` is asked before every post; a pause or budget refusal records `refused` with the host's reason (the delivery is final, so the host re-announces under a new event id when it resumes). Withdrawing is never blocked by the guard.
+
 ## Deliberately deferred
 
 Digests. Phone paging (never). Generic webhook channel: designed only, an HTTPS POST of the delivery as JSON through the `Channel` interface, signed per connection, same queues, SSRF checks on the URL (`kanbus-93a4f9`). Inbound Slack and Discord events. A shared renderer or UI package. Custom domain for operator pages. An outside watcher for the dead-man's switch. Merging with the inbound Papyrus Slack agent app.

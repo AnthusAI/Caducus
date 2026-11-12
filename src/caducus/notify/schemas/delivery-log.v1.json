@@ -13,7 +13,7 @@
     "deliveryId": { "type": "string" },
     "eventId": { "type": "string" },
     "kind": { "type": "string" },
-    "class": { "enum": ["operator", "admin", "account", "public"] },
+    "class": { "enum": ["operator", "admin", "account", "public", "broadcast"] },
     "product": { "type": "string" },
     "site": { "type": "string" },
     "recipientKey": { "type": "string", "description": "HMAC of the address, or a Person or site-subject reference. Never an address." },
@@ -22,7 +22,7 @@
     "status": {
       "enum": [
         "queued", "sent", "delivered", "delayed", "bounced", "complained", "rejected", "failed",
-        "suppressed", "skipped_preference", "grouped", "refused", "dead_lettered"
+        "withdrawn", "suppressed", "skipped_preference", "grouped", "refused", "dead_lettered"
       ]
     },
     "reason": { "type": "string" },
@@ -36,6 +36,11 @@
     "ackRequested": { "type": "boolean" },
     "ackAt": { "type": "string", "format": "date-time" },
     "expiresAt": { "type": "integer", "description": "Epoch seconds; DynamoDB TTL. Set from one retention setting (90 days)." },
+    "cost": { "type": "string", "description": "Decimal string: the running total charged for this delivery by a channel that bills per request. Only ever grows." },
+    "costCurrency": { "type": "string", "description": "The currency of cost, for example USD. One currency per delivery." },
+    "costNote": { "type": "string", "description": "Where the prices applied came from, as the host stated them, for example the price list and its date." },
+    "withdrawnAt": { "type": "string", "format": "date-time" },
+    "withdrawnBy": { "type": "string", "description": "Who withdrew the post, as the host named them." },
     "version": { "type": "integer" }
   },
   "additionalProperties": false
