@@ -17,10 +17,17 @@
       "text": "Built on branch feat/public-audiences: audience package (service, tokens, limits, domains, directory), handlers.public, Store increment/transact/index_page, router fan-out by list and account recipients, email channel re-check + RFC 8058 headers + RenderContext, base kinds audience.confirmation/audience.surge, event field lists. features/notifications/public_audience.feature (32 scenarios) and tests/notify/test_audience.py incl. a moto end-to-end journey. Pause assumption (SendingPausedException) documented with a required drill before any site turns its public path On.",
       "created_at": "2026-11-12T23:05:47.597103Z",
       "comment_type": "default"
+    },
+    {
+      "id": "69e8aaba-5337-44c1-b075-d6181f21b95a",
+      "author": "home",
+      "text": "Merged to develop: #14 design, #15 implementation, #16 leave-one-out rate baseline (found while wiring Papyrus). Not released: a release (expected 0.3.0) waits for Ryan's go. Papyrus side ready on AnthusAI/Papyrus branch feat/PPY-1081ad-public-audiences (pins caducus[notify]==0.3.0). Remaining here: nothing for PPY-1081ad; the pause drill is Papyrus PPY-a85725.",
+      "created_at": "2026-11-12T23:26:20.828175Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-11-12T22:50:05.581295Z",
-  "updated_at": "2026-11-12T23:05:47.597886Z",
+  "updated_at": "2026-11-12T23:26:20.828755Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
