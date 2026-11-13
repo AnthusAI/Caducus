@@ -9,7 +9,7 @@ from typing import Any, Mapping, Optional
 
 @dataclass(frozen=True)
 class Outcome:
-    status: str  # sent | duplicate | failed
+    status: str  # sent | duplicate | failed | withdrawn | withdrawn
     provider_message_id: Optional[str] = None
     reason: Optional[str] = None
 

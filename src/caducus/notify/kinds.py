@@ -8,7 +8,7 @@ from typing import Any, Dict, Mapping, Optional, Tuple
 
 from .files import PACKAGE_DIR, find_config, load_mapping
 
-CLASSES = ("operator", "admin", "account", "public")
+CLASSES = ("operator", "admin", "account", "public", "broadcast")
 ACK_MODES = ("none", "requested")
 AUDIENCES = ("class", "probe")
 GROUPING_FIELDS = ("product", "site")
@@ -60,6 +60,8 @@ def _kind(name: str, raw: Mapping[str, Any]) -> Kind:
     channels = tuple(raw.get("channels") or ())
     if not channels:
         raise ValueError("kind %s: needs at least one channel" % name)
+    if klass == "broadcast" and (raw.get("grouping") or raw.get("lifecycle")):
+        raise ValueError("kind %s: a broadcast is one post per account, with no grouping or lifecycle" % name)
     grouping = None
     if raw.get("grouping"):
         by = tuple(raw["grouping"].get("by") or ())

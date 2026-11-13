@@ -160,7 +160,7 @@ def test_a_host_can_pass_its_own_renderer():
     from caducus.notify.render.operator import RenderedEmail
 
     class Branded(Renderer):
-        def render(self, items):
+        def render(self, items, context=None):
             return RenderedEmail("Branded", "plain", "<p>html</p>")
 
     world = World()

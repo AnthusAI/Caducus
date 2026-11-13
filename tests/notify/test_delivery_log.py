@@ -27,8 +27,12 @@ def expected(current, new):
     """The rule, written out independently of next_status."""
     if current in TERMINAL:
         return current
+    if current == "withdrawn":
+        return current
     if new in TERMINAL:
         return new if current in ("queued", "sent", "delivered", "delayed") else current
+    if new == "withdrawn":
+        return new
     order = ["queued", "sent", "delivered", "delayed"]
     worst = {"bounced", "complained", "rejected", "failed"}
     if current in worst:

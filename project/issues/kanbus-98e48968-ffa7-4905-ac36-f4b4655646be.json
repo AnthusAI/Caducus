@@ -17,9 +17,17 @@
       "type": "blocked-by"
     }
   ],
-  "comments": [],
+  "comments": [
+    {
+      "id": "e9fb29ea-4d5f-4f8a-a4cf-8491198d5ba3",
+      "author": "home",
+      "text": "Public-audience parts designed and being built in kanbus-2bba4f (docs/public-audiences.md, Papyrus PPY-1081ad).",
+      "created_at": "2026-11-12T22:50:09.797974Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-11-04T13:14:29.454419Z",
-  "updated_at": "2026-11-04T17:10:47.394303Z",
+  "updated_at": "2026-11-12T22:50:09.798372Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

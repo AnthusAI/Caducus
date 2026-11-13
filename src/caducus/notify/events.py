@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, Mapping, Optional
+from typing import Any, Dict, Mapping, Optional, Tuple
 
 SCHEMA_VERSION = 1
 SEVERITIES = ("info", "warning", "critical")
@@ -29,6 +29,7 @@ class Event:
     site: Optional[str] = None
     group_key: Optional[str] = None
     audience: Optional[str] = None
+    lists: Tuple[str, ...] = ()  # public kinds: the host's lists this event is for
     schema: int = field(default=SCHEMA_VERSION)
 
     def to_detail(self) -> Dict[str, Any]:
@@ -49,6 +50,8 @@ class Event:
         ):
             if value is not None:
                 detail[name] = value
+        if self.lists:
+            detail["lists"] = list(self.lists)
         return detail
 
 
@@ -88,7 +91,11 @@ def parse_event(detail: Any) -> Event:
     _text(facts, "title")
     for name in ("summary", "url"):
         _text(facts, name, required=False)
+    lists = detail.get("lists", [])
+    if not isinstance(lists, list) or not all(isinstance(v, str) and v.strip() for v in lists):
+        raise EventInvalid("lists must be a list of non-empty strings")
     return Event(
+        lists=tuple(lists),
         event_id=_text(detail, "eventId"),
         kind=_text(detail, "kind"),
         product=_text(detail, "product"),

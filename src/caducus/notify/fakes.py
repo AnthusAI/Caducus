@@ -5,18 +5,24 @@ from __future__ import annotations
 import itertools
 import json
 import os
+import threading
+import time
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Mapping, Optional
+from decimal import Decimal
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from typing import Any, Dict, List, Mapping, Optional, Sequence
 
 from .catalog import catalog_from_mapping
 from .files import load_mapping
 from .channels.email import EmailChannel, Mailer, Throttled
+from .channels.x import Guard, PriceTable, TokenProvider, UrllibHttp, XChannel
 from .delivery_log import DeliveryLog
-from .directory import StaticDirectory
+from .directory import ChannelAccount, StaticDirectory, account_key
+from .prices import Price
 from .grouping import Dispatcher
 from .handlers.router import process_envelope
 from .incidents import IncidentTracker
-from .kinds import load_registry
+from .kinds import Kind, load_registry
 from .queues import MemoryQueues
 from .routing import MemoryPreferences, Router
 from .store import MemoryStore
@@ -43,14 +49,15 @@ class FakeMailer(Mailer):
         self.rate = rate
         self.attempts = 0
 
-    def send(self, *, to_address, subject, text, html, tags):  # type: ignore[no-untyped-def]
+    def send(self, *, to_address, subject, text, html, tags, headers=None):  # type: ignore[no-untyped-def]
         self.attempts += 1
         if self.script:
             problem = self.script.pop(0)
             if problem is not None:
                 raise problem
         self.calls.append(
-            {"to": to_address, "subject": subject, "text": text, "html": html, "tags": dict(tags)}
+            {"to": to_address, "subject": subject, "text": text, "html": html, "tags": dict(tags),
+             "headers": dict(headers or {})}
         )
         return "fake-message-%d" % len(self.calls)
 
@@ -70,7 +77,13 @@ PROBE_ADDRESS = "success@simulator.amazonses.com"
 class World:
     """The whole service wired to in-memory fakes, for specs and unit tests."""
 
-    def __init__(self, operators: int = 1, sleep: Any = None):
+    def __init__(
+        self,
+        operators: int = 1,
+        sleep: Any = None,
+        accounts: Sequence[ChannelAccount] = (),
+        extra_kinds: Sequence[Kind] = (),
+    ):
         self.clock = FakeClock()
         self.store = MemoryStore()
         self.queues = MemoryQueues()
@@ -78,9 +91,12 @@ class World:
         self.sleeps: List[float] = []
         self.addresses = [OPERATOR_ADDRESS.format(n + 1) for n in range(operators)]
         self.directory = StaticDirectory(
-            self.addresses, "test-key-secret", probe_address=PROBE_ADDRESS
+            self.addresses, "test-key-secret", probe_address=PROBE_ADDRESS,
+            accounts=accounts,
         )
         self.kinds = load_registry()
+        for kind in extra_kinds:
+            self.kinds._kinds[kind.name] = kind
         catalog_data = load_mapping(os.path.join(FIXTURES, "alarm-catalog.yaml"))
         # A made-up family of alarms so a storm can hit one site with many alarms.
         catalog_data["alarms"].append(
@@ -217,4 +233,302 @@ class World:
         return self.router.tick()
 
 
-__all__ = ["FakeClock", "FakeMailer", "Throttled", "World"]
+X_ACCOUNT_ID = "acct1"
+X_USER_ID = "9001"
+X_TOKEN = "fake-access-token-do-not-log"
+X_PRICES = PriceTable(
+    post=Price("0.015", "USD", "X price list, 2026-11-12: create post"),
+    post_with_url=Price("0.200", "USD", "X price list, 2026-11-12: create post with URL"),
+    delete=Price("0.010", "USD", "X price list, 2026-11-12: delete"),
+    read_per_post=Price("0.005", "USD", "X price list, 2026-11-12: read, per post returned"),
+)
+
+
+class FakeX:
+    """A small HTTP server that answers like X's API v2, so the adapter's real
+    HTTP client is exercised and nothing leaves the machine.
+
+    `script` is a list of steps consumed one per request, before normal
+    behaviour: ("status", code, body, headers); ("hang",) to never answer; or
+    ("post-then-hang",) to create the post and then not answer.
+    """
+
+    def __init__(self) -> None:
+        self.requests: List[Dict[str, Any]] = []
+        self.posts: List[Dict[str, Any]] = []
+        self.script: List[Any] = []
+        self._ids = itertools.count(1000)
+        fake = self
+
+        class Handler(BaseHTTPRequestHandler):
+            def log_message(self, *args):  # type: ignore[no-untyped-def]
+                pass
+
+            def _answer(self, code: int, body: Any, headers: Optional[Mapping[str, str]] = None) -> None:
+                raw = json.dumps(body).encode("utf-8")
+                self.send_response(code)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(raw)))
+                for name, value in (headers or {}).items():
+                    self.send_header(name, value)
+                self.end_headers()
+                self.wfile.write(raw)
+
+            def _handle(self) -> None:
+                length = int(self.headers.get("Content-Length") or 0)
+                body = json.loads(self.rfile.read(length)) if length else None
+                fake.requests.append(
+                    {"method": self.command, "path": self.path, "body": body,
+                     "authorization": self.headers.get("Authorization")}
+                )
+                step = fake.script.pop(0) if fake.script else None
+                if step and step[0] == "status":
+                    return self._answer(step[1], step[2], step[3])
+                if step and step[0] == "hang":
+                    return time.sleep(1)  # longer than the client waits: it times out
+                if self.command == "POST" and self.path == "/2/tweets":
+                    post = {"id": str(next(fake._ids)), "text": body["text"]}
+                    fake.posts.append(post)
+                    if step and step[0] == "post-then-hang":
+                        return time.sleep(1)
+                    return self._answer(201, {"data": post})
+                if self.command == "DELETE" and self.path.startswith("/2/tweets/"):
+                    post_id = self.path.rsplit("/", 1)[1]
+                    fake.posts = [p for p in fake.posts if p["id"] != post_id]
+                    return self._answer(200, {"data": {"deleted": True}})
+                if self.command == "GET" and self.path.startswith("/2/users/%s/tweets" % X_USER_ID):
+                    shown = [
+                        {"id": p["id"], "text": p["text"], "entities": {"urls": [
+                            {"expanded_url": w} for w in p["text"].split() if w.startswith("http")
+                        ]}}
+                        for p in reversed(fake.posts)
+                    ]
+                    return self._answer(200, {"data": shown} if shown else {"meta": {"result_count": 0}})
+                self._answer(404, {"title": "Not Found"})
+
+            do_GET = do_POST = do_DELETE = _handle
+
+        self._server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        self.url = "http://127.0.0.1:%d" % self._server.server_address[1]
+        threading.Thread(target=self._server.serve_forever, daemon=True).start()
+
+    def close(self) -> None:
+        self._server.shutdown()
+        self._server.server_close()
+
+
+class FakeTokens(TokenProvider):
+    def access_token(self, account: ChannelAccount) -> str:
+        return X_TOKEN
+
+
+class FakeGuard(Guard):
+    """Pause and budget kept in memory: `paused` is a reason or None."""
+
+    def __init__(self) -> None:
+        self.paused: Optional[str] = None
+        self.budget: Optional[Decimal] = None
+        self.spent = Decimal("0")
+
+    def refusal(self, account, price):  # type: ignore[no-untyped-def]
+        if self.paused:
+            return self.paused
+        if self.budget is not None and self.spent + Decimal(price.amount) > self.budget:
+            return "budget reached"
+        return None
+
+    def charged(self, account, price):  # type: ignore[no-untyped-def]
+        self.spent += Decimal(price.amount)
+
+
+class XWorld(World):
+    """The World plus a connected X account, a fake X server and the x channel."""
+
+    def __init__(self) -> None:
+        self.account = ChannelAccount(
+            key=account_key("x", X_ACCOUNT_ID), address="@example_pub",
+            channel="x", external_id=X_USER_ID,
+        )
+        super().__init__(
+            accounts=[self.account],
+            extra_kinds=[
+                Kind(name="story.announce", klass="broadcast", default_on=True, channels=("x",))
+            ],
+        )
+        self.x_server = FakeX()
+        self.guard = FakeGuard()
+        self.waits: List[float] = []
+        self.x = XChannel(
+            self.store, self.log, self.directory,
+            tokens=FakeTokens(), prices=X_PRICES, guard=self.guard, clock=self.clock,
+            http=UrllibHttp(timeout=0.3), recent_count=5, base_url=self.x_server.url,
+            sleep=self.waits.append,
+        )
+
+    def announce(self, event_id: str, text: Optional[str], url: str = "", account: Optional[str] = None):  # type: ignore[no-untyped-def]
+        facts: Dict[str, Any] = {"title": "A Story"}
+        if text is not None:
+            facts["text"] = text
+        if url:
+            facts["url"] = url
+        return self.router.handle_detail(
+            {
+                "schema": 1, "eventId": event_id, "kind": "story.announce",
+                "product": "papyrus", "site": "mom", "occurredAt": "2026-11-04T12:00:00Z",
+                "severity": "info", "facts": facts, "audience": account or self.account.key,
+            }
+        )
+
+    def queued_row(self, event_id: str) -> Dict[str, Any]:
+        (row,) = self.log.for_event(event_id)
+        return row
+
+    def close(self) -> None:
+        self.x_server.close()
+
+
+class FakeLinks:
+    """The host's pages and one-click endpoint at a made-up origin."""
+
+    ORIGIN = "https://news.example.com"
+
+    def confirm_page(self, token: str) -> str:
+        return "%s/notifications/confirm/?token=%s" % (self.ORIGIN, token)
+
+    def preferences_page(self, token: str) -> str:
+        return "%s/notifications/preferences/?token=%s" % (self.ORIGIN, token)
+
+    def unsubscribe_page(self, token: str, list_id: Optional[str]) -> str:
+        return "%s/notifications/unsubscribe/?token=%s%s" % (
+            self.ORIGIN, token, "&list=" + list_id if list_id else "")
+
+    def one_click(self, token: str, list_id: Optional[str]) -> str:
+        return "%s/api/notifications/unsubscribe?t=%s%s" % (
+            self.ORIGIN, token, "&l=" + list_id if list_id else "")
+
+
+CONSENT = "I agree to receive the emails I choose from Example News and can unsubscribe at any time."
+PUBLIC_KIND = "story.published"
+
+
+class PublicWorld(World):
+    """The World plus a public audience with two lists, on fakes. Nothing reaches SES or DNS."""
+
+    def __init__(self, confirm_window_seconds: int = 72 * 3600) -> None:
+        from .audience import (
+            AudienceDirectory, AudienceKeys, AudienceList, AudienceSettings, PublicAudience, StaticDomains,
+        )
+
+        super().__init__(
+            extra_kinds=[Kind(name=PUBLIC_KIND, klass="public", default_on=False, channels=("email",))]
+        )
+        self.domains = StaticDomains()
+        self.fanout_pages = 0
+        self._networks_used = 0
+        self.unsuppressed: List[str] = []
+        self.settings = AudienceSettings(
+            lists=(
+                AudienceList("stories", PUBLIC_KIND, "New stories", "One email per new story."),
+                AudienceList("weekly", PUBLIC_KIND, "The weekly issue"),
+            ),
+            consent=CONSENT,
+            confirm_window_seconds=confirm_window_seconds,
+            links=FakeLinks(),  # type: ignore[arg-type]
+            product="papyrus",
+            site="example",
+            provider_unsuppress=self.unsuppressed.append,
+        )
+        self.keys = AudienceKeys.from_secret("test-key-secret")
+        self.directory = AudienceDirectory(self.directory)  # type: ignore[assignment]
+        nonces = itertools.count(1)
+        self.router = Router(
+            store=self.store, kinds=self.kinds, log=self.log, directory=self.directory,
+            dispatcher=self.dispatcher, incidents=IncidentTracker(self.store, self.clock),
+            catalog=self.catalog, triage=TriageSettings(portal_url=PORTAL, role_name="", accounts={}),
+            clock=self.clock, preferences=self.preferences, fanout_queues=self.queues,
+        )
+        self.audience = PublicAudience(
+            self.store, self.settings, self.keys, self.domains, self.clock,
+            self.router.handle_detail, new_nonce=lambda: "n%04d" % next(nonces),
+        )
+        self.directory.audience = self.audience  # type: ignore[attr-defined]
+        self.router._audience_source = self.audience
+        self.email = EmailChannel(
+            self.store, self.log, self.directory, self.mailer,
+            sleep=self.sleeps.append, audience=self.audience,
+        )
+
+    # -- reader actions, as a host's routes send them ------------------------
+
+    def subscribe(self, address: str, lists=("stories",), consent: str = CONSENT, ip: Optional[str] = None, **extra: Any):  # type: ignore[no-untyped-def]
+        """`ip` defaults to a network of its own per call, as readers' signups mostly are."""
+        from .handlers.public import dispatch
+
+        if ip is None:
+            self._networks_used += 1
+            ip = "100.%d.%d.1" % (64 + self._networks_used // 250 % 64, self._networks_used % 250)
+
+        event = {"action": "subscribe", "email": address, "lists": list(lists), "consent": consent,
+                 "formId": "notifications", "page": FakeLinks.ORIGIN + "/notifications/?utm=x",
+                 "origin": FakeLinks.ORIGIN, "ip": ip, "userAgent": "Reader/1.0"}
+        event.update(extra)
+        return dispatch(self.audience, event)
+
+    def act(self, action: str, **fields: Any) -> Dict[str, Any]:
+        from .handlers.public import dispatch
+
+        return dispatch(self.audience, dict(fields, action=action))
+
+    def key(self, address: str) -> str:
+        return self.keys.recipient(address)
+
+    def deliver(self) -> int:
+        """Play the email queue (pages and deliveries) until it is empty, as SQS would."""
+        from .handlers.email_sender import handle_batch
+
+        handled = 0
+        while self.queues.sent:
+            channel, body = self.queues.sent.pop(0)
+            if "fanout" in body:
+                self.fanout_pages += 1
+            if channel == "email":
+                handle_batch(self.store, self.email, {"Records": [{"messageId": "m", "body": json.dumps(body)}]},
+                             fan_out=self.router.fan_out_page)
+                handled += 1
+        return handled
+
+    def fan_out_only(self) -> None:
+        """Run the queued fan-out pages, leaving the deliveries they queue unsent."""
+        pages = [b for c, b in self.queues.sent if "fanout" in b]
+        self.queues.sent = [(c, b) for c, b in self.queues.sent if "fanout" not in b]
+        while pages:
+            self.fanout_pages += 1
+            self.router.fan_out_page(pages.pop(0))
+            pages += [b for c, b in self.queues.sent if "fanout" in b]
+            self.queues.sent = [(c, b) for c, b in self.queues.sent if "fanout" not in b]
+
+    def mail_to(self, address: str) -> List[Mapping[str, Any]]:
+        return [c for c in self.mailer.calls if c["to"] == address]
+
+    def confirm_token(self, address: str) -> str:
+        """The token in the newest confirmation link mailed to `address`."""
+        from urllib.parse import parse_qs, urlparse
+
+        rows = [i for (pk, sk), i in self.store.items.items()
+                if sk.startswith("CONTENT#") and i["items"][0].get("kind") == "audience.confirmation"]
+        for row in reversed(rows):
+            delivery = self.store.get(row["pk"], "DELIVERY#" + row["sk"][len("CONTENT#"):])
+            if delivery and delivery["recipientKey"] == self.key(address):
+                url = row["items"][0]["link"]
+                return parse_qs(urlparse(url).query)["token"][0]
+        raise AssertionError("no confirmation for that address")
+
+    def publish(self, event_id: str, lists=("stories",)):  # type: ignore[no-untyped-def]
+        return self.router.handle_detail(
+            {"schema": 1, "eventId": event_id, "kind": PUBLIC_KIND, "product": "papyrus", "site": "example",
+             "occurredAt": "2026-11-04T12:00:00Z", "severity": "info", "lists": list(lists),
+             "facts": {"title": "A new story", "url": FakeLinks.ORIGIN + "/a-new-story/"}}
+        )
+
+
+__all__ = ["FakeClock", "FakeMailer", "PublicWorld", "Throttled", "World", "XWorld"]

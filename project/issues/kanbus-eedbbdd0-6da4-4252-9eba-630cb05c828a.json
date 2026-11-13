@@ -35,10 +35,17 @@
       "text": "Papyrus side, corrected id: PPY-f361ee (replaces PPY-ab9205, deleted and refiled before it was ever pushed).",
       "created_at": "2026-11-04T13:17:12.317033Z",
       "comment_type": "default"
+    },
+    {
+      "id": "61da59fe-fb46-4f2d-900d-fdb98a1f5c7b",
+      "author": "home",
+      "text": "Public-audience parts designed and being built in kanbus-2bba4f (docs/public-audiences.md, Papyrus PPY-1081ad).",
+      "created_at": "2026-11-12T22:50:09.741693Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-11-04T13:14:29.443091Z",
-  "updated_at": "2026-11-04T17:10:47.380444Z",
+  "updated_at": "2026-11-12T22:50:09.742148Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
