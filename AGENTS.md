@@ -12,7 +12,7 @@ Warning: Editing project/ directly is a sin against The Way. Do not read or writ
 
 ## Development policy (Ryan, 2026-11-04)
 
-- Caducus is a Python package, not a site: there is no dev server and no Amplify. Develop and verify locally with `pip install -e ".[dev,radar,reinforcement-memory]"`, then `pytest` and `behave` (the commands CI and the release workflow run).
+- Caducus is a Python package, not a site: there is no dev server and no Amplify. Develop and verify locally with `pip install -e ".[dev,radar,reinforcement-memory,notify-dev]"`, then `pytest` and `behave` (the commands `.github/actions/test` runs for both CI and the release workflow).
 - **Merge** means merging a pull request into `develop`; that is where things are reviewed. CI (`ci.yml`) runs on pull requests and pushes to `develop`; nothing is published from `develop`.
 - **Release** means merging `develop` into `main`. A push to `main` runs `release.yml`: tests, a semantic version tag, a GitHub release and the PyPI publish. Aim for once or twice a day, batching what is ready. An extra release needs Ryan's say-so.
 - Say "merged to develop" or "released" precisely.
