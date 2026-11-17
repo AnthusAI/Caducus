@@ -109,3 +109,27 @@ Feature: A host announces on a publication's X account through Caducus
     And the X channel handles the queue
     Then the access token was sent to X as a bearer token
     And no token appears in the delivery log or in the logs
+
+  Scenario: An attempt of a host's Delivery is one event, delivery:<id>:a<N>, and is deduped on it
+    When the host sends the announcement "delivery:announcement-0a1b#x#acct1#g1:a1" with a link twice
+    And the X channel handles the queue
+    And the X channel handles the queue again
+    Then exactly one post is made at X
+    And the delivery of the event "delivery:announcement-0a1b#x#acct1#g1:a1" has the status "sent"
+
+  Scenario: A retry is the next attempt, a new event, and posts once
+    Given X answers the post request with 403 "You are not allowed to create a Tweet with this text"
+    When the host sends the announcement "delivery:announcement-0a1b#x#acct1#g1:a1" with a link twice
+    And the X channel handles the queue
+    Then the delivery of the event "delivery:announcement-0a1b#x#acct1#g1:a1" has the status "failed"
+    And nothing was posted at X
+    When the host sends the announcement "delivery:announcement-0a1b#x#acct1#g1:a2" with a link twice
+    And the X channel handles the queue
+    Then exactly one post is made at X
+    And the delivery of the event "delivery:announcement-0a1b#x#acct1#g1:a2" has the status "sent"
+    And the delivery of the event "delivery:announcement-0a1b#x#acct1#g1:a1" has the status "failed"
+
+  Scenario: Two Deliveries of one account are two events even with the same words
+    When the host sends the announcement "delivery:announcement-0a1b#x#acct1#g1:a1" with a link
+    And the host sends the announcement "delivery:announcement-0a1b#x#acct1#g2:a1" with a link
+    Then there are 2 deliveries to the account "@example_pub" on the channel "x"
