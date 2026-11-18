@@ -52,6 +52,8 @@ class AudienceList:
     kind: str
     name: str
     description: str = ""
+    #: Lists of one family are alternatives (a reader holds at most one at a time); no family = its own family.
+    family: Optional[str] = None
 
 
 class LinkBuilder:
@@ -83,6 +85,9 @@ class AudienceSettings:
     #: Called with an address when a person lifts a bounce or complaint suppression, so the host can
     #: also clear its provider's own suppression list (SES account suppression). Optional.
     provider_unsuppress: Optional[Callable[[str], None]] = None
+    #: Called with (family, now) when a reader moves between two lists of a family: the instant the move
+    #: takes effect (the host's next period start for a periodic list). None, or a time not after now, means now.
+    move_effective_at: Optional[Callable[[str, datetime], datetime]] = None
 
     def list_named(self, list_id: str) -> Optional[AudienceList]:
         return next((entry for entry in self.lists if entry.id == list_id), None)
@@ -184,17 +189,52 @@ class PublicAudience:
         row = self._store.get("SUPP#" + key, SUPPRESSION)
         return row["reason"] if row else None
 
-    def subscribed_lists(self, key: str) -> List[str]:
-        return [lid for lid, row in self._subscriptions(key).items() if row["status"] == "subscribed"]
+    @staticmethod
+    def _began(row: Item) -> str:
+        """When the row's membership began: `since`, or for a row written before that, when it was written."""
+        return row.get("since") or row["at"]
 
-    def receiving(self, key: str, list_ids: Sequence[str]) -> Tuple[bool, str]:
-        """May this key get mail for one of `list_ids` now? (False, reason) when not."""
+    @staticmethod
+    def _stamp_time(value: str) -> datetime:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+    def _member_at(self, row: Item, when: datetime) -> bool:
+        """Membership at an instant: subscribed, begun by then, and not yet moved off."""
+        if row.get("status") != "subscribed" or self._stamp_time(self._began(row)) > when:
+            return False
+        return row.get("until") is None or when < self._stamp_time(row["until"])
+
+    @staticmethod
+    def _held(row: Item) -> bool:
+        """The reader holds the list: subscribed and not moved off (a move to take effect later does not count)."""
+        return row.get("status") == "subscribed" and row.get("until") is None
+
+    def _live(self, row: Item, now: datetime) -> bool:
+        return row.get("status") == "subscribed" and (row.get("until") is None or now < self._stamp_time(row["until"]))
+
+    def _family_of(self, list_id: str) -> str:
+        entry = self._settings.list_named(list_id)
+        return (entry.family if entry and entry.family else None) or list_id
+
+    def _held_lists(self, key: str) -> List[str]:
+        return [lid for lid, row in self._subscriptions(key).items() if self._held(row)]
+
+    def _members_at(self, key: str, when: Optional[datetime]) -> List[str]:
+        when = when or self._clock()
+        return [lid for lid, row in self._subscriptions(key).items() if self._member_at(row, when)]
+
+    def subscribed_lists(self, key: str, as_of: Optional[datetime] = None) -> List[str]:
+        """The lists `key` is a member of at `as_of` (now when omitted)."""
+        return self._members_at(key, as_of)
+
+    def receiving(self, key: str, list_ids: Sequence[str], as_of: Optional[datetime] = None) -> Tuple[bool, str]:
+        """May this key get mail for one of `list_ids` (as a member at `as_of`, now when omitted)? (False, reason) when not."""
         if self.suppression(key):
             return False, "suppressed"
         profile = self._profile(key)
         if profile is None or profile.get("status") != "confirmed":
             return False, "skipped_preference"
-        if not set(self.subscribed_lists(key)) & set(list_ids):
+        if not set(self.subscribed_lists(key, as_of)) & set(list_ids):
             return False, "skipped_preference"
         return True, ""
 
@@ -202,10 +242,23 @@ class PublicAudience:
         profile = self._profile(key)
         return profile.get("address") if profile else None
 
-    def subscriber_page(self, list_id: str, cursor: Optional[str]) -> Tuple[List[str], Optional[str]]:
-        """One page of the confirmed subscribers of `list_id` (the `byList` index), and the next cursor."""
+    def subscriber_page(
+        self, list_id: str, cursor: Optional[str], as_of: Optional[datetime] = None
+    ) -> Tuple[List[str], Optional[str]]:
+        """One page of the members of `list_id` at `as_of` (now when omitted), and the next cursor.
+
+        The `byList` index holds keys only, so each row is read to apply its `since` and `until`.
+        A page can come back short, or empty with a cursor, when some of its rows are not members then.
+        """
+        when = as_of or self._clock()
+        when = when if when.tzinfo else when.replace(tzinfo=timezone.utc)
         rows, nxt = self._store.index_page(LIST_INDEX, LIST_ATTRIBUTE, list_id, cursor)
-        return [row["pk"][len("RCPT#"):] for row in rows], nxt
+        keys = []
+        for row in rows:
+            held = self._store.get(row["pk"], row["sk"])
+            if held is not None and self._member_at(held, when):
+                keys.append(row["pk"][len("RCPT#"):])
+        return keys, nxt
 
     def manage_token(self, key: str) -> Optional[str]:
         profile = self._profile(key)
@@ -213,12 +266,12 @@ class PublicAudience:
             return None
         return tokens.issue(self._keys.token, tokens.Claims(key, "manage", profile["generation"]))
 
-    def links_for(self, key: str, list_ids: Sequence[str]) -> Optional[Dict[str, str]]:
+    def links_for(self, key: str, list_ids: Sequence[str], as_of: Optional[datetime] = None) -> Optional[Dict[str, str]]:
         """The footer and header links of one public message to `key`, unsubscribing from the first list it is on."""
         token = self.manage_token(key)
         if token is None:
             return None
-        mine = [lid for lid in list_ids if lid in set(self.subscribed_lists(key))]
+        mine = [lid for lid in list_ids if lid in set(self.subscribed_lists(key, as_of))]
         list_id = mine[0] if mine else None
         links = self._settings.links
         return {
@@ -234,15 +287,18 @@ class PublicAudience:
         self._store.put_if_absent({"pk": "WORDING#" + digest, "sk": "TEXT", "text": wording})
         return digest
 
-    def _subscription_row(self, key: str, list_id: str, subscribed: bool, indexed: bool) -> Item:
+    def _subscription_row(self, key: str, list_id: str, subscribed: bool, indexed: bool, since: Optional[str] = None) -> Item:
+        stamp = self._stamp()
         row: Item = {
             "pk": rcpt(key),
             "sk": "SUB#" + list_id,
             "status": "subscribed" if subscribed else "unsubscribed",
-            "at": self._stamp(),
+            "at": stamp,
         }
-        if subscribed and indexed:
-            row[LIST_ATTRIBUTE] = list_id
+        if subscribed:
+            row["since"] = since or stamp
+            if indexed:
+                row[LIST_ATTRIBUTE] = list_id
         return row
 
     def _save(self, profile: Item, writes: List[Write], seen: Optional[int]) -> bool:
@@ -260,15 +316,88 @@ class PublicAudience:
             return True
         return False
 
-    def _set_lists(self, key: str, chosen: Iterable[str], suppressed_manually: bool) -> List[Write]:
+    def _clash(self, key: str, chosen: Iterable[str]) -> bool:
+        """Would `chosen` bring two lists of one family on at once? (A reader's held lists are not new.)"""
+        held = set(self._held_lists(key))
+        seen = set()
+        for lid in set(chosen):
+            if lid in held:
+                continue
+            family = self._family_of(lid)
+            if family in seen:
+                return True
+            seen.add(family)
+        return False
+
+    def _effective(self, family: str, now: datetime) -> datetime:
+        """When a move in `family` takes effect: the host's next period start, never before now."""
+        chooser = self._settings.move_effective_at
+        when = chooser(family, now) if chooser else now
+        return when if when > now else now
+
+    def _set_lists(
+        self, key: str, chosen: Iterable[str], suppressed_manually: bool, end: Iterable[str] = ()
+    ) -> List[Write]:
+        """The writes that make `chosen` the lists the reader holds. Callers have refused a `_clash` first.
+
+        A new list of a family the reader holds another list of is a move: the old list ends and the new one
+        begins at the host's effective time. A list in `end` is left at once, with any move onto it that has
+        not begun. A list the reader is moving off, but is still in, is left alone unless named in `end`.
+        """
+        now = self._clock()
+        stamp = iso(now)
         chosen = set(chosen)
+        ending = set(end)
         current = self._subscriptions(key)
-        writes = []
+        held = {lid for lid, row in current.items() if self._held(row)}
+        indexed = not suppressed_manually
+        begins: Dict[str, str] = {}
+        moved: Dict[str, str] = {}
+        for lid in sorted(chosen - held - ending):
+            family = self._family_of(lid)
+            mates = [other for other in held if other != lid and self._family_of(other) == family]
+            if mates:
+                when = iso(self._effective(family, now))
+                begins[lid] = when
+                for other in mates:
+                    moved[other] = when
+                    chosen.discard(other)
+        leaving = {lid for lid in held if lid not in chosen and lid not in moved} | {
+            lid for lid in ending if current.get(lid, {}).get("status") == "subscribed"
+        }
+        for lid in list(leaving):  # leaving a list whose move had not begun abandons the move
+            if self._stamp_time(self._began(current[lid])) > now:
+                family = self._family_of(lid)
+                leaving |= {
+                    other for other, row in current.items()
+                    if other != lid and self._family_of(other) == family and self._live(row, now)
+                }
+        writes: List[Write] = []
         for entry in self._settings.lists:
-            on = entry.id in chosen
-            was = current.get(entry.id, {}).get("status") == "subscribed"
-            if on != was or (on and not suppressed_manually and LIST_ATTRIBUTE not in current.get(entry.id, {})):
-                writes.append(Write(item=self._subscription_row(key, entry.id, on, not suppressed_manually)))
+            lid, row = entry.id, current.get(entry.id)
+            if lid in leaving:
+                ended = dict(row, status="unsubscribed", at=stamp, since=self._began(row), until=stamp)
+                ended.pop(LIST_ATTRIBUTE, None)
+                writes.append(Write(item=ended))
+            elif lid in moved:
+                if self._stamp_time(self._began(row)) > now:
+                    ended = dict(row, status="unsubscribed", at=stamp, until=stamp)
+                    ended.pop(LIST_ATTRIBUTE, None)
+                    writes.append(Write(item=ended))
+                else:  # stays subscribed until the move, and in the index, so an as-of fan-out still finds it
+                    writes.append(Write(item=dict(row, at=stamp, since=self._began(row), until=moved[lid])))
+            elif lid in chosen:
+                if row is not None and self._held(row):
+                    if indexed and LIST_ATTRIBUTE not in row:
+                        writes.append(Write(item=dict(row, since=self._began(row), **{LIST_ATTRIBUTE: lid})))
+                elif row is not None and row.get("status") == "subscribed" and self._live(row, now):
+                    kept = {k: v for k, v in row.items() if k != "until"}  # staying after all: since is kept
+                    kept.update(at=stamp, since=self._began(row))
+                    if indexed:
+                        kept[LIST_ATTRIBUTE] = lid
+                    writes.append(Write(item=kept))
+                else:
+                    writes.append(Write(item=self._subscription_row(key, lid, True, indexed, begins.get(lid))))
         return writes
 
     # -- subscribe ---------------------------------------------------------------
@@ -295,6 +424,10 @@ class PublicAudience:
         lists = self._requested(request.lists)
         if not lists:
             return answer(400, status="invalid_lists")
+        families = [self._family_of(lid) for lid in lists]
+        if len(set(families)) != len(families):
+            # Decided by the request alone, never by what the address holds: the answer reveals nothing.
+            return answer(400, status="one_cadence_per_family")
         if request.consent != self._settings.consent:
             return answer(400, status="invalid_consent")
         network = addresses.keyed_hash(self._keys.network, addresses.network_of(_text(request.ip, 64)))
@@ -324,7 +457,7 @@ class PublicAudience:
         now = self._now()
         profile = self._profile(key)
         seen = profile.get("version") if profile else None
-        if profile and profile.get("status") == "confirmed" and set(lists) <= set(self.subscribed_lists(key)):
+        if profile and profile.get("status") == "confirmed" and set(lists) <= set(self._held_lists(key)):
             return CHECK_EMAIL
         pending = (profile or {}).get("pending")
         window = self._settings.confirm_window_seconds
@@ -442,7 +575,7 @@ class PublicAudience:
             writes: List[Write] = []
             self._lift(claims.key, profile["address"], writes)
             manual = self.suppression(claims.key) == "manual"
-            chosen = set(self.subscribed_lists(claims.key)) | set(pending["lists"])
+            chosen = set(self._held_lists(claims.key)) | set(pending["lists"])
             writes += self._set_lists(claims.key, chosen, manual)
             consent = dict(pending["consent"], confirmedAt=self._stamp())
             consent["confirmUserAgent"] = _text(user_agent, MAXIMUM_USER_AGENT)
@@ -478,7 +611,9 @@ class PublicAudience:
         claims, profile = self._manage(token)
         if profile is None:
             return INVALID
-        mine = set(self.subscribed_lists(claims.key))  # type: ignore[union-attr]
+        # What the reader chose: a list they are moving onto shows on and the one they are moving off shows off,
+        # even while the move waits for its start.
+        mine = set(self._held_lists(claims.key))  # type: ignore[union-attr]
         return answer(
             200,
             status="ready",
@@ -499,7 +634,9 @@ class PublicAudience:
                 return INVALID
             key = claims.key  # type: ignore[union-attr]
             writes: List[Write] = []
-            added = set(chosen) - set(self.subscribed_lists(key))
+            if self._clash(key, chosen):
+                return answer(400, status="one_cadence_per_family")
+            added = set(chosen) - set(self._held_lists(key))
             if added:
                 self._lift(key, profile["address"], writes)
                 writes.append(
@@ -531,16 +668,26 @@ class PublicAudience:
             profile = self._profile(key)
             if profile is None:
                 return answer(200, status="unsubscribed", lists=[])
-            mine = self.subscribed_lists(key)
+            now = self._clock()
+            rows = self._subscriptions(key)
+            mine = [lid for lid, row in rows.items() if self._live(row, now)]
             if list_id and self._settings.list_named(list_id):
-                remaining = [lid for lid in mine if lid != list_id]
+                # A link from a list the reader has moved off ends only that list: their current one stays.
+                leaves = {list_id}
+                if list_id in rows and self._stamp_time(self._began(rows[list_id])) > now:
+                    leaves |= {  # leaving a list a move had not yet begun onto abandons the move
+                        lid for lid, row in rows.items()
+                        if self._family_of(lid) == self._family_of(list_id) and self._live(row, now)
+                    }
+                remaining = [lid for lid in mine if lid not in leaves]
                 if remaining:
-                    writes = self._set_lists(key, remaining, self.suppression(key) == "manual")
+                    held = [lid for lid in remaining if lid in set(self._held_lists(key))]
+                    writes = self._set_lists(key, held, self.suppression(key) == "manual", end=leaves)
                     if self._save(dict(profile, updatedAt=self._stamp()), writes, profile.get("version")):
                         emit(LOGGER, "unsubscribed", scope="list")
                         return answer(200, status="unsubscribed", lists=[list_id])
                     continue
-            writes = self._set_lists(key, [], True)
+            writes = self._set_lists(key, [], True, end=[entry.id for entry in self._settings.lists])
             if self.suppression(key) is None:
                 writes.append(Write(item={"pk": "SUPP#" + key, "sk": SUPPRESSION, "reason": "unsubscribed", "at": self._stamp()}))
             updated = dict(profile, status="unsubscribed", updatedAt=self._stamp())
@@ -561,7 +708,8 @@ class PublicAudience:
             if profile is None:
                 return "suppressed"
             updated = dict(profile, status="unsubscribed", updatedAt=self._stamp())
-            if self._save(updated, self._set_lists(key, [], True), profile.get("version")):
+            everything = [entry.id for entry in self._settings.lists]
+            if self._save(updated, self._set_lists(key, [], True, end=everything), profile.get("version")):
                 emit(LOGGER, "suppressed", reason=reason)
                 return "suppressed"
 
@@ -617,7 +765,11 @@ class PublicAudience:
             200,
             status="ready",
             profile={k: v for k, v in profile.items() if k not in drop},
-            lists={row["sk"][4:]: row["status"] for row in rows if row["sk"].startswith("SUB#")},
+            lists={row["sk"][4:]: self._export_status(row) for row in rows if row["sk"].startswith("SUB#")},
+            membership={
+                row["sk"][4:]: {k: row[k] for k in ("since", "until") if row.get(k)}
+                for row in rows if row["sk"].startswith("SUB#")
+            },
             consent=consents,
             suppression=self.suppression(key),
             deliveries=[
@@ -625,6 +777,9 @@ class PublicAudience:
                 for d in self._store.by_recipient(key)
             ],
         )
+
+    def _export_status(self, row: Item) -> str:
+        return "subscribed" if self._held(row) or self._member_at(row, self._clock()) else "unsubscribed"
 
     def import_subscriber(
         self,
@@ -645,18 +800,20 @@ class PublicAudience:
         if self.suppression(key) in BLOCKS_IMPORT:
             return "refused"
         chosen = [lid for lid in lists if self._settings.list_named(lid)]
+        if self._clash(key, chosen):
+            return "refused"  # two lists of one family at once
         record = dict(evidence, source="migrated", **{"from": source}, lists=sorted(chosen))
         digest = hashlib.sha256(repr(sorted(record.items())).encode("utf-8")).hexdigest()[:16]
         while True:
             profile = self._profile(key)
-            already = profile is not None and profile.get("status") == "confirmed" and set(chosen) <= set(self.subscribed_lists(key))
+            already = profile is not None and profile.get("status") == "confirmed" and set(chosen) <= set(self._held_lists(key))
             consent_key = (rcpt(key), "CONSENT#%s#import-%s" % (evidence.get("confirmedAt", ""), digest))
             if already and self._store.get(*consent_key) and (suppressed is None or self.suppression(key)):
                 return "unchanged"
             writes: List[Write] = []
             if suppressed and self.suppression(key) is None:
                 writes.append(Write(item={"pk": "SUPP#" + key, "sk": SUPPRESSION, "reason": suppressed, "at": self._stamp()}))
-            writes += self._set_lists(key, set(chosen) | set(self.subscribed_lists(key)), bool(suppressed or self.suppression(key)))
+            writes += self._set_lists(key, set(chosen) | set(self._held_lists(key)), bool(suppressed or self.suppression(key)))
             writes.append(Write(item={"pk": consent_key[0], "sk": consent_key[1], **record}))
             updated: Item = dict(profile or {"createdAt": self._stamp(), "generation": self._nonce()})
             updated.update({"pk": rcpt(key), "sk": PROFILE, "address": normalized, "status": "confirmed", "updatedAt": self._stamp()})

@@ -16,6 +16,7 @@ from typing import Any, Callable, Dict, Mapping, Optional, Sequence
 
 from ..delivery_log import DeliveryLog
 from ..directory import Directory
+from ..events import parse_timestamp
 from ..logs import emit
 from ..render.operator import RenderedEmail, render_operator_email
 from ..store import Store
@@ -214,12 +215,15 @@ class EmailChannel(Channel):
         headers: Dict[str, str] = {}
         if delivery.get("class") == "public":
             lists = [lid for item in content["items"] for lid in item.get("lists", [])]
+            stamps = [item.get("audienceAsOf") for item in content["items"]]
+            # A summary of a past period asks about membership then, not now: a reader who moved off since still gets it.
+            as_of = min(parse_timestamp(stamp) for stamp in stamps) if stamps and all(stamps) else None
             receiving, why = (
-                self._audience.receiving(delivery["recipientKey"], lists)
+                self._audience.receiving(delivery["recipientKey"], lists, as_of)
                 if self._audience is not None
                 else (False, "refused")
             )
-            links = self._audience.links_for(delivery["recipientKey"], lists) if receiving else None
+            links = self._audience.links_for(delivery["recipientKey"], lists, as_of) if receiving else None
             if not receiving or links is None:
                 reason = {
                     "suppressed": "the reader is suppressed",

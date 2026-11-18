@@ -15,7 +15,7 @@ from .catalog import Catalog
 from .cloudwatch import KIND as ALARM_KIND, STATES
 from .delivery_log import DeliveryLog
 from .directory import ChannelAccount, Directory, Recipient
-from .events import Event, EventInvalid, parse_event
+from .events import Event, EventInvalid, parse_event, parse_timestamp
 from .grouping import Dispatcher, delivery_id_for
 from .incidents import IncidentTracker
 from .kinds import Kind, KindRegistry
@@ -173,6 +173,9 @@ class Router:
                 product=event.product, site=event.site, reason="no audience",
             )
             return Result("refused", "no audience", [row])
+        carried = dict(item, lists=list(event.lists))
+        if event.audience_as_of:
+            carried["audienceAsOf"] = event.audience_as_of  # the send-time check asks the same question
         self._store.put(
             {
                 "pk": "EVENT#" + event.event_id,
@@ -181,7 +184,8 @@ class Router:
                 "product": event.product,
                 "site": event.site or "",
                 "lists": list(event.lists),
-                "item": dict(item, lists=list(event.lists)),
+                **({"audienceAsOf": event.audience_as_of} if event.audience_as_of else {}),
+                "item": carried,
                 "started": False,
                 "expiresAt": self._log.expires_at(),
             }
@@ -203,7 +207,8 @@ class Router:
         kind = self._kinds.get(fanout["kind"]) if fanout else None
         if fanout is None or kind is None:
             return 0
-        keys, cursor = self._audience_source.subscriber_page(list_id, body.get("cursor"))
+        as_of = parse_timestamp(fanout["audienceAsOf"]) if fanout.get("audienceAsOf") else None
+        keys, cursor = self._audience_source.subscriber_page(list_id, body.get("cursor"), as_of)
         site = fanout["site"] or None
         for key in keys:
             who = self._directory.get(key)
