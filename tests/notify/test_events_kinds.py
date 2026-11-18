@@ -44,6 +44,9 @@ def _with(path, value):
 
 CASES = [
     VALID,
+    _with(("audienceAsOf",), "2026-11-05T00:00:00Z"),
+    _with(("audienceAsOf",), ""),
+    _with(("audienceAsOf",), 7),
     _without(("site",)),
     _without(("groupKey",)),
     _without(("facts", "summary")),
@@ -74,6 +77,15 @@ def test_parse_event_round_trips():
 def test_parse_event_rejects_a_timestamp_that_is_not_iso():
     with pytest.raises(EventInvalid, match="occurredAt"):
         parse_event(_with(("occurredAt",), "yesterday"))
+
+
+def test_audience_as_of_round_trips_and_must_be_a_timestamp():
+    event = parse_event(_with(("audienceAsOf",), "2026-11-05T00:00:00Z"))
+    assert event.audience_as_of == "2026-11-05T00:00:00Z"
+    assert event.to_detail()["audienceAsOf"] == "2026-11-05T00:00:00Z"
+    assert "audienceAsOf" not in parse_event(VALID).to_detail()
+    with pytest.raises(EventInvalid, match="audienceAsOf"):
+        parse_event(_with(("audienceAsOf",), "last week"))
 
 
 def test_parse_event_rejects_non_objects():

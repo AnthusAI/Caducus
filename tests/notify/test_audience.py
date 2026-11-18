@@ -215,3 +215,91 @@ def test_the_whole_reader_journey_runs_on_dynamodb_in_moto(monkeypatch):
         assert world.audience.export(address)["body"]["consent"][0]["source"] == "form"
         assert world.audience.erase(address)["body"]["status"] == "deleted"
         assert world.act("preferences_state", token=manage)["body"]["status"] == "invalid"
+
+
+# -- cadence families, membership over time, as-of fan-out ---------------------
+
+
+def _family_world(move_effective_at=None):
+    from caducus.notify.audience import AudienceList
+    from caducus.notify.fakes import PublicWorld
+
+    return PublicWorld(
+        lists=(
+            AudienceList("every-item", "story.published", "Every item", family="cadence"),
+            AudienceList("daily", "story.published", "Daily", family="cadence"),
+            AudienceList("weekly", "story.published", "Weekly"),
+        ),
+        move_effective_at=move_effective_at,
+    )
+
+
+def _confirm(world, address, lists):
+    world.subscribe(address, lists)
+    world.deliver()
+    reply = world.act("confirm", token=world.confirm_token(address))
+    return reply["body"]["manageToken"]
+
+
+def test_subscriber_page_applies_since_and_until_through_the_keys_only_index():
+    world = _family_world(lambda family, now: now.replace(hour=0, minute=0) + __import__("datetime").timedelta(days=1))
+    manage = _confirm(world, "a@example.com", ["every-item"])
+    world.act("update_preferences", token=manage, lists=["daily"])
+    key = world.key("a@example.com")
+    from datetime import datetime, timezone
+
+    def members(list_id, when):
+        return world.audience.subscriber_page(list_id, None, datetime.fromisoformat(when))[0]
+
+    assert members("every-item", "2026-11-04T13:00:00+00:00") == [key]
+    assert members("every-item", "2026-11-05T00:00:00+00:00") == []
+    assert members("daily", "2026-11-04T13:00:00+00:00") == []
+    assert members("daily", "2026-11-05T00:00:00+00:00") == [key]
+    assert members("daily", "2026-11-05T00:00:00") == [key]  # no zone means UTC
+
+
+def test_a_row_written_before_since_existed_counts_from_its_at():
+    world = _family_world()
+    _confirm(world, "a@example.com", ["daily"])
+    key = world.key("a@example.com")
+    row = world.store.get("RCPT#" + key, "SUB#daily")
+    row.pop("since")
+    world.store.put(row)
+    from datetime import datetime, timezone
+
+    assert world.audience.subscribed_lists(key, datetime(2026, 11, 4, 11, 0, tzinfo=timezone.utc)) == []
+    assert world.audience.subscribed_lists(key) == ["daily"]
+    manage = world.audience.manage_token(key)
+    world.act("update_preferences", token=manage, lists=["every-item"])  # a move keeps the old row's beginning
+    assert world.store.get("RCPT#" + key, "SUB#daily")["since"] == row["at"]
+
+
+def test_the_export_reports_membership_and_a_move_does_not_duplicate_routes():
+    world = _family_world()
+    manage = _confirm(world, "a@example.com", ["every-item"])
+    world.act("update_preferences", token=manage, lists=["daily"])
+    body = world.audience.export("a@example.com")["body"]
+    assert body["lists"] == {"every-item": "unsubscribed", "daily": "subscribed"}
+    assert body["membership"]["every-item"]["until"] == "2026-11-04T12:00:00Z"
+    assert world.audience.receiving(world.key("a@example.com"), ["every-item"]) == (False, "skipped_preference")
+    assert world.audience.receiving(world.key("a@example.com"), ["daily"]) == (True, "")
+
+
+def test_unsubscribing_everything_ends_a_waiting_switch_too():
+    from datetime import timedelta
+
+    world = _family_world(lambda family, now: now + timedelta(days=1))
+    manage = _confirm(world, "a@example.com", ["every-item"])
+    world.act("update_preferences", token=manage, lists=["daily"])
+    world.act("unsubscribe", token=manage)
+    assert world.audience.subscribed_lists(world.key("a@example.com")) == []
+    assert world.audience.receiving(world.key("a@example.com"), ["every-item", "daily"])[0] is False
+
+
+def test_the_fan_out_row_and_the_item_carry_the_audience_instant():
+    world = _family_world()
+    _confirm(world, "a@example.com", ["daily"])
+    world.publish("summary:1", ["daily"], audience_as_of="2026-11-04T13:00:00Z")
+    assert world.store.get("EVENT#summary:1", "FANOUT")["audienceAsOf"] == "2026-11-04T13:00:00Z"
+    world.publish("story:1", ["daily"])
+    assert "audienceAsOf" not in world.store.get("EVENT#story:1", "FANOUT")

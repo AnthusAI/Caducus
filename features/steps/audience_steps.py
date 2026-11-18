@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import json
+import re
+from datetime import datetime, timedelta
 from urllib.parse import parse_qs, urlparse
 
 from behave import given, then, when
 
+from caducus.notify.audience import AudienceList
 from caducus.notify.fakes import CONSENT, PublicWorld
 
 A = "reader@example.com"
@@ -37,6 +40,7 @@ def _publish(context, lists, send=True):
     w = _world(context)
     context.stories = getattr(context, "stories", 0) + 1
     context.last_event = "story.published:lineage-%d" % context.stories
+    _mark(context)
     w.publish(context.last_event, lists)
     if send:
         w.deliver()
@@ -134,6 +138,7 @@ def step_bounce(context, address):
 def step_story_reached(context, lists, address):
     _publish(context, _lists(lists))
     assert len(_story_mail(context, address)) == 1
+    context.earlier_headers = _story_mail(context, address)[-1]["headers"]
 
 
 @given('"{address}" was imported with the alias "{alias}" from "{source}" until tomorrow')
@@ -308,7 +313,7 @@ def step_export(context, address):
 def step_import(context, address, list_id, source):
     w = _world(context)
     context.evidence = {"confirmedAt": "2026-01-01T00:00:00Z", "formId": "newsletter", "wording": "Old wording."}
-    context.import_args = (address, [list_id], context.evidence, source)
+    context.import_args = (address, _lists(list_id), context.evidence, source)
     context.outcome = w.audience.import_subscriber(*context.import_args)
     w.deliver()
 
@@ -627,3 +632,119 @@ def step_pages(context, count):
 def step_each_one(context, count):
     for address in context.readers[:count]:
         assert len(_story_mail(context, address)) == 1, address
+
+
+# -- cadence families --------------------------------------------------------------
+
+
+def _names(text):
+    return re.findall(r'"([^"]+)"', text)
+
+
+def _next_midnight(family, now):
+    return (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+
+
+def _cadence_lists():
+    return (
+        AudienceList("every-item", "story.published", "Every item", family="cadence"),
+        AudienceList("daily", "story.published", "The daily summary", family="cadence"),
+        AudienceList("weekly", "story.published", "The weekly issue"),
+    )
+
+
+def _mark(context):
+    w = _world(context)
+    context.marks = {}
+    for call in w.mailer.calls:
+        if "Confirm" not in call["subject"]:
+            context.marks[call["to"]] = context.marks.get(call["to"], 0) + 1
+
+
+@given('a host whose lists "every-item" and "daily" form one cadence family and "weekly" stands alone')
+def step_cadence_host(context):
+    context.public = PublicWorld(lists=_cadence_lists())
+
+
+@given('a host whose lists "every-item" and "daily" form one cadence family and whose switches take effect at the next midnight')
+def step_cadence_host_midnight(context):
+    context.public = PublicWorld(lists=_cadence_lists(), move_effective_at=_next_midnight)
+
+
+@given('the time is "{stamp}"')
+@when('the time is "{stamp}"')
+def step_time(context, stamp):
+    _world(context).clock.now = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+
+
+@given("the reader asks the manage link for {lists}")
+@when("the reader asks the manage link for {lists}")
+def step_ask_manage(context, lists):
+    w = _world(context)
+    w.mailer.calls.clear()
+    context.reply = w.act("update_preferences", token=context.manage, lists=_names(lists))
+    w.deliver()
+
+
+@when("the reader confirms the new subscription")
+def step_confirm_new(context):
+    w = _world(context)
+    context.reply = w.act("confirm", token=w.confirm_token(A))
+    context.manage = context.reply["body"].get("manageToken")
+
+
+@when('a summary is published for "{lists}" as of "{stamp}"')
+def step_summary(context, lists, stamp):
+    w = _world(context)
+    _mark(context)
+    context.stories = getattr(context, "stories", 0) + 1
+    context.last_event = "summary.published:lineage-%d" % context.stories
+    w.publish(context.last_event, _lists(lists), audience_as_of=stamp)
+    w.deliver()
+
+
+@when("the mail provider posts the one-click unsubscribe from that earlier message")
+def step_one_click_earlier(context):
+    w = _world(context)
+    header = context.earlier_headers["List-Unsubscribe"].strip("<>")
+    query = parse_qs(urlparse(header).query)
+    context.reply = w.act("unsubscribe", token=query["t"][0], list=query.get("l", [None])[0])
+    w.mailer.calls.clear()
+
+
+@then('"{address}" gets that publication')
+def step_gets(context, address):
+    now = len([c for c in _story_mail(context, address)])
+    assert now == context.marks.get(address, 0) + 1, (now, context.marks)
+
+
+@then('"{address}" does not get that publication')
+def step_gets_not(context, address):
+    now = len([c for c in _story_mail(context, address)])
+    assert now == context.marks.get(address, 0), (now, context.marks)
+
+
+@then('"{address}" has been sent {count:d} story messages in all')
+def step_sent_in_all(context, address, count):
+    assert len(_story_mail(context, address)) == count, len(_story_mail(context, address))
+
+
+@then('the page shows "{on}" on and "{off}" off')
+def step_page_on_off(context, on, off):
+    shown = {entry["id"]: entry["subscribed"] for entry in context.state["body"]["lists"]}
+    assert shown[on] is True and shown[off] is False, shown
+
+
+def _row(context, list_id):
+    w = _world(context)
+    return w.store.get("RCPT#" + w.key(A), "SUB#" + list_id)
+
+
+@then('the reader\'s membership of "{list_id}" began at "{stamp}"')
+def step_began(context, list_id, stamp):
+    assert _row(context, list_id)["since"] == stamp, _row(context, list_id)
+
+
+@then('the reader\'s membership of "{list_id}" ended at "{stamp}"')
+def step_ended(context, list_id, stamp):
+    assert _row(context, list_id)["until"] == stamp, _row(context, list_id)

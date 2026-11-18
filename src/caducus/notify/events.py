@@ -30,6 +30,7 @@ class Event:
     group_key: Optional[str] = None
     audience: Optional[str] = None
     lists: Tuple[str, ...] = ()  # public kinds: the host's lists this event is for
+    audience_as_of: Optional[str] = None  # public kinds: fan out to the members of the lists at this instant
     schema: int = field(default=SCHEMA_VERSION)
 
     def to_detail(self) -> Dict[str, Any]:
@@ -52,6 +53,8 @@ class Event:
                 detail[name] = value
         if self.lists:
             detail["lists"] = list(self.lists)
+        if self.audience_as_of is not None:
+            detail["audienceAsOf"] = self.audience_as_of
         return detail
 
 
@@ -94,8 +97,15 @@ def parse_event(detail: Any) -> Event:
     lists = detail.get("lists", [])
     if not isinstance(lists, list) or not all(isinstance(v, str) and v.strip() for v in lists):
         raise EventInvalid("lists must be a list of non-empty strings")
+    audience_as_of = _text(detail, "audienceAsOf", required=False)
+    if audience_as_of is not None:
+        try:
+            parse_timestamp(audience_as_of)
+        except EventInvalid:
+            raise EventInvalid("audienceAsOf must be an ISO 8601 timestamp") from None
     return Event(
         lists=tuple(lists),
+        audience_as_of=audience_as_of,
         event_id=_text(detail, "eventId"),
         kind=_text(detail, "kind"),
         product=_text(detail, "product"),
