@@ -15,6 +15,7 @@
     "groupKey": { "type": "string", "minLength": 1 },
     "audience": { "type": "string", "minLength": 1 },
     "lists": { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "Public kinds: the host's lists this event is for; the audience is their confirmed subscribers." },
+    "audienceAsOf": { "type": "string", "minLength": 1, "description": "Public kinds: an ISO 8601 timestamp; the audience is the lists' members at that instant (a periodic summary names its period start). Omitted: the members now." },
     "facts": {
       "type": "object",
       "required": ["title"],

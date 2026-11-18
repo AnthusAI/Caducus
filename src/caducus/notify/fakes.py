@@ -414,7 +414,12 @@ PUBLIC_KIND = "story.published"
 class PublicWorld(World):
     """The World plus a public audience with two lists, on fakes. Nothing reaches SES or DNS."""
 
-    def __init__(self, confirm_window_seconds: int = 72 * 3600) -> None:
+    def __init__(
+        self,
+        confirm_window_seconds: int = 72 * 3600,
+        lists: Optional[Any] = None,
+        move_effective_at: Optional[Any] = None,
+    ) -> None:
         from .audience import (
             AudienceDirectory, AudienceKeys, AudienceList, AudienceSettings, PublicAudience, StaticDomains,
         )
@@ -427,7 +432,7 @@ class PublicWorld(World):
         self._networks_used = 0
         self.unsuppressed: List[str] = []
         self.settings = AudienceSettings(
-            lists=(
+            lists=tuple(lists) if lists is not None else (
                 AudienceList("stories", PUBLIC_KIND, "New stories", "One email per new story."),
                 AudienceList("weekly", PUBLIC_KIND, "The weekly issue"),
             ),
@@ -437,6 +442,7 @@ class PublicWorld(World):
             product="papyrus",
             site="example",
             provider_unsuppress=self.unsuppressed.append,
+            move_effective_at=move_effective_at,
         )
         self.keys = AudienceKeys.from_secret("test-key-secret")
         self.directory = AudienceDirectory(self.directory)  # type: ignore[assignment]
@@ -523,12 +529,13 @@ class PublicWorld(World):
                 return parse_qs(urlparse(url).query)["token"][0]
         raise AssertionError("no confirmation for that address")
 
-    def publish(self, event_id: str, lists=("stories",)):  # type: ignore[no-untyped-def]
-        return self.router.handle_detail(
-            {"schema": 1, "eventId": event_id, "kind": PUBLIC_KIND, "product": "papyrus", "site": "example",
-             "occurredAt": "2026-11-04T12:00:00Z", "severity": "info", "lists": list(lists),
-             "facts": {"title": "A new story", "url": FakeLinks.ORIGIN + "/a-new-story/"}}
-        )
+    def publish(self, event_id: str, lists=("stories",), audience_as_of: Optional[str] = None):  # type: ignore[no-untyped-def]
+        detail = {"schema": 1, "eventId": event_id, "kind": PUBLIC_KIND, "product": "papyrus", "site": "example",
+                  "occurredAt": "2026-11-04T12:00:00Z", "severity": "info", "lists": list(lists),
+                  "facts": {"title": "A new story", "url": FakeLinks.ORIGIN + "/a-new-story/"}}
+        if audience_as_of:
+            detail["audienceAsOf"] = audience_as_of
+        return self.router.handle_detail(detail)
 
 
 __all__ = ["FakeClock", "FakeMailer", "PublicWorld", "Throttled", "World", "XWorld"]

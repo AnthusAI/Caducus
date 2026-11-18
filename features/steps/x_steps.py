@@ -185,6 +185,12 @@ def step_withdraw(context, who):
 # -- what happened ----------------------------------------------------------
 
 
+@then('the delivery of the event "{event_id}" has the status "{status}"')
+def step_event_status(context, event_id, status):
+    (row,) = context.xw.log.for_event(event_id)
+    assert row["status"] == status, row
+
+
 @then("exactly one post is made at X")
 def step_one_post(context):
     assert len(context.xw.x_server.posts) == 1, context.xw.x_server.posts
@@ -301,6 +307,13 @@ def step_one_delivery(context, handle, channel):
     assert row["recipientKey"] == context.xw.account.key
     assert row["destinationMask"] == handle and row["channel"] == channel
     assert row["class"] == "broadcast"
+
+
+@then('there are {count:d} deliveries to the account "{handle}" on the channel "{channel}"')
+def step_deliveries(context, count, handle, channel):
+    rows = context.xw.rows()
+    assert len(rows) == count, rows
+    assert all(row["destinationMask"] == handle and row["channel"] == channel for row in rows)
 
 
 @then("the second send was reported as a duplicate")
