@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "event_id": "d94773e8-1797-42ee-b44a-41516f65b654",
+  "issue_id": "kanbus-20d4c29e-6532-4fda-8f5d-635030ffb49a",
+  "event_type": "field_updated",
+  "occurred_at": "2026-11-04T17:12:13.395Z",
+  "actor_id": "home",
+  "payload": {
+    "changes": {
+      "labels": {
+        "from": [
+          "m2",
+          "ryan-step"
+        ],
+        "to": [
+          "m2"
+        ]
+      }
+    }
+  }
+}

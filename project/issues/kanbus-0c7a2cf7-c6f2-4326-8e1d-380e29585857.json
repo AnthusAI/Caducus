@@ -1,0 +1,27 @@
+{
+  "id": "kanbus-0c7a2cf7-c6f2-4326-8e1d-380e29585857",
+  "title": "Reconcile with what CloudWatch says now",
+  "description": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** M1, first slice\n\n**Goal.** As an operator, I hear about alarms already firing when the listener starts, and about any state change whose event was lost. On 2026-11-04 seven alarms in papyrus-production were already in ALARM; state-change events alone would never mention them.\n\n**Build.**\n- `src/caducus/notify/reconcile.py`, `handlers/reconcile.py`: takes the current alarms (host passes `describe-alarms` pages), compares with `INCIDENT#` rows, and feeds synthetic transitions through the normal incident path with stable event ids, so a real event for the same change dedupes.\n- First run opens incidents for what is firing, grouped like any storm, so day one is one or two messages.\n- The host schedules it. Works against fakes; moto for the adapter.\n\n**Acceptance.**\nBehave features green; the first run against a fixture of 47 alarms, 7 firing, makes one incident per firing alarm and grouped messages.\n\n**Depends on:** kanbus-9a3b85\n**Related:** PPY-e92c8e\n\n**Specification.**\n```gherkin\nFeature: Reconcile\n  Scenario: Alarms already firing at start\n    Given an alarm is in ALARM and has no incident\n    When reconciliation runs\n    Then an incident opens and one message goes out\n\n  Scenario: A lost clearing event\n    Given an open incident whose alarm is now OK\n    When reconciliation runs\n    Then the hold-down starts as if the event had arrived\n\n  Scenario: The real event arrives too\n    Given reconciliation opened an incident\n    When the state-change event for it arrives\n    Then no second message goes out\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-886a10c9-95a8-432f-a12a-8367b5579777",
+  "labels": [
+    "m1"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-9a3b85ab-fc69-43b1-9a16-cc3b410ec994",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-11-04T17:10:44.191853Z",
+  "updated_at": "2026-11-04T17:10:45.308948Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

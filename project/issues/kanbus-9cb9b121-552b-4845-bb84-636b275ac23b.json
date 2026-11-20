@@ -1,0 +1,28 @@
+{
+  "id": "kanbus-9cb9b121-552b-4845-bb84-636b275ac23b",
+  "title": "Landing-page copy on notification options",
+  "description": "**Milestone:** M3, public email and new stories\n\n**Goal.** One section on the Papyrus landing page, and others when products adopt it: per-person choice, channels live today, no tracking. Placeholders may land early, dimmed and labelled per the deploy-incrementally rule. Ryan reviews the wording.\n\n**Acceptance.**\nLive; only shipped things stated as present.\n\n**Depends on:** kanbus-c5bf83",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-6a008767-14d2-4dd8-a3d9-78fda7ab7330",
+  "labels": [
+    "m3",
+    "ryan-review"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-c5bf8359-c55e-4aee-a847-ddad3eddec58",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-11-04T13:14:29.722304Z",
+  "updated_at": "2026-11-04T13:14:32.740497Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

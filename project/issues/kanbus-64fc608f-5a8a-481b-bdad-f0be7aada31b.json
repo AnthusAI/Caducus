@@ -1,0 +1,35 @@
+{
+  "id": "kanbus-64fc608f-5a8a-481b-bdad-f0be7aada31b",
+  "title": "Forwarder in every AWS account, catalog coverage and source-account checks",
+  "description": "**Milestone:** M2, operators finished\n\n**Goal.** Every account's alarms arrive, and a broken forwarder cannot stay silent.\n\n**Build.**\n- Extend the StackSet to the whole tree with auto-deployment. Find the Regions alarms really live in; a live read of CloudWatch was not possible while planning, so inventory first: `describe-alarms` per account and Region, post counts on the epic.\n- Accounts outside the tree (Data Parade profiles): decide per account and add an explicit bus grant.\n- A schedule in each forwarder stack emits kind `caducus.source_heartbeat`; a stale account raises an operator incident (normal path, not SNS).\n- Fill `config/alarm-catalog.yaml` for the alarms found. CI fails on a duplicate or invalid pattern; a weekly job lists alarms that show `No triage notes yet`.\n\n**Acceptance.**\nInventory recorded; a forced alarm from each account arrives; removing the forwarder rule in a test raises the stale-source incident.\n\n**Depends on:** kanbus-6275db",
+  "type": "task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-886a10c9-95a8-432f-a12a-8367b5579777",
+  "labels": [
+    "m2"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-6275db47-c61f-4cb6-bb03-d6ba2d1fe0c0",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [
+    {
+      "id": "a5dd80a6-910c-457e-93b3-1b8e0dacf931",
+      "author": "home",
+      "text": "No longer applies: nothing crosses AWS accounts. Coverage of papyrus-production's alarms is in PPY-e92c8e; each other app covers its own at adoption.",
+      "created_at": "2026-11-04T17:10:49.111205Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-11-04T13:14:29.365612Z",
+  "updated_at": "2026-11-04T17:10:49.117152Z",
+  "closed_at": "2026-11-04T17:10:49.117130Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

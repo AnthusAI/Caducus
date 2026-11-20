@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "13803c9c-1366-4c64-83a5-e007da7caaa6",
+  "issue_id": "kanbus-e364c7e2-e3c9-4bcf-94a9-ddd4caa3150d",
+  "event_type": "issue_created",
+  "occurred_at": "2026-11-04T13:14:29.672Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Add MIT LICENSE and broaden the README",
+    "description": "**Milestone:** M1, first slice\n\n**Goal.** Caducus is public with no licence file. Anthus's public repos such as Prospectus use MIT. Add `LICENSE` (copyright AnthusAI) on Ryan's yes, and open the README with the new direction: it decides what deserves your attention and gets it to you, with the radar as one part. Claims describe only what has shipped.\n\n**Acceptance.**\n`gh repo view --json licenseInfo` shows MIT.",
+    "issue_type": "chore",
+    "status": "open",
+    "priority": 0,
+    "assignee": null,
+    "parent": "kanbus-6a008767-14d2-4dd8-a3d9-78fda7ab7330",
+    "labels": [
+      "m1"
+    ]
+  }
+}

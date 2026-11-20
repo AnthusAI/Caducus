@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "28b31eb5-d4f5-4f8a-b500-a4b3c8f7aad7",
+  "issue_id": "kanbus-e364c7e2-e3c9-4bcf-94a9-ddd4caa3150d",
+  "event_type": "field_updated",
+  "occurred_at": "2026-11-04T13:18:23.167Z",
+  "actor_id": "home",
+  "payload": {
+    "changes": {
+      "title": {
+        "from": "Add MIT LICENSE and broaden the README",
+        "to": "Broaden the README to the new direction"
+      },
+      "description": {
+        "from": "**Milestone:** M1, first slice\n\n**Goal.** Caducus is public with no licence file. Anthus's public repos such as Prospectus use MIT. Add `LICENSE` (copyright AnthusAI) on Ryan's yes, and open the README with the new direction: it decides what deserves your attention and gets it to you, with the radar as one part. Claims describe only what has shipped.\n\n**Acceptance.**\n`gh repo view --json licenseInfo` shows MIT.",
+        "to": "**Milestone:** M1, first slice\n\n**Goal.** MIT is already in place: AnthusAI/Caducus#4 added LICENSE on develop while this plan was being filed. What remains: open the README with the new direction, that Caducus decides what deserves your attention and gets it to you, with the radar as one part. Claims describe only what has shipped.\n\n**Acceptance.**\nREADME states the direction without claiming unbuilt features."
+      }
+    }
+  }
+}

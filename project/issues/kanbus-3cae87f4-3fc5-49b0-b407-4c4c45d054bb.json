@@ -1,0 +1,35 @@
+{
+  "id": "kanbus-3cae87f4-3fc5-49b0-b407-4c4c45d054bb",
+  "title": "Public audience: cadence family, membership since/until and as-of fan-out",
+  "description": "Move the cadence-family rule (one list per family per reader), membership since/until with a host-supplied effective time for moves, and as-of fan-out (audienceAsOf) into PublicAudience, the router and the event schema, so every item reaches a reader by exactly one route.",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-454b52c2-9bb8-483d-aa06-b687a33f456c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "964b613c-847e-40b9-9c9d-b8958c3cd592",
+      "author": "home",
+      "text": "Decisions: (1) subscribe refuses any request naming two lists of one family, regardless of what the reader holds, so the answer reveals nothing about the address; update_preferences and import refuse two NEW lists (not held). (2) Moved-off rows keep status subscribed with until, and stay in the byList index, so an as-of fan-out for an earlier instant still finds the reader; plain leaves become unsubscribed with until=now and leave the index. (3) byList is KEYS_ONLY, so subscriber_page does one get per row. (4) Preferences view shows held lists (the choice made: new list on, old off) during a pending move. (5) email send-time receiving/links_for take the item's audienceAsOf so a late-sent as-of summary still reaches a reader who has since moved off.",
+      "created_at": "2026-11-18T18:41:33.608399Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "3e28b721-8f81-4343-8b18-7e639df03a5e",
+      "author": "home",
+      "text": "Merged to develop in PR 22 (ee8a156).",
+      "created_at": "2026-11-18T18:51:17.373304Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-11-18T18:41:29.500211Z",
+  "updated_at": "2026-11-18T18:51:17.422765Z",
+  "closed_at": "2026-11-18T18:51:17.422509Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

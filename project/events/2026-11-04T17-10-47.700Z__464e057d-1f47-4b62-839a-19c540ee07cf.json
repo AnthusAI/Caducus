@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "event_id": "464e057d-1f47-4b62-839a-19c540ee07cf",
+  "issue_id": "kanbus-d7b6ac96-0bc1-4655-ad8b-440cb06027c1",
+  "event_type": "dependency_removed",
+  "occurred_at": "2026-11-04T17:10:47.700Z",
+  "actor_id": "home",
+  "payload": {
+    "dependency_type": "blocked-by",
+    "target_id": "kanbus-64fc608f-5a8a-481b-bdad-f0be7aada31b"
+  }
+}

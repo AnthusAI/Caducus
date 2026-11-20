@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "acaea13a-95e3-4261-bf60-8df4b0453a1b",
+  "issue_id": "kanbus-e5812c13-91be-4167-9221-8bc3c41ce2af",
+  "event_type": "field_updated",
+  "occurred_at": "2026-11-04T13:15:37.254Z",
+  "actor_id": "home",
+  "payload": {
+    "changes": {
+      "priority": {
+        "from": 1,
+        "to": 2
+      }
+    }
+  }
+}

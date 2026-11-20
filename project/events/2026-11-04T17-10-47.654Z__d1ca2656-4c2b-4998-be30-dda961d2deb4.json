@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "d1ca2656-4c2b-4998-be30-dda961d2deb4",
+  "issue_id": "kanbus-95686d19-37fd-43f5-a721-4fddeaa6f8b7",
+  "event_type": "field_updated",
+  "occurred_at": "2026-11-04T17:10:47.654Z",
+  "actor_id": "home",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "**Milestone:** Later, coarse\n\n**Goal.** If Ryan confirms sending counts toward quota. Register with `quota: true` in Prospectus (Prospectus session told before merge). Report item kinds such as `caducus.email.sent` by Account via `POST /v1/quota/accounts/{account}/usage`, batched, retried with the same operation id. No rates in this public repo; customers see percent used. Operator, last-resort and consent mail never check quota.\n\n**Acceptance.**\nAn unknown kind's 422 is visible; no dollar figure or rate anywhere in Git.\n\n**Depends on:** kanbus-b47fad",
+        "to": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** Later, coarse\n\n**Goal.** If Ryan confirms sending counts toward quota. Report only (accepted): each host reports items such as `caducus.email.sent` by Account via `POST /v1/quota/accounts/{account}/usage`, batched, retried with the same operation id. A Papyrus site's existing registration needs `quota: true` in Prospectus, so tell that session before merge. No rates in public repos; customers see percent used. Operator, last-resort and consent mail never check quota. Package exposes a hook; Papyrus implements it.\n\n**Acceptance.**\nAn unknown kind's 422 is visible; no dollar figure or rate anywhere in Git."
+      }
+    }
+  }
+}

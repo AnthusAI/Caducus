@@ -1,0 +1,453 @@
+"""Turn one accepted event into one queued delivery per person and channel.
+
+First version: operator kinds go to the operators in the directory. Preferences
+arrive later. Anything decided against is recorded in the delivery log with a
+reason, never dropped silently.
+"""
+
+from __future__ import annotations
+
+import logging
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Mapping, Optional
+
+from .catalog import Catalog
+from .cloudwatch import KIND as ALARM_KIND, STATES
+from .delivery_log import DeliveryLog
+from .directory import ChannelAccount, Directory, Recipient
+from .events import Event, EventInvalid, parse_event, parse_timestamp
+from .grouping import Dispatcher, delivery_id_for
+from .incidents import IncidentTracker
+from .kinds import Kind, KindRegistry
+from .logs import emit
+from .queues import Queues
+from .store import Store
+from .triage import TriageSettings, build_alarm_item, build_cleared_item
+
+LOGGER = logging.getLogger("caducus.notify.router")
+NO_RECIPIENT = "NONE"
+
+
+class Preferences:
+    """What a person turned off. The first version has none; storage arrives with
+    the preferences stories."""
+
+    def opted_out(self, recipient_key: str, kind: str) -> bool:
+        return False
+
+
+class MemoryPreferences(Preferences):
+    def __init__(self) -> None:
+        self._off: set = set()
+
+    def turn_off(self, recipient_key: str, kind: str) -> None:
+        self._off.add((recipient_key, kind))
+
+    def opted_out(self, recipient_key: str, kind: str) -> bool:
+        return (recipient_key, kind) in self._off
+
+
+@dataclass
+class Result:
+    outcome: str  # accepted | duplicate | refused
+    reason: str = ""
+    deliveries: List[Dict[str, Any]] = field(default_factory=list)
+
+
+class Router:
+    def __init__(
+        self,
+        *,
+        store: Store,
+        kinds: KindRegistry,
+        log: DeliveryLog,
+        directory: Directory,
+        dispatcher: Dispatcher,
+        incidents: IncidentTracker,
+        catalog: Catalog,
+        triage: TriageSettings,
+        clock: Any,
+        preferences: Optional[Preferences] = None,
+        audience: Any = None,
+        fanout_queues: Optional[Queues] = None,
+    ):
+        """`audience` (a `PublicAudience`) and `fanout_queues` are needed only for public kinds."""
+        self._audience_source = audience
+        self._fanout_queues = fanout_queues
+        self._preferences = preferences or Preferences()
+        self._store = store
+        self._kinds = kinds
+        self._log = log
+        self._directory = directory
+        self._dispatcher = dispatcher
+        self._incidents = incidents
+        self._catalog = catalog
+        self._triage = triage
+        self._clock = clock
+
+    # -- intake --------------------------------------------------------------
+
+    def handle_detail(self, detail: Any) -> Result:
+        """Accept `detail` from a Notification Requested event, or record why not."""
+        try:
+            event = parse_event(detail)
+        except EventInvalid as error:
+            event_id = detail.get("eventId") if isinstance(detail, Mapping) else None
+            reason = "invalid event: %s" % error
+            emit(LOGGER, "event_refused", reason=reason, eventId=event_id)
+            if isinstance(event_id, str) and event_id:
+                self._refuse(
+                    event_id=event_id,
+                    kind=str(detail.get("kind") or "unknown"),
+                    klass="operator",
+                    product=str(detail.get("product") or "unknown"),
+                    site=None,
+                    reason=reason,
+                )
+            return Result("refused", reason)
+        return self.handle_event(event)
+
+    def handle_event(self, event: Event) -> Result:
+        first_time = self._store.put_if_absent(
+            {
+                "pk": "EVENT#" + event.event_id,
+                "sk": "META",
+                "event": event.to_detail(),
+                "acceptedAt": self._clock().strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "expiresAt": self._log.expires_at(),
+            }
+        )
+        if not first_time:
+            emit(LOGGER, "event_duplicate", eventId=event.event_id)
+            fanout = self._store.get("EVENT#" + event.event_id, "FANOUT")
+            if fanout is not None and not fanout.get("started"):
+                self._start_fan_out(event.event_id, fanout["lists"])  # a retry after a crash
+            return Result("duplicate")
+        kind = self._kinds.get(event.kind)
+        if kind is None:
+            self._refuse(
+                event_id=event.event_id,
+                kind=event.kind,
+                klass="operator",
+                product=event.product,
+                site=event.site,
+                reason="unknown kind",
+            )
+            emit(LOGGER, "event_refused", eventId=event.event_id, reason="unknown kind")
+            return Result("refused", "unknown kind")
+        if kind.lifecycle == "incident":
+            return self._handle_alarm(event, kind)
+        if kind.klass == "broadcast":
+            return self._broadcast(event, kind)
+        item = {
+            "state": "NOTICE",
+            "alarmName": event.facts["title"],
+            "product": event.product,
+            "site": event.site or "",
+            "what": event.facts["title"],
+            "reason": event.facts.get("summary", ""),
+            "link": event.facts.get("url", ""),
+            "hasNotes": False,
+            "notesLabel": "",
+            "kind": kind.name,
+            "facts": dict(event.facts),  # for a host's renderer: everything the app said
+        }
+        if kind.klass == "public":
+            return self._fan_out(event, kind, item)
+        return self._send(
+            event.event_id, kind, event.product, event.site, item, audience_key=event.audience
+        )
+
+    # -- public kinds: fan out page by page ----------------------------------
+
+    def _fan_out(self, event: Event, kind: Kind, item: Mapping[str, Any]) -> Result:
+        """Record the fan-out and queue one page message per list; `fan_out_page` does the rest.
+
+        Each page is one DynamoDB query page of the audience's list index, so no
+        single invocation grows with the audience. Delivery ids are deterministic,
+        so a reader on two of the lists gets one delivery, and a retried page queues nothing twice.
+        """
+        if not event.lists or self._audience_source is None or self._fanout_queues is None:
+            row = self._refuse(
+                event_id=event.event_id, kind=kind.name, klass=kind.klass,
+                product=event.product, site=event.site, reason="no audience",
+            )
+            return Result("refused", "no audience", [row])
+        carried = dict(item, lists=list(event.lists))
+        if event.audience_as_of:
+            carried["audienceAsOf"] = event.audience_as_of  # the send-time check asks the same question
+        self._store.put(
+            {
+                "pk": "EVENT#" + event.event_id,
+                "sk": "FANOUT",
+                "kind": kind.name,
+                "product": event.product,
+                "site": event.site or "",
+                "lists": list(event.lists),
+                **({"audienceAsOf": event.audience_as_of} if event.audience_as_of else {}),
+                "item": carried,
+                "started": False,
+                "expiresAt": self._log.expires_at(),
+            }
+        )
+        self._start_fan_out(event.event_id, list(event.lists))
+        return Result("accepted", "fanning out")
+
+    def _start_fan_out(self, event_id: str, lists: List[str]) -> None:
+        for list_id in lists:
+            self._fanout_queues.send("email", {"fanout": event_id, "list": list_id, "cursor": None})  # type: ignore[union-attr]
+        self._store.update(
+            "EVENT#" + event_id, "FANOUT", lambda row: dict(row or {}, started=True)
+        )
+
+    def fan_out_page(self, body: Mapping[str, Any]) -> int:
+        """Queue the deliveries of one page of one list, then the next page. Returns how many readers it covered."""
+        event_id, list_id = body["fanout"], body["list"]
+        fanout = self._store.get("EVENT#" + event_id, "FANOUT")
+        kind = self._kinds.get(fanout["kind"]) if fanout else None
+        if fanout is None or kind is None:
+            return 0
+        as_of = parse_timestamp(fanout["audienceAsOf"]) if fanout.get("audienceAsOf") else None
+        keys, cursor = self._audience_source.subscriber_page(list_id, body.get("cursor"), as_of)
+        site = fanout["site"] or None
+        for key in keys:
+            who = self._directory.get(key)
+            if who is None:
+                continue
+            for channel in kind.channels:
+                if self._preferences.opted_out(who.key, kind.name):
+                    self._record(event_id, kind, fanout["product"], site, who, channel,
+                                 "skipped_preference", "turned off by the person", None)
+                    continue
+                if self._log.get(event_id, delivery_id_for(event_id, who.key, channel)):
+                    continue  # on another list of this event, or a retried page
+                self._dispatcher.dispatch(
+                    event_id=event_id, kind=kind, product=fanout["product"], site=site,
+                    recipient=who, channel=channel, item=fanout["item"],
+                )
+        if cursor:
+            self._fanout_queues.send("email", {"fanout": event_id, "list": list_id, "cursor": cursor})  # type: ignore[union-attr]
+        emit(LOGGER, "fanout_page", eventId=event_id, list=list_id, readers=len(keys), more=bool(cursor))
+        return len(keys)
+
+    # -- broadcasts ----------------------------------------------------------
+
+    def _broadcast(self, event: Event, kind: Kind) -> Result:
+        """Post to the one connected account the event names: no person, no choices.
+
+        `event.audience` is the account's `CHANNELACCT#<channel>#<id>` key. The
+        host names the account; nothing here looks it up for anyone else.
+        """
+        text = event.facts.get("text")
+        if not isinstance(text, str) or not text.strip():
+            reason = "invalid event: a broadcast needs facts.text"
+            row = self._refuse(
+                event_id=event.event_id, kind=kind.name, klass=kind.klass,
+                product=event.product, site=event.site, reason=reason,
+            )
+            return Result("refused", reason, [row])
+        account = self._directory.account(event.audience) if event.audience else None
+        if account is None or account.channel not in kind.channels:
+            row = self._refuse(
+                event_id=event.event_id, kind=kind.name, klass=kind.klass,
+                product=event.product, site=event.site, reason="no audience",
+            )
+            return Result("refused", "no audience", [row])
+        item = {"text": text, "url": event.facts.get("url", "")}
+        row = self._dispatcher.dispatch(
+            event_id=event.event_id, kind=kind, product=event.product,
+            site=event.site, recipient=account, channel=account.channel, item=item,
+        )
+        return Result("accepted", deliveries=[row])
+
+    # -- alarms --------------------------------------------------------------
+
+    def _handle_alarm(self, event: Event, kind: Kind) -> Result:
+        facts = event.facts
+        if not facts.get("alarmName") or facts.get("state") not in STATES:
+            reason = "invalid event: alarmName and state are required"
+            self._refuse(
+                event_id=event.event_id, kind=kind.name, klass=kind.klass,
+                product=event.product, site=event.site, reason=reason,
+            )
+            return Result("refused", reason)
+        name, account, region = facts["alarmName"], facts.get("awsAccountId", ""), facts.get("region", "")
+        item = build_alarm_item(event, self._catalog, self._triage)
+        decision = self._incidents.apply(
+            account=account,
+            region=region,
+            alarm=name,
+            state=facts["state"],
+            hold_down_seconds=self._catalog.hold_down_seconds(name),
+            muted=bool(facts.get("muted")),
+            item=item,
+            product=event.product,
+            site=event.site,
+        )
+        emit(
+            LOGGER,
+            "alarm_transition",
+            eventId=event.event_id,
+            alarm=name,
+            state=facts["state"],
+            action=decision.action,
+            reason=decision.reason,
+        )
+        if decision.action == "open":
+            return self._send(
+                event.event_id,
+                kind,
+                event.product,
+                event.site,
+                item,
+                incident_key=decision.incident_key,
+            )
+        recipients = self._directory.operators()
+        rows = [
+            self._record(
+                event.event_id, kind, event.product, event.site, who, channel,
+                "suppressed", decision.reason, decision.incident_key,
+            )
+            for who in recipients
+            for channel in kind.channels
+        ] or [
+            self._refuse(
+                event_id=event.event_id,
+                kind=kind.name,
+                klass=kind.klass,
+                product=event.product,
+                site=event.site,
+                reason="no audience",
+            )
+        ]
+        return Result("accepted", decision.reason, rows)
+
+    def tick(self) -> int:
+        """Run each minute: send due clearing messages, then flush ended groups."""
+        sent = 0
+        kind = self._kinds.get(ALARM_KIND)
+        if kind is not None:
+            for cleared in self._incidents.due_clears():
+                item = build_cleared_item(
+                    cleared.item, cleared.duration_seconds, cleared.flaps
+                )
+                self._send(
+                    "clear:%s:%s" % (cleared.incident_key, cleared.opened_at),
+                    kind,
+                    cleared.product,
+                    cleared.site,
+                    item,
+                    incident_key=cleared.incident_key,
+                )
+                sent += 1
+        return sent + self._dispatcher.flush_groups(self._directory.get)
+
+    # -- delivery ------------------------------------------------------------
+
+    def _audience(self, kind: Kind, audience_key: Optional[str] = None) -> List[Recipient]:
+        if kind.klass == "account" and audience_key:
+            named = self._directory.get(audience_key)  # account mail names one person
+            return [named] if named else []
+        if kind.audience == "probe":
+            probe = self._directory.probe()
+            return [probe] if probe else []
+        if kind.klass == "operator":
+            return self._directory.operators()
+        return []  # admin, account and public audiences arrive with preferences
+
+    def _send(
+        self,
+        event_id: str,
+        kind: Kind,
+        product: str,
+        site: Optional[str],
+        item: Mapping[str, Any],
+        incident_key: Optional[str] = None,
+        audience_key: Optional[str] = None,
+    ) -> Result:
+        audience = self._audience(kind, audience_key)
+        if not audience:
+            row = self._refuse(
+                event_id=event_id,
+                kind=kind.name,
+                klass=kind.klass,
+                product=product,
+                site=site,
+                reason="no audience",
+            )
+            return Result("refused", "no audience", [row])
+        rows = []
+        for who in audience:
+            for channel in kind.channels:
+                if self._preferences.opted_out(who.key, kind.name):
+                    rows.append(
+                        self._record(
+                            event_id, kind, product, site, who, channel,
+                            "skipped_preference", "turned off by the person",
+                            incident_key,
+                        )
+                    )
+                    continue
+                rows.append(
+                    self._dispatcher.dispatch(
+                        event_id=event_id,
+                        kind=kind,
+                        product=product,
+                        site=site,
+                        recipient=who,
+                        channel=channel,
+                        item=item,
+                        incident_key=incident_key,
+                    )
+                )
+        return Result("accepted", deliveries=rows)
+
+    def _record(
+        self,
+        event_id: str,
+        kind: Kind,
+        product: str,
+        site: Optional[str],
+        who: Recipient,
+        channel: str,
+        status: str,
+        reason: str,
+        incident_key: Optional[str],
+    ) -> Dict[str, Any]:
+        return self._log.create(
+            event_id=event_id,
+            kind=kind.name,
+            klass=kind.klass,
+            product=product,
+            site=site,
+            recipient_key=who.key,
+            channel=channel,
+            destination_mask=who.mask,
+            status=status,
+            reason=reason,
+            incident_key=incident_key,
+            delivery_id=delivery_id_for(event_id, who.key, channel),
+        )
+
+    def _refuse(
+        self,
+        *,
+        event_id: str,
+        kind: str,
+        klass: str,
+        product: str,
+        site: Optional[str],
+        reason: str,
+    ) -> Dict[str, Any]:
+        return self._log.create(
+            event_id=event_id,
+            kind=kind,
+            klass=klass,
+            product=product,
+            site=site,
+            recipient_key=NO_RECIPIENT,
+            channel="none",
+            status="refused",
+            reason=reason,
+            delivery_id=delivery_id_for(event_id, NO_RECIPIENT, "none"),
+        )

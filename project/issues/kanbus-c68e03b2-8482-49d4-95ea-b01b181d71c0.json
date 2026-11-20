@@ -1,0 +1,39 @@
+{
+  "id": "kanbus-c68e03b2-8482-49d4-95ea-b01b181d71c0",
+  "title": "Send a test, and see delivery history",
+  "description": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** M2, operators finished\n\n**Goal.** As a person or an admin, I can prove a channel works and see what was sent. Library calls plus the `caducus notify` CLI for operators; console buttons come with PPY-17cf09 and PPY-d7443d. There's no history across sites: each host holds its own.\n\n**Build.**\n- `testsend.py`, `history.py` in the package. `caducus notify test`, `caducus notify history [--person|--kind]`, with `--table` or environment, on the operator's AWS session.\n- A test is a real send logged as kind `caducus.test`, only to the caller's own destination. A person sees their own history. Admins see their site's, masked unless they are its owner or admin.\n\n**Acceptance.**\nBehave features; live through the simulator once hosted.\n\n**Depends on:** kanbus-53a88d, kanbus-cfe4b9\n**Related:** PPY-3e260c, PPY-17cf09, PPY-d7443d\n\n**Specification.**\n```gherkin\nFeature: Test and history\n  Scenario: Send a test\n    When I press send a test for my email channel\n    Then one test message goes only to my own address\n    And it appears in my history with its result\n\n  Scenario: An admin reads history\n    Given an admin of a site\n    When they read the site's delivery history\n    Then they see kind, channel, result and time for each delivery\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-52b7c299-5df6-4da7-ace7-9fc00473ac77",
+  "labels": [
+    "m2"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-53a88d63-fbc6-4723-b721-2c57987ab75f",
+      "type": "blocked-by"
+    },
+    {
+      "target": "kanbus-cfe4b911-1716-4f8d-b7da-5811e880b1c7",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [
+    {
+      "id": "e2c6c298-bea5-49a4-8d65-16a1f8c9f8e6",
+      "author": "home",
+      "text": "Papyrus side: PPY-17cf09",
+      "created_at": "2026-11-04T13:15:36.785684Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-11-04T13:14:29.333092Z",
+  "updated_at": "2026-11-04T17:10:47.221246Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

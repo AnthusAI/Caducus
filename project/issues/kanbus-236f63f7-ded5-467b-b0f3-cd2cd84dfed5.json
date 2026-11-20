@@ -1,0 +1,35 @@
+{
+  "id": "kanbus-236f63f7-ded5-467b-b0f3-cd2cd84dfed5",
+  "title": "Operator sending domain: SES identity, DNS and a configuration set with no tracking",
+  "description": "**Milestone:** M1, first slice\n\n**Goal.** SES can send from the new account with SPF, DKIM and DMARC in place, and open and click tracking impossible.\n\n**Build.**\n- `infra/notifications/stacks/email.py`, ported from Papyrus `infra/newsletter/papyrus-newsletter-sending.yaml`: domain identity with Easy DKIM (RSA 2048), MAIL FROM `bounce.<domain>`, SPF, DMARC, configuration set `caducus-operators` (reputation metrics on, suppression BOUNCE and COMPLAINT).\n- Event destination: EventBridge, default bus (the only bus SES supports), types SEND, DELIVERY, BOUNCE, COMPLAINT, REJECT, DELIVERY_DELAY. Never OPEN or CLICK.\n- Domain from the decision in the plan (recommended `notify.anth.us`): a hosted zone in the new account, delegated by one NS record in the anth.us zone. `infra/dns/notify-delegation.yaml` deploys once to papyrus-production with Ryan's approval. Check the zone first: list records and `_dmarc` so nothing collides.\n\n**Acceptance.**\n- `aws sesv2 get-email-identity` reads `True SUCCESS SUCCESS` as in Papyrus `infra/newsletter/README.md`.\n- A CDK assertion test fails if OPEN or CLICK ever appears in an event destination.\n\n**Depends on:** kanbus-9cc7ec",
+  "type": "task",
+  "status": "closed",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-28219b64-56ee-423d-bbee-480563eedef3",
+  "labels": [
+    "m1"
+  ],
+  "dependencies": [
+    {
+      "target": "kanbus-9cc7ecad-1d48-4620-aa10-df051cf0a47f",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [
+    {
+      "id": "8be0cffd-2de5-4bf1-b5b3-3091786c2f61",
+      "author": "home",
+      "text": "Moved to the Papyrus board as PPY-bf63d5: notify.anth.us in papyrus-production through the newsletter's sending stack.",
+      "created_at": "2026-11-04T17:10:49.004023Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-11-04T13:14:29.207930Z",
+  "updated_at": "2026-11-04T17:10:49.010162Z",
+  "closed_at": "2026-11-04T17:10:49.010138Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

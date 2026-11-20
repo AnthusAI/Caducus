@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "33d33f2b-8362-4874-b097-f34ff76ec929",
+  "issue_id": "kanbus-ecbda368-4806-4f55-955d-30a5efb672b0",
+  "event_type": "field_updated",
+  "occurred_at": "2026-11-04T17:10:47.609Z",
+  "actor_id": "home",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "**Milestone:** Later, coarse\n\n**Goal.** Babulus's topics are in `packages/construct/src/index.ts` and `packages/control-plane/stacks/backend.py`. Brand, app events, SNS email removed.\n\n**Acceptance.**\nSpec'd when started.\n\n**Depends on:** kanbus-0c3a43",
+        "to": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** Later, coarse\n\n**Goal.** Same pattern in Babulus's own account. Its topics are in `packages/construct/src/index.ts` and `packages/control-plane/stacks/backend.py`; SNS email removed. SES status there not read.\n\n**Acceptance.**\nSpec'd when started."
+      }
+    }
+  }
+}

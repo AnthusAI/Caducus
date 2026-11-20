@@ -1,0 +1,35 @@
+{
+  "id": "kanbus-52b7c299-5df6-4da7-ace7-9fc00473ac77",
+  "title": "Notifications core: events, routing, preferences and delivery log",
+  "description": "The central part every app and channel uses: one event format, routing from event to people and channels, stored per-person choices, dedupe, and a record of what was sent, to whom and whether it arrived. Depends on open question 1.",
+  "type": "epic",
+  "status": "open",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-90737cee-7479-4411-bb09-5f5ca4b08818",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "f17a6848-a7cb-4695-aba4-4a6f1be7cac6",
+      "author": "home",
+      "text": "Build order and architecture: docs/notifications-plan.md. Delivery log: kanbus-53a88d. Papyrus side: PPY-4d1143.",
+      "created_at": "2026-11-04T13:15:37.369089Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "2e53156c-6393-4080-adbb-9e60167e7970",
+      "author": "home",
+      "text": "Reworked 2026-11-04: this epic is now the `caducus.notify` package, published to PyPI (kanbus-9cc7ec). Tables, queues and Lambdas belong to each host. Plan: docs/notifications-plan.md.",
+      "created_at": "2026-11-04T17:10:49.438961Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-11-04T12:59:54.108257Z",
+  "updated_at": "2026-11-04T17:10:49.439263Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

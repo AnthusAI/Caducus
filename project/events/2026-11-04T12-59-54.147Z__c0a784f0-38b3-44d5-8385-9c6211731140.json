@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "c0a784f0-38b3-44d5-8385-9c6211731140",
+  "issue_id": "kanbus-28219b64-56ee-423d-bbee-480563eedef3",
+  "event_type": "issue_created",
+  "occurred_at": "2026-11-04T12:59:54.147Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Email channel through SES",
+    "description": "Outbound notification email through SES using shared rendering, each product or site with its own sending identity, with bounce and complaint handling, unsubscribe and the required footer. SES events move off SNS where EventBridge can carry them.",
+    "issue_type": "epic",
+    "status": "open",
+    "priority": 1,
+    "assignee": null,
+    "parent": "kanbus-90737cee-7479-4411-bb09-5f5ca4b08818",
+    "labels": []
+  }
+}

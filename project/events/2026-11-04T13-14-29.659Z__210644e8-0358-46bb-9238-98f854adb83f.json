@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "210644e8-0358-46bb-9238-98f854adb83f",
+  "issue_id": "kanbus-d7b6ac96-0bc1-4655-ad8b-440cb06027c1",
+  "event_type": "issue_created",
+  "occurred_at": "2026-11-04T13:14:29.659Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Connect the log radar as a source of incidents",
+    "description": "**Milestone:** Later, coarse\n\n**Goal.** The radar's hot, new blips become events of kind `radar.blip` in the same format, so the radar feeds the same routing. After CloudWatch and app events, per direction. See initiative kanbus-6f9fc4.\n\n**Acceptance.**\nSpec'd when started.\n\n**Depends on:** kanbus-64fc60",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 3,
+    "assignee": null,
+    "parent": "kanbus-52b7c299-5df6-4da7-ace7-9fc00473ac77",
+    "labels": [
+      "later"
+    ]
+  }
+}

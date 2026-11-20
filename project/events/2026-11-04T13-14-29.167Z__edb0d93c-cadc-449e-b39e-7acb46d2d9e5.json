@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "edb0d93c-cadc-449e-b39e-7acb46d2d9e5",
+  "issue_id": "kanbus-9cc7ecad-1d48-4620-aa10-df051cf0a47f",
+  "event_type": "issue_created",
+  "occurred_at": "2026-11-04T13:14:29.167Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Service skeleton: CDK app, DynamoDB table and OIDC deploy on merge to main",
+    "description": "**Milestone:** M1, first slice\n\n**Goal.** An empty, deployed service, so every later story ships by merging. Public repo: CI in GitHub Actions, CD by OIDC, no stored keys.\n\n**Build.**\n- `src/caducus/notify/` (new package, standard library plus boto3, imports nothing from the radar; `from __future__ import annotations` because the package still supports Python 3.9, Lambdas run 3.12 arm64).\n- `infra/notifications/` CDK in Python: table `caducus-notifications` (keys `pk`,`sk`, TTL `expiresAt`, on demand, customer-managed KMS key, point-in-time recovery off so erasure is real, as in `amplify/plugins/newsletter/papyrus.plugin.ts`), event bus `caducus-notifications`, empty SSM parameters from kanbus-91d450, and the create-only secret construct ported from Papyrus `amplify/plugins/newsletter/secure-string-parameter.ts` for the link-signing key `/caducus/link-key`.\n- `infra/notifications/bootstrap-oidc.yaml`: the GitHub OIDC role, restricted to `repo:AnthusAI/Caducus:ref:refs/heads/main`; deployed once from Ryan's session.\n- `.github/workflows/deploy-notifications.yml`: after the tests pass on main, `cdk deploy` with the role. Add a push trigger on develop to `ci.yml`.\n- Guard: the deploy stops unless the caller account equals the repository variable `CADUCUS_AWS_ACCOUNT`.\n\n**Acceptance.**\n- A merge to main deploys with no stored key; a run with the wrong account stops before any change.\n- `pytest` and `behave` stay green; no AWS id or address in Git (LeftBlock passes).\n\n**Depends on:** kanbus-d0987c",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 0,
+    "assignee": null,
+    "parent": "kanbus-52b7c299-5df6-4da7-ace7-9fc00473ac77",
+    "labels": [
+      "m1"
+    ]
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "kanbus-67de8f5b-b568-4b07-a777-6c1651b69d32",
+  "title": "Extract the email renderer into a small shared package",
+  "description": "**Milestone:** M3, public email and new stories\n\n**Goal.** One renderer for Papyrus mail and notifications. `papyrus_content.email_render` is pure Python except that it calls Markus for the body, through `papyrus_content.markus_renderer`, which shells out to the `markus` binary.\n\n**Build.**\n- New package `packages/email-render` in this repo, MIT, published from CI as `caducus-email-render`: `theme.py`, `dom.py`, `styles.py`, `text.py`, `urls.py`, and `render.py` changed to take an HTML fragment, not Markus.\n- `src/caducus/notify/render/` builds a fragment from event facts (title, dek, link). Papyrus keeps Markus conversion and calls the package (PPY-03c71e).\n- Keep `email_render_test.py` tests with the code; the rule that a theme with no branding renders the same stays pinned.\n\n**Acceptance.**\nAll existing renderer tests pass in the new package; no `markus` import there.\n\n**Related:** PPY-03c71e",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-2c2dad3a-fbda-4948-96da-02852a114e2a",
+  "labels": [
+    "m3"
+  ],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "85137362-4b65-4e1e-ac65-94d4f6ac511b",
+      "author": "home",
+      "text": "Not needed now. The package takes a renderer: Papyrus passes its own email_render, which already has Markus in its bundle. Extract a shared renderer only when a second app wants branded public mail. Closed with PPY-03c71e.",
+      "created_at": "2026-11-04T17:10:49.132011Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-11-04T13:14:29.398392Z",
+  "updated_at": "2026-11-04T17:10:49.138044Z",
+  "closed_at": "2026-11-04T17:10:49.138020Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

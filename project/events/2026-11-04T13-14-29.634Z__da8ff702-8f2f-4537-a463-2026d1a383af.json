@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "event_id": "da8ff702-8f2f-4537-a463-2026d1a383af",
+  "issue_id": "kanbus-95686d19-37fd-43f5-a721-4fddeaa6f8b7",
+  "event_type": "issue_created",
+  "occurred_at": "2026-11-04T13:14:29.634Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Report sending volume to Prospectus quota: percent only, no dollars",
+    "description": "**Milestone:** Later, coarse\n\n**Goal.** If Ryan confirms sending counts toward quota. Register with `quota: true` in Prospectus (Prospectus session told before merge). Report item kinds such as `caducus.email.sent` by Account via `POST /v1/quota/accounts/{account}/usage`, batched, retried with the same operation id. No rates in this public repo; customers see percent used. Operator, last-resort and consent mail never check quota.\n\n**Acceptance.**\nAn unknown kind's 422 is visible; no dollar figure or rate anywhere in Git.\n\n**Depends on:** kanbus-b47fad",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 3,
+    "assignee": null,
+    "parent": "kanbus-52b7c299-5df6-4da7-ace7-9fc00473ac77",
+    "labels": [
+      "later",
+      "prospectus"
+    ]
+  }
+}

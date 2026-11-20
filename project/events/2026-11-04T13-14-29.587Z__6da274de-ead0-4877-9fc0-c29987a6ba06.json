@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "6da274de-ead0-4877-9fc0-c29987a6ba06",
+  "issue_id": "kanbus-49f7bde8-0480-4e92-b778-5140552ea6e8",
+  "event_type": "issue_created",
+  "occurred_at": "2026-11-04T13:14:29.587Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Adopt in Chatticus",
+    "description": "**Milestone:** Later, coarse\n\n**Goal.** Chatticus's alarms are in `infra/lib/alarms.ts` with an email option on the topic; its accounts already take the forwarder (kanbus-64fc60). Add app events and a brand; remove its SNS email. Chatticus's repo and session own the merge.\n\n**Acceptance.**\nSpec'd when started.\n\n**Depends on:** kanbus-0c3a43, kanbus-64fc60",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 3,
+    "assignee": null,
+    "parent": "kanbus-dd394f79-6339-4bca-9a4c-259c93afaffe",
+    "labels": [
+      "later"
+    ]
+  }
+}

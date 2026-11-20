@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "173316dd-915e-4d51-880a-927b4925e24c",
+  "issue_id": "kanbus-0c3a43e6-c96e-4339-92b8-ea087208c1a7",
+  "event_type": "issue_created",
+  "occurred_at": "2026-11-04T13:14:29.574Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Thin clients: Python and TypeScript",
+    "description": "**Milestone:** Later, coarse\n\n**Goal.** Apps need only `PutEvents` with the schema. Add the smallest helper per language: `caducus.notify.client` first (Papyrus), a small npm package when Chatticus adopts. No shared UI package until a second app needs it.\n\n**Acceptance.**\nSpec'd when started.\n\n**Depends on:** kanbus-ff4727",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 3,
+    "assignee": null,
+    "parent": "kanbus-dd394f79-6339-4bca-9a4c-259c93afaffe",
+    "labels": [
+      "later"
+    ]
+  }
+}

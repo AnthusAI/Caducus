@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "19550ade-2f91-4a42-8164-f9b6476e3a5d",
+  "issue_id": "kanbus-98e48968-ffa7-4905-ac36-f4b4655646be",
+  "event_type": "issue_created",
+  "occurred_at": "2026-11-04T13:14:29.454Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Deletion, merges and delivery-log retention",
+    "description": "**Milestone:** M3, public email and new stories\n\n**Goal.** As a person, when I ask for deletion, or my Person is deleted or merged in Prospectus, my data goes or moves. Delivery logs expire on the stated schedule.\n\n**Build.**\n- `src/caducus/notify/erasure.py`: removes recipient, contact, preference and consent rows and delivery rows through `byRecipient` (as Papyrus's `byHid` does). A suppression hash holding no address stays, so an unsubscribe still holds; Prospectus's newsletter takes the same stance.\n- Reader sites: a site job polls `GET /v1/accounts/site-subjects/retired`, using its own role, and calls `POST /v1/retirements`. Apply each as 'ensure dropped' or 'ensure remapped' as Prospectus `docs/accounts/PAPYRUS_SITES.md` asks. Prospectus does not delete or merge Persons yet, so the list is empty today; test with fixtures.\n- Editor sites: no such feed; requested in kanbus-3e30d1.\n- Newsletter: a person's roundup record stays in the plugin until the digest epic, so erasure from a site page calls both.\n\n**Acceptance.**\nBehave features; a test that no row holds the address after erasure.\n\n**Depends on:** kanbus-ff4727\n\n**Specification.**\n```gherkin\nFeature: Deletion\n  Scenario: A person asks\n    Given a subscriber with preferences and delivery history\n    When they choose delete my data\n    Then their address, choices and history are gone\n    And a suppression record without the address remains if they had unsubscribed\n\n  Scenario: A merge\n    When Prospectus retires a reader subject as merged into another\n    Then the choices move to the surviving subject\n\n  Scenario: Logs expire\n    Given a delivery older than the retention setting\n    Then it is no longer in the log\n```",
+    "issue_type": "story",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-e5812c13-91be-4167-9221-8bc3c41ce2af",
+    "labels": [
+      "m3"
+    ]
+  }
+}

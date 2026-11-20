@@ -14,22 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install dependencies
-        run: |
-          pip install "biblicus @ git+https://github.com/AnthusAI/Biblicus.git@dev"
-          pip install -e ".[dev,reinforcement-memory]"
-      - name: Workaround virtuus VERSION bug
-        run: |
-          SITE_PKG=$(python -c "import site; print(site.getsitepackages()[0])")
-          VERSION_PATH=$(dirname $(dirname $SITE_PKG))/VERSION
-          echo "0.4.3" | sudo tee $VERSION_PATH > /dev/null
-      - name: Run Pytest
-        run: pytest
-      - name: Run Behave
-        run: behave
+      - uses: ./.github/actions/test
 
   release:
     needs: test
@@ -47,6 +32,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.ref_name }}
+          fetch-depth: 0
 
       - name: Force branch to workflow SHA
         run: git reset --hard ${{ github.sha }}
@@ -64,6 +50,9 @@ jobs:
         uses: python-semantic-release/python-semantic-release@v10.5.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          # main takes changes only through pull requests, so the release is a tag, with the version stamped into the build.
+          commit: false
+          changelog: false
           git_committer_name: github-actions
           git_committer_email: actions@users.noreply.github.com
 
@@ -86,9 +75,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: release
     if: ${{ needs.release.outputs.released == 'true' }}
+    environment: pypi
     permissions:
       contents: read
-      id-token: write
+      id-token: write # OIDC trusted publishing; there is no API token or secret
     steps:
       - name: Download built distributions
         uses: actions/download-artifact@v4
@@ -100,4 +90,3 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist
-          password: ${{ secrets.PYPI_API_TOKEN }}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "c38e0f27-5fcf-46d2-a028-8dc3918e1c2c",
+  "issue_id": "kanbus-3cae87f4-3fc5-49b0-b407-4c4c45d054bb",
+  "event_type": "issue_created",
+  "occurred_at": "2026-11-18T18:41:29.500Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Public audience: cadence family, membership since/until and as-of fan-out",
+    "description": "Move the cadence-family rule (one list per family per reader), membership since/until with a host-supplied effective time for moves, and as-of fan-out (audienceAsOf) into PublicAudience, the router and the event schema, so every item reaches a reader by exactly one route.",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-454b52c2-9bb8-483d-aa06-b687a33f456c",
+    "labels": []
+  }
+}

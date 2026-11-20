@@ -1,0 +1,22 @@
+{
+  "id": "kanbus-49f7bde8-0480-4e92-b778-5140552ea6e8",
+  "title": "Adopt in Chatticus",
+  "description": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** Later, coarse\n\n**Goal.** Chatticus takes the `caducus` package in its own deployment and accounts, with nothing shared at runtime: one operator listener per account, its own alarm catalog, table and SES identity, and its own two last-resort alerts. Replace the SNS email in `infra/lib/alarms.ts`. TypeScript hosts run the package as Python Lambdas. Its SES was in the sandbox on 2026-11-04, which is enough for verified operators; production access is its own request when it sends to customers. Chatticus's repo and session own the merge.\n\n**Acceptance.**\nSpec'd when started.",
+  "type": "task",
+  "status": "open",
+  "priority": 3,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-dd394f79-6339-4bca-9a4c-259c93afaffe",
+  "labels": [
+    "later"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-11-04T13:14:29.587102Z",
+  "updated_at": "2026-11-04T17:10:47.562921Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

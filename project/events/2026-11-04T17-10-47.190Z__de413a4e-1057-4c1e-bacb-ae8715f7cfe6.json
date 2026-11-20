@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "de413a4e-1057-4c1e-bacb-ae8715f7cfe6",
+  "issue_id": "kanbus-222bcf30-ca2f-4c89-a9c8-b46627d2fd72",
+  "event_type": "field_updated",
+  "occurred_at": "2026-11-04T17:10:47.190Z",
+  "actor_id": "home",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "**Milestone:** M2, operators finished\n\n**Goal.** As any person, I choose by kind and channel, and can turn off a whole class. As an admin, app alerts are on by default until I say otherwise.\n\n**Build.**\n- `src/caducus/notify/preferences.py`. Rows `RCPT#<recipientKey>` / `PREF#<scope>` where scope is `kind:<k>`, `class:<c>` or `all`, each with a channel set. The most specific wins. Router writes `skipped_preference`.\n- Defaults come from the kind registry: operator on for staff, admin-class on for site admins, account mail on, public off until subscribed. There is no 'cannot be turned off' flag, including for operators; the two SNS alerts are outside this system.\n\n**Acceptance.**\nResolution table-tested.\n\n**Depends on:** kanbus-ad0a0d\n\n**Specification.**\n```gherkin\nFeature: Choosing what I receive\n  Scenario: An admin gets app alerts by default\n    Given a site admin who has changed nothing\n    When an app alert for their site is raised\n    Then they are notified\n\n  Scenario: Turning off a class\n    Given a person turned off the class \"admin\"\n    When any admin-class alert is raised\n    Then they are not notified and the log says why\n\n  Scenario: A specific choice beats a class choice\n    Given a person turned off the class \"admin\" and turned on the kind \"site.paused\"\n    When a \"site.paused\" alert is raised\n    Then they are notified\n```",
+        "to": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** M2, operators finished\n\n**Goal.** As any person, I choose by kind and channel, and can turn off a whole class. As an admin, app alerts are on by default until I say otherwise.\n\n**Build.**\n- `src/caducus/notify/preferences.py`. Rows `RCPT#<recipientKey>` / `PREF#<scope>` where scope is `kind:<k>`, `class:<c>` or `all`, each with a channel set. The most specific wins. Router writes `skipped_preference`.\n- Defaults come from the kind registry: operator on for staff, admin-class on for site admins, account mail on, public off until subscribed. There is no 'cannot be turned off' flag, including for operators; the two SNS alerts are outside this system.\n\n**Acceptance.**\nResolution table-tested.\n\n**Depends on:** kanbus-ad0a0d\n**Related:** PPY-3e260c, PPY-d7443d\n\n**Specification.**\n```gherkin\nFeature: Choosing what I receive\n  Scenario: An admin gets app alerts by default\n    Given a site admin who has changed nothing\n    When an app alert for their site is raised\n    Then they are notified\n\n  Scenario: Turning off a class\n    Given a person turned off the class \"admin\"\n    When any admin-class alert is raised\n    Then they are not notified and the log says why\n\n  Scenario: A specific choice beats a class choice\n    Given a person turned off the class \"admin\" and turned on the kind \"site.paused\"\n    When a \"site.paused\" alert is raised\n    Then they are notified\n```"
+      }
+    }
+  }
+}

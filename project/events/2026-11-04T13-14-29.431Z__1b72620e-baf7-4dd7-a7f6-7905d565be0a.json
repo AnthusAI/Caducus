@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "1b72620e-baf7-4dd7-a7f6-7905d565be0a",
+  "issue_id": "kanbus-ff4727b1-ce02-4255-a7b6-fa6b1a88f41b",
+  "event_type": "issue_created",
+  "occurred_at": "2026-11-04T13:14:29.431Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "A client API for apps: preferences, subscriptions, contact points",
+    "description": "**Milestone:** M3, public email and new stories\n\n**Goal.** As an app's server, I read and change a person's choices through one signed API, and tell the service who the person is and their verified address.\n\n**Build.**\n- REST API with IAM auth, resource policy by `aws:PrincipalOrgID`; `config/clients.yaml` maps role-name patterns to a product. Prospectus's own registry hit the 8192-character resource-policy limit, so do not list roles in the policy. The caller's product comes from the verified caller, never the body.\n- Identity: `PERSON#<id>` for account members; `SUBJECT#<product>#<ss1_...>` for signed-in readers of a public-reader site (a pairwise subject cannot be linked across sites, by design: Prospectus `docs/SECURITY.md`); `ADDR#<site>#<hmac>` for an email-only subscriber. Readers' choices are therefore per site. Staff and members share them across apps.\n- Contact points: Prospectus has no email. On sign-in the app sends the verified email claim with the person's role, as the Papyrus newsletter test send already trusts its `email` claim. Admin alerts reach people who have signed in since launch; the console says so. The admin set refreshes at sign-in until kanbus-3e30d1 brings a machine route.\n- Routes: `GET/PUT /v1/preferences`, `POST /v1/subscriptions`, `DELETE ...`, `POST /v1/contacts`, plus kanbus-c68e03's. No realtime subscriptions anywhere.\n\n**Acceptance.**\nBehave features; a caller from product A cannot read a person's data for product B.\n\n**Depends on:** kanbus-222bcf\n\n**Specification.**\n```gherkin\nFeature: Client API\n  Scenario: A site's server changes a reader's choice\n    Given a signed call from a site's server role about its own reader\n    When it turns off new-story email\n    Then that reader's choice changes\n\n  Scenario: Another site cannot\n    Given a signed call from another site's server role\n    When it asks for that reader's choices\n    Then it is refused\n\n  Scenario: An admin joins by signing in\n    Given an admin signs in to a site for the first time since launch\n    When the site reports their verified address and role\n    Then they are in the audience for that site's admin alerts\n```",
+    "issue_type": "story",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-e5812c13-91be-4167-9221-8bc3c41ce2af",
+    "labels": [
+      "m3"
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "46308647-78b0-4bcc-ba4f-693b13ab5253",
+  "issue_id": "kanbus-726078b1-a4bc-4570-a2e3-3b79e68ab0bb",
+  "event_type": "field_updated",
+  "occurred_at": "2026-11-04T17:10:47.456Z",
+  "actor_id": "home",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "**Milestone:** Later, coarse\n\n**Goal.** Only Ryan can create the app under his Slack account. Slack's docs were checked for each item except where marked.\n\n**Build.**\n1. At api.slack.com/apps create an app from the manifest in `infra/slack/manifest.yaml` (kanbus-ae4094 writes it), named Anthus, with the Anthus icon.\n2. Scopes: `chat:write`, plus `chat:write.customize` only if the plan's decision keeps per-message names. Redirect URL and Events URL on the notification domain. Bot events `app_uninstalled`, `tokens_revoked`.\n3. Manage Distribution: complete the checklist and press Activate Public Distribution. This is unlisted distribution: installable by OAuth with no review, which Slack describes as suited to pilots.\n4. Give the Client ID, Client Secret and Signing Secret to `scripts/put-channel-secrets.py` from your own shell; it writes SSM SecureStrings created empty by IaC. These values originate at Slack, so this is the one place a secret is entered by hand. Do not paste them into chat or Kanbus.\n5. Later, not now: Slack Marketplace. Its guide calls apps unsuitable under 10 active workspaces and 20 monthly active users, and needs a public landing page, a privacy policy and a support page answering within 2 business days.\n\n**Acceptance.**\nInstall on Anthus's own workspace; a test post.\n\n**Depends on:** kanbus-a65828",
+        "to": "**Reworked 2026-11-04:** Ryan reversed the architecture. No new AWS account and no central service; see docs/notifications-plan.md in AnthusAI/Caducus.\n\n**Milestone:** Later, coarse\n\n**Goal.** Only Ryan can create the app under his Slack account. Slack's docs were checked for each item except where marked.\n\n**Build.**\n1. At api.slack.com/apps create an app from the manifest (kanbus-ae4094 writes `infra/slack/manifest.yaml` in Papyrus), named Anthus, with the Anthus icon.\n2. Scope `chat:write`, no `chat:write.customize` (decision: no per-message override). `redirect_urls` lists each site's callback; the manifest allows up to 1000. No Events URL, per the plan's recommendation; if you would rather have uninstall events, a small endpoint goes in papyrus-monitoring.\n3. Manage Distribution: complete the checklist and press Activate Public Distribution. Unlisted: OAuth install, no review, which Slack describes as suited to pilots.\n4. Give Client ID and Client Secret to `scripts/put-channel-secrets.py` from your own shell; it writes shared SSM SecureStrings `/papyrus/shared/slack-*`. These values originate at Slack, so this is the one place a secret is entered by hand. Do not paste them into chat or Kanbus.\n5. Later, not now: Slack Marketplace. Its guide calls apps unsuitable under 10 active workspaces and 20 monthly active users, and needs a public landing page, a privacy policy and a support page answering within 2 business days.\n\n**Acceptance.**\nInstall on Anthus's own workspace; a test post.\n\n**Depends on:** kanbus-a65828"
+      }
+    }
+  }
+}
